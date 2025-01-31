@@ -1,0 +1,42 @@
+.navbar {
+    position: fixed;
+    top: 0;
+    width: 98%;
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: linear-gradient(to right, rgba(15, 15, 16, 0.0), rgba(26, 27, 36, 0.0), rgba(35, 37, 50, 0.0)); /* Lower transparency */
+    backdrop-filter: blur(15px); /* Stronger blur to merge better */
+    -webkit-backdrop-filter: blur(15px);
+    border-bottom: none !important; /* Remove any border */
+    box-shadow: none !important; /* Remove any shadow */
+    z-index: 1000;
+  }
+  
+  /* Navbar Links */
+  .menu a {
+    position: relative;
+    color: white;
+    text-decoration: none;
+    margin-left: 20px;
+    font-size: 1.2rem;
+    padding: 8px 12px;
+    border-radius: 12px;
+    transition: background 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+  }
+  
+  /* Hover Effect for Links */
+  .menu a:hover {
+    background: rgba(255, 255, 255, 0.15);
+    box-shadow: 0px 4px 8px rgba(255, 255, 255, 0.1);
+  }
+  
+  /* Adjust Logo Color */
+  .logo {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: white;
+    text-decoration: none;
+  }
+  
