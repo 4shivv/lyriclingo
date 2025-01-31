@@ -97,5 +97,5 @@ LyricLingo is a music-based language learning app that allows users to learn new
 MIT License
 
 ## Contributors
-- **[Your Name]** - Developer
+- **Shivaganesh Nagamandla** - Developer
 
