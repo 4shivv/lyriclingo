@@ -1,0 +1,39 @@
+/* Ensure buttons have a consistent style */
+button {
+    padding: 12px 20px;
+    font-size: 1rem;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.3s ease, transform 0.2s ease;
+  }
+  
+  /* Log Song Button */
+  .log-song-button {
+    background: #1DB954;
+    color: white;
+    margin-bottom: 20px;
+  }
+  
+  .log-song-button:hover {
+    background: #1aa34a;
+    transform: scale(1.05);
+  }
+  
+  /* Clear History Button */
+  .clear-history-button {
+    background: #e74c3c;
+    color: white;
+  }
+  
+  .clear-history-button:hover {
+    background: #c0392b;
+    transform: scale(1.05);
+  }
+  
+  /* History Item Hover */
+  .history-item:hover {
+    background: #3c3f50;
+    transform: scale(1.02);
+  }
+  

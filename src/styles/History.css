@@ -1,0 +1,72 @@
+.history-container {
+    text-align: center;
+    padding: 50px;
+  }
+  
+  /* Title and Subtitle */
+  .history-title {
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: white;
+  }
+  
+  .history-subtitle {
+    font-size: 1.2rem;
+    color: #cccccc;
+    margin-bottom: 20px;
+  }
+  
+  /* History List */
+  .history-list {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+  
+  /* Individual History Item */
+  .history-item {
+    width: 100%;
+    padding: 12px;
+    background: #2a2d3a;
+    color: white;
+    border-radius: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: background 0.3s ease, transform 0.2s ease;
+    cursor: pointer;
+  }
+  
+  .history-item:hover {
+    background: #3c3f50;
+    transform: scale(1.02);
+  }
+  
+  /* Song and Artist Info */
+  .history-info {
+    font-size: 1.2rem;
+  }
+  
+  .history-song {
+    font-weight: bold;
+  }
+  
+  .history-artist {
+    color: #bbbbbb;
+  }
+  
+  /* Date */
+  .history-date {
+    font-size: 1rem;
+    color: #cccccc;
+  }
+  
+  /* Empty State */
+  .history-empty {
+    font-size: 1.2rem;
+    color: #888888;
+  }
+  

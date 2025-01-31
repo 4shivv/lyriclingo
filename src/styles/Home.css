@@ -1,0 +1,47 @@
+.home-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 80vh;
+    text-align: center;
+  }
+  
+  .home-content {
+    max-width: 600px;
+  }
+  
+  .home-title {
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: white;
+    margin-bottom: 10px;
+  }
+  
+  .home-subtitle {
+    font-size: 1.5rem;
+    color: #cccccc;
+    margin-bottom: 20px;
+  }
+  
+  .home-description {
+    font-size: 1.2rem;
+    color: #bbbbbb;
+    margin-bottom: 30px;
+  }
+  
+  .connect-button {
+    padding: 12px 24px;
+    font-size: 1.2rem;
+    background: #1DB954; /* Spotify Green */
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.3s ease, transform 0.2s ease;
+  }
+  
+  .connect-button:hover {
+    background: #1aa34a;
+    transform: scale(1.05);
+  }
+  
