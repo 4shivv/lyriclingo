@@ -18,7 +18,7 @@ function Login() {
         </button>
         <button className="social-login apple-login">
           <img src="/pngegg.png" alt="Apple Logo" className="social-icon" />
-          Continue with Apple
+         Continue with Apple
         </button>
 
         {/* Separator */}

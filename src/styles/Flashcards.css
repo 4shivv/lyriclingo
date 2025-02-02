@@ -1,98 +1,139 @@
 .flashcards-container {
-    text-align: center;
-    padding: 50px;
-  }
-  
-  /* Title and Subtitle */
-  .flashcards-title {
-    font-size: 2.5rem;
-    font-weight: bold;
-    color: white;
-  }
-  
-  .flashcards-subtitle {
-    font-size: 1.2rem;
-    color: #cccccc;
-    margin-bottom: 20px;
-  }
-  
-  /* Flashcard Wrapper */
-  .flashcard-wrapper {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin-top: 20px;
-  }
-  
-  /* Flashcard Container */
-  .flashcard-container {
-    perspective: 1000px; /* Enables 3D effect */
-  }
-  
-  /* Flashcard */
-  .flashcard {
-    width: 350px;
-    height: 200px;
-    position: relative;
-    transform-style: preserve-3d;
-    transition: transform 0.6s;
-    cursor: pointer;
-  }
-  
-  .flashcard.flipped {
-    transform: rotateY(180deg);
-  }
-  
-  /* Front and Back of Flashcard */
-  .flashcard-face {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 1.8rem;
-    font-weight: bold;
-    border-radius: 12px;
-    backface-visibility: hidden;
-    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
-  }
-  
-  /* Front Side */
-  .flashcard-front {
-    background: #2a2d3a;
-    color: white;
-  }
-  
-  /* Back Side */
-  .flashcard-back {
-    background: #3c3f50;
-    color: white;
-    transform: rotateY(180deg);
-  }
-  
-  /* Navigation Buttons */
-  .flashcard-controls {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin-top: 20px;
-    gap: 20px;
-  }
-  
-  .nav-button {
-    background: #1DB954;
-    color: white;
-    border: none;
-    padding: 10px 15px;
-    font-size: 1.2rem;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background 0.3s ease, transform 0.2s ease;
-  }
-  
-  .nav-button:hover {
-    background: #1aa34a;
-    transform: scale(1.05);
-  }
-  
+  text-align: center;
+  padding: 50px;
+  max-width: 600px;
+  margin: auto;
+}
+
+/* Title and Subtitle */
+.flashcards-title {
+  font-size: 2rem;
+  font-weight: bold;
+  color: white;
+}
+
+.flashcards-subtitle {
+  font-size: 1.2rem;
+  color: #cccccc;
+  margin-bottom: 20px;
+}
+
+/* Flashcard Wrapper */
+.flashcard-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 20px;
+}
+
+/* Flashcard Container */
+.flashcard-container {
+  perspective: 1000px;
+}
+
+/* Flashcard */
+.flashcard {
+  width: 400px;
+  height: 250px;
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 0.6s;
+  cursor: pointer;
+  background: #222;
+  border-radius: 12px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.flashcard.flipped {
+  transform: rotateY(180deg);
+}
+
+/* Front and Back of Flashcard */
+.flashcard-face {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1.5rem;
+  font-weight: bold;
+  border-radius: 12px;
+  backface-visibility: hidden;
+  padding: 15px;
+  text-align: center;
+}
+
+/* Front Side */
+.flashcard-front {
+  background: #2a2d3a;
+  color: white;
+}
+
+/* Back Side */
+.flashcard-back {
+  background: #3c3f50;
+  color: white;
+  transform: rotateY(180deg);
+}
+
+/* Navigation Buttons */
+.flashcard-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 20px;
+  gap: 20px;
+}
+
+.nav-button {
+  background: #1DB954;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  font-size: 1.2rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.3s ease, transform 0.2s ease;
+}
+
+.nav-button:hover {
+  background: #1aa34a;
+  transform: scale(1.05);
+}
+
+/* Log Current Song Button */
+.log-song-button {
+  background: #777;
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  font-size: 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.3s ease, transform 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 30px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Hover Effect */
+.log-song-button:hover {
+  background: #1aa34a;
+  transform: scale(1.05);
+}
+
+/* Loading State */
+.log-song-button:disabled {
+  background: #888888;
+  cursor: not-allowed;
+  transform: none;
+}

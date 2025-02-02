@@ -1,17 +1,32 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom"; // Import navigation
 import "../styles/History.css";
 
-const sampleHistory = [
-  { id: 1, song: "Despacito", artist: "Luis Fonsi", date: "2024-01-30" },
-  { id: 2, song: "Bailando", artist: "Enrique Iglesias", date: "2024-01-29" },
-  { id: 3, song: "Vivir Mi Vida", artist: "Marc Anthony", date: "2024-01-28" },
-];
+function History({ setSelectedSong }) {
+  const [history, setHistory] = useState([]);
+  const navigate = useNavigate(); // Initialize navigation
 
-function History({ onSelectSong }) {
-  const [history, setHistory] = useState(sampleHistory);
+  useEffect(() => {
+    fetch("http://localhost:5001/api/songs/history")
+      .then((res) => res.json())
+      .then((data) => {
+        console.log("Fetched History:", data); // ✅ Debugging: Check if data arrives
+        setHistory(data);
+      })
+      .catch((error) => console.error("Error fetching history:", error));
+  }, []);
 
-  const clearHistory = () => {
-    setHistory([]);
+  // ✅ Function to clear history
+  const clearHistory = async () => {
+    await fetch("http://localhost:5001/api/songs/clear", { method: "DELETE" });
+    setHistory([]); // ✅ Update frontend immediately
+    alert("History Cleared!");
+  };
+
+  // ✅ Navigate to flashcards for selected song
+  const handleSongClick = (song) => {
+    setSelectedSong(song);
+    navigate("/flashcards");
   };
 
   return (
@@ -25,21 +40,19 @@ function History({ onSelectSong }) {
 
       <div className="history-list">
         {history.length > 0 ? (
-          history.map((entry) => (
-            <div
-              key={entry.id}
-              className="history-item"
-              onClick={() => onSelectSong(entry.id)}
-            >
+          history.map((entry, index) => (
+            <div key={index} className="history-item" onClick={() => handleSongClick(entry)}>
               <div className="history-info">
                 <span className="history-song">{entry.song}</span> - 
                 <span className="history-artist"> {entry.artist}</span>
               </div>
-              <span className="history-date">{entry.date}</span>
+              <span className="history-date">
+                {new Date(entry.timestamp).toLocaleDateString()}
+              </span>
             </div>
           ))
         ) : (
-          <p className="history-empty">No history available.</p>
+          <p className="history-empty">No songs logged yet.</p>
         )}
       </div>
     </div>

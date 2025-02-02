@@ -70,3 +70,27 @@
     color: #888888;
   }
   
+/* Centering Clear History Button */
+.clear-history-button {
+  background: #777;
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  font-size: 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.3s ease, transform 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;  /* Ensures text is centered */
+  gap: 8px;
+  margin-bottom: 30px;
+  margin-left: auto;  /* Centers inside a flex container */
+  margin-right: auto;
+}
+
+
+.clear-history-button:hover {
+  background: #999;
+  transform: scale(1.05);
+}
