@@ -1,4 +1,5 @@
-# ![LyricLingo Logo]\(public/IMG\_0862.png) LyricLingo
+![LyricLingo Logo]\(public/IMG\_0862.png)  
+# LyricLingo
 
 **LyricLingo** is a full-stack web application that fetches song lyrics, translates them, and generates flashcards for language learning. Users can log songs, view their history, and test themselves with flashcards generated from song lyrics.
 
