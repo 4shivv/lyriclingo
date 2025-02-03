@@ -53,7 +53,7 @@ REACT_APP_BACKEND_URL=http://localhost:5001
   npm start
   npm run dev
 ```
-> Frontend runs on **http://localhost:3000**
+> Frontend runs on **http://localhost:5173/**
 
 ---
 
@@ -135,11 +135,6 @@ GET /api/songs/flashcards?song=BESO
 
 ## 👥 Contributors
 - **Shivaganesh Nagamandla** - *Developer & Project Lead*
-
----
-
-## 📜 License
-This project is licensed under the MIT License.
 
 ---
 
