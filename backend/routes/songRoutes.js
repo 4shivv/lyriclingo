@@ -7,5 +7,6 @@ router.post("/log", logSong);
 router.get("/history", getSongHistory);
 router.delete("/clear", clearHistory);
 router.get("/flashcards", getFlashcardsForSong);
+router.post("/logout", clearHistory);
 
 module.exports = router; // ✅ Ensure correct export

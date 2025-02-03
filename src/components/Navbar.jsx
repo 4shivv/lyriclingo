@@ -14,14 +14,23 @@ function Navbar() {
     window.location.href = "http://localhost:5001/api/spotify/login"; // Redirects to Spotify's login page
   };   
 
-  const handleLogout = () => {
-    localStorage.removeItem("spotify_access_token"); // Remove stored access token
-    localStorage.removeItem("spotify_refresh_token"); // Remove refresh token
-    setIsAuthenticated(false); // Update state
+  const handleLogout = async () => {
+    try {
+      // ✅ Call the backend to clear history
+      await fetch("http://localhost:5001/api/songs/logout", { method: "POST" });
   
-    // ✅ Redirect to home page for a fresh login session
-    window.location.href = "/";
-  };  
+      console.log("✅ Cleared history on logout");
+  
+      // ✅ Remove stored authentication tokens
+      localStorage.removeItem("spotify_access_token");
+      localStorage.removeItem("spotify_refresh_token");
+  
+      // ✅ Redirect to home page
+      window.location.href = "/";
+    } catch (error) {
+      console.error("❌ Error during logout:", error);
+    }
+  }; 
 
   return (
     <nav className="navbar">

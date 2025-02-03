@@ -2,6 +2,8 @@ const express = require("express");
 const cors = require("cors");
 const mongoose = require("mongoose");
 require("dotenv").config();
+const Redis = require("ioredis");
+const redis = new Redis(); // Default Redis connection (localhost:6379)
 
 const spotifyRoutes = require("./routes/spotifyRoutes");
 const songRoutes = require("./routes/songRoutes");

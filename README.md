@@ -1,91 +1,122 @@
-# 🎵 LyricLingo
+# ![LyricLingo Logo]\(public/IMG\_0862.png) LyricLingo
 
 **LyricLingo** is a full-stack web application that fetches song lyrics, translates them, and generates flashcards for language learning. Users can log songs, view their history, and test themselves with flashcards generated from song lyrics.
 
 ## 🚀 Features
+
 - **Fetch song lyrics** from Genius API
 - **Translate lyrics** using DeepL API
 - **Generate flashcards** from lyrics (original + translated)
 - **Save song history** in MongoDB
-- **Frontend built with React**
+- **Redis caching** for optimized API performance
+- **Frontend built with React** (inside `src/`)
 - **Backend powered by Node.js + Express**
 
 ---
 
 ## 🛠️ Installation
+
 ### **1️⃣ Clone the Repository**
+
 ```sh
-  git clone https://github.com/your-username/LyricLingo.git
-  cd LyricLingo
+git clone https://github.com/your-username/my-lyric-app.git 
+cd my-lyric-app
 ```
 
 ### **2️⃣ Set Up Backend**
+
 ```sh
   cd backend
   npm install
 ```
-#### **Environment Variables** (Create `.env` file in `backend/`)
+
+#### **Environment Variables** (Create `.env` file inside `backend/`)
+
 ```env
 GENIUS_ACCESS_TOKEN=your-genius-api-key
 DEEPL_API_KEY=your-deepl-api-key
 MONGO_URI=your-mongodb-connection-string
+SPOTIFY_CLIENT_ID=your-spotify-client-id
+SPOTIFY_CLIENT_SECRET=your-spotify-client-secret
+SPOTIFY_REDIRECT_URI=http://localhost:5001/api/spotify/callback
 ```
+
 #### **Run Backend**
+
 ```sh
-  npm start
   node server.js
 ```
-> Backend runs on **http://localhost:5001**
+
+> Backend runs on **[http://localhost:5001](http://localhost:5001)**
+
+#### **Start Redis (If not running already)**
+
+```sh
+  redis-server
+```
+
+OR (if using Homebrew on macOS):
+
+```sh
+  brew services start redis
+```
 
 ---
 
-### **3️⃣ Set Up Frontend**
+### **3️⃣ Set Up Frontend** (Inside `src/` but no separate frontend directory)
+
 ```sh
-  cd frontend
   npm install
 ```
-#### **Environment Variables** (Create `.env` file in `frontend/`)
-```env
-REACT_APP_BACKEND_URL=http://localhost:5001
-```
+
 #### **Run Frontend**
+
 ```sh
-  npm start
   npm run dev
 ```
-> Frontend runs on **http://localhost:5173/**
+
+> Frontend runs on **[http://localhost:5173/](http://localhost:5173/)**
 
 ---
 
 ## 📡 API Endpoints
+
 ### **1️⃣ Log a Song**
+
 ```http
 POST /api/songs/log
 ```
+
 **Request Body:**
+
 ```json
 {
   "song": "BESO",
   "artist": "Rosalía & Rauw Alejandro"
 }
 ```
+
 **Response:**
+
 ```json
 {
   "message": "Song logged successfully!",
   "song": {
     "song": "BESO",
     "artist": "Rosalía & Rauw Alejandro",
-    "lyricsUrl": "https://genius.com/...","
+    "lyricsUrl": "https://genius.com/..."
   }
 }
 ```
 
 ### **2️⃣ Get Song History**
+
 ```http
 GET /api/songs/history
 ```
+
 **Response:**
+
 ```json
 [
   {
@@ -96,10 +127,13 @@ GET /api/songs/history
 ```
 
 ### **3️⃣ Fetch Flashcards**
+
 ```http
 GET /api/songs/flashcards?song=BESO
 ```
+
 **Response:**
+
 ```json
 [
   { "front": "Ya yo necesito otro beso", "back": "Now I need another kiss" },
@@ -110,35 +144,42 @@ GET /api/songs/flashcards?song=BESO
 ---
 
 ## 🌍 Deployment Guide
+
 ### **1️⃣ Deploy Backend** (Render/Railway/Heroku)
+
 - Push backend to GitHub
 - Deploy on [Render](https://render.com/) or [Railway](https://railway.app/)
 - Set environment variables
 - Get the backend URL (e.g., `https://lyriclingo-backend.onrender.com`)
 
 ### **2️⃣ Deploy Frontend** (Vercel/Netlify)
+
 - Push frontend to GitHub
 - Deploy on [Vercel](https://vercel.com/)
-- Set `REACT_APP_BACKEND_URL=https://lyriclingo-backend.onrender.com`
+- Set `VITE_BACKEND_URL=https://lyriclingo-backend.onrender.com`
 - Deploy & get URL (e.g., `https://lyriclingo.vercel.app`)
 
 ---
 
 ## 🛠️ Tech Stack
+
 - **Frontend:** React, Tailwind CSS
 - **Backend:** Node.js, Express
 - **Database:** MongoDB Atlas
 - **APIs Used:** Genius API, DeepL API
+- **Caching:** Redis (ioredis)
 - **Hosting:** Vercel (frontend), Render/Railway (backend)
 
 ---
 
 ## 👥 Contributors
+
 - **Shivaganesh Nagamandla** - *Developer & Project Lead*
 
 ---
 
 ## 🎯 Future Improvements
+
 - ✅ Support for more languages
 - ✅ User authentication
 - ✅ Mobile-friendly UI
