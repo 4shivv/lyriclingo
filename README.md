@@ -33,6 +33,7 @@ MONGO_URI=your-mongodb-connection-string
 #### **Run Backend**
 ```sh
   npm start
+  node server.js
 ```
 > Backend runs on **http://localhost:5001**
 
@@ -50,6 +51,7 @@ REACT_APP_BACKEND_URL=http://localhost:5001
 #### **Run Frontend**
 ```sh
   npm start
+  npm run dev
 ```
 > Frontend runs on **http://localhost:3000**
 
