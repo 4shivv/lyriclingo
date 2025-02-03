@@ -23,15 +23,15 @@ function AppContent() {
     const urlParams = new URLSearchParams(window.location.search);
     const accessToken = urlParams.get("access_token");
     const refreshToken = urlParams.get("refresh_token");
-  
+
     if (accessToken && refreshToken) {
       localStorage.setItem("spotify_access_token", accessToken);
       localStorage.setItem("spotify_refresh_token", refreshToken);
       setIsLoggedIn(true);
-  
+
       // ✅ Remove tokens from URL
       window.history.replaceState({}, document.title, "/flashcards");
-  
+
       // ✅ Redirect user to Flashcards page
       navigate("/flashcards", { replace: true });
     } else {
@@ -40,15 +40,14 @@ function AppContent() {
         setIsLoggedIn(true);
       }
     }
-  }, [navigate]);  
-
+  }, [navigate]);
 
   return (
     <>
       <Navbar isLoggedIn={isLoggedIn} />
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/flashcards" element={<Flashcards isLoggedIn={isLoggedIn} selectedSong={selectedSong} />} />
+        <Route path="/flashcards" element={<Flashcards isLoggedIn={isLoggedIn} selectedSong={selectedSong} setSelectedSong={setSelectedSong} />} />
         <Route path="/history" element={<History setSelectedSong={setSelectedSong} />} />
       </Routes>
     </>

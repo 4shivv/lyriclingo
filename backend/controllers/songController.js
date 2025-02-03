@@ -81,26 +81,25 @@ const getFlashcardsForSong = async (req, res) => {
   try {
     const songTitle = req.query.song;
     const sourceLanguage = req.query.lang || "es"; // Default to Spanish input
-    const cacheKey = `flashcards:${songTitle}`; // Unique cache key
+    const cacheKey = `flashcards:${songTitle}`;
 
-    // 🔍 Check if flashcards exist in Redis cache
+    // Check Redis cache first
     const cachedFlashcards = await redis.get(cacheKey);
     if (cachedFlashcards) {
       console.log(`⚡ Serving flashcards from cache for: ${songTitle}`);
-      return res.json(JSON.parse(cachedFlashcards)); // Return cached result
+      return res.json(JSON.parse(cachedFlashcards));
     }
 
     console.log(`🔎 Looking for song: ${songTitle}`);
 
-    // Find song in the database
+    // Find song in the DB
     const song = await Song.findOne({ song: songTitle });
     if (!song || !song.lyricsUrl) {
       return res.status(404).json({ error: "Song not found in history" });
     }
-
     console.log(`✅ Found song in DB with lyrics URL: ${song.lyricsUrl}`);
 
-    // Fetch Lyrics from Lyrics API
+    // Fetch Lyrics from the Lyrics API
     const response = await fetch(
       `http://localhost:5001/api/lyrics/fetch-lyrics?lyricsUrl=${encodeURIComponent(song.lyricsUrl)}`
     );
@@ -109,22 +108,49 @@ const getFlashcardsForSong = async (req, res) => {
     if (!data.lyrics || data.lyrics.trim().length === 0) {
       return res.status(500).json({ error: "Failed to fetch lyrics from Genius" });
     }
-
     console.log("🔍 Raw Lyrics Received:", data.lyrics);
 
-    // ✅ 1️⃣ Clean and Format Lyrics
-    let cleanedLyrics = data.lyrics.replace(/\[.*?\]/g, "").replace(/\s+/g, " ").trim();
+    // 1️⃣ Clean the lyrics
+    let cleanedLyrics = data.lyrics
+      .replace(/\[.*?\]/g, "")
+      .replace(/\s+/g, " ")
+      .trim();
 
-    // ✅ 2️⃣ Translate Full Lyrics in a Single API Call
+    // 2️⃣ Translate the full lyrics as a single block
     let translatedResult = await translateBatch([cleanedLyrics], sourceLanguage);
     let translatedLyrics = translatedResult[0] || "Translation unavailable";
 
-    // ✅ 3️⃣ Split Original and Translated Lyrics Using Same Method
+    // 3️⃣ Split both original and translated texts using your regex.
     const splitRegex = /(?<=\w[.!?])\s+|(?<!\s)(?=[A-Z])/g;
     let frontLines = cleanedLyrics.split(splitRegex).filter(line => line.trim().length > 0);
     let backLines = translatedLyrics.split(splitRegex).filter(line => line.trim().length > 0);
 
-    // ✅ 4️⃣ Ensure Matching Line Count Between Original & Translated Lyrics
+    // Helper: Merge isolated punctuation segments throughout the array.
+    const mergeIsolatedSegments = (lines, isolatedChars) => {
+      const merged = [];
+      let i = 0;
+      while (i < lines.length) {
+        let current = lines[i].trim();
+        if (isolatedChars.includes(current) && i + 1 < lines.length) {
+          let next = lines[i + 1].trim();
+          merged.push(current + next);
+          i += 2;
+        } else {
+          merged.push(current);
+          i++;
+        }
+      }
+      return merged;
+    };
+
+    const isolatedPunctuations = ["(", "¿", "¡"];
+    frontLines = mergeIsolatedSegments(frontLines, isolatedPunctuations);
+    backLines = mergeIsolatedSegments(backLines, isolatedPunctuations);
+
+    console.log(`🔹 After merging, Original Lyrics segments: ${frontLines.length}`);
+    console.log(`🔹 After merging, Translated Lyrics segments: ${backLines.length}`);
+
+    // 4️⃣ Equalize segment counts if needed.
     while (backLines.length < frontLines.length) {
       backLines.push("Translation unavailable");
     }
@@ -132,16 +158,16 @@ const getFlashcardsForSong = async (req, res) => {
       backLines.pop();
     }
 
-    // ✅ 5️⃣ Generate Flashcards
+    // 5️⃣ Generate flashcards.
     let flashcards = frontLines.map((line, index) => ({
-      front: line.trim(),
-      back: (backLines[index] || "Translation unavailable").trim(),
+      front: line,
+      back: (backLines[index] || "Translation unavailable"),
     }));
 
-    console.log(`✅ Cached ${flashcards.length} flashcards for: ${songTitle}`);
+    console.log(`✅ Generated ${flashcards.length} flashcards for: ${songTitle}`);
 
-    // ✅ 6️⃣ Store Flashcards in Redis (Cache for 24 Hours)
-    await redis.setex(cacheKey, 86400, JSON.stringify(flashcards)); // 86400 seconds = 24 hours
+    // 6️⃣ Cache the flashcards in Redis for 24 hours.
+    await redis.setex(cacheKey, 86400, JSON.stringify(flashcards));
 
     res.json(flashcards);
   } catch (error) {

@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from "react";
 import "../styles/Flashcards.css";
 
-function Flashcards({ selectedSong, isLoggedIn }) {
+import { useNavigate } from "react-router-dom"; // ✅ Import navigation
+
+function Flashcards({ selectedSong, setSelectedSong, isLoggedIn }) {
+  const navigate = useNavigate(); // ✅ Initialize navigation
   const [flashcards, setFlashcards] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [flipped, setFlipped] = useState(false);
@@ -19,23 +22,7 @@ function Flashcards({ selectedSong, isLoggedIn }) {
         })
         .catch(error => console.error("Error fetching flashcards:", error));
     }
-  }, [selectedSong]);
-
-  const handleFlip = () => {
-    setFlipped(!flipped);
-  };
-
-  const nextCard = () => {
-    setFlipped(false);
-    setCurrentIndex((prevIndex) => (prevIndex + 1) % flashcards.length);
-  };
-
-  const prevCard = () => {
-    setFlipped(false);
-    setCurrentIndex((prevIndex) =>
-      prevIndex === 0 ? flashcards.length - 1 : prevIndex - 1
-    );
-  };
+  }, [selectedSong]); // ✅ Re-fetch flashcards when selectedSong changes
 
   const logCurrentSong = async () => {
     const accessToken = localStorage.getItem("spotify_access_token");
@@ -58,6 +45,10 @@ function Flashcards({ selectedSong, isLoggedIn }) {
         });
 
         alert(`🎵 Logged: ${data.song} by ${data.artist}`);
+
+        // ✅ Update selected song and navigate to Flashcards
+        setSelectedSong(data);
+        navigate("/flashcards");
       } else {
         alert("No song currently playing!");
       }
@@ -74,7 +65,7 @@ function Flashcards({ selectedSong, isLoggedIn }) {
       </h1>
       <p className="flashcards-subtitle">Click the card to flip 🔄</p>
 
-      {/* ✅ Log Current Song Button - Ensure it is ALWAYS rendered */}
+      {/* ✅ Log Current Song Button - Now updates flashcards immediately */}
       {isLoggedIn && (
         <button className="log-song-button" onClick={logCurrentSong}>
           🎵 Log Current Song
@@ -84,10 +75,7 @@ function Flashcards({ selectedSong, isLoggedIn }) {
       <div className="flashcard-wrapper">
         <div className="flashcard-container">
           {flashcards.length > 0 ? (
-            <div
-              className={`flashcard ${flipped ? "flipped" : ""}`}
-              onClick={handleFlip}
-            >
+            <div className={`flashcard ${flipped ? "flipped" : ""}`} onClick={() => setFlipped(!flipped)}>
               <div className="flashcard-face flashcard-front">
                 {flashcards[currentIndex].front}
               </div>
@@ -102,9 +90,9 @@ function Flashcards({ selectedSong, isLoggedIn }) {
       </div>
 
       <div className="flashcard-controls">
-        <button className="nav-button" onClick={prevCard}>⬅️</button>
+        <button className="nav-button" onClick={() => setCurrentIndex((prev) => (prev === 0 ? flashcards.length - 1 : prev - 1))}>⬅️</button>
         <span>{currentIndex + 1} / {flashcards.length}</span>
-        <button className="nav-button" onClick={nextCard}>➡️</button>
+        <button className="nav-button" onClick={() => setCurrentIndex((prev) => (prev + 1) % flashcards.length)}>➡️</button>
       </div>
     </div>
   );
