@@ -1,101 +1,150 @@
-# LyricLingo
+# 🎵 LyricLingo
 
-## Overview
-LyricLingo is a music-based language learning app that allows users to learn new languages by translating song lyrics into flashcards. The app integrates with Spotify to fetch the currently playing song, retrieves lyrics via the Genius API, translates lyrics using Google Translate, and organizes them into flashcards for interactive learning.
+**LyricLingo** is a full-stack web application that fetches song lyrics, translates them, and generates flashcards for language learning. Users can log songs, view their history, and test themselves with flashcards generated from song lyrics.
 
-## Features
-- **Spotify Authentication**: Log in with Spotify to fetch currently playing songs.
-- **Fetch Lyrics**: Retrieve song lyrics using the Genius API.
-- **Translate Lyrics**: Automatically translate lyrics line by line using Google Translate API.
-- **Flashcard Generation**: Display translated lyrics as flashcards for language learning.
-- **History Tracking**: Save previously translated songs for review.
-- **Clear History**: Remove previously logged songs.
+## 🚀 Features
+- **Fetch song lyrics** from Genius API
+- **Translate lyrics** using DeepL API
+- **Generate flashcards** from lyrics (original + translated)
+- **Save song history** in MongoDB
+- **Frontend built with React**
+- **Backend powered by Node.js + Express**
 
-## Tech Stack
-### **Frontend**
-- **Framework:** React.js (Vite)
-- **Styling:** CSS
-- **State Management:** React Hooks (useState, useEffect)
-- **Routing:** React Router
-- **Animations:** CSS Transitions (Framer Motion optional)
+---
 
-### **Backend**
-- **Framework:** Express.js (Node.js)
-- **Authentication:** Spotify OAuth 2.0
-- **APIs:**
-  - **Spotify API** (fetch currently playing song)
-  - **Genius API** (retrieve lyrics)
-  - **Google Translate API** (translate lyrics line by line)
-- **Database:** MongoDB (Mongoose) or PostgreSQL
-- **Communication:** REST API for frontend-backend integration
+## 🛠️ Installation
+### **1️⃣ Clone the Repository**
+```sh
+  git clone https://github.com/your-username/LyricLingo.git
+  cd LyricLingo
+```
 
-## Installation & Setup
-### **Backend**
-1. Clone the repository:
-   ```sh
-   git clone https://github.com/yourusername/lyriclingo.git
-   cd lyriclingo
-   ```
-2. Install backend dependencies:
-   ```sh
-   npm install
-   ```
-3. Create a `.env` file and add:
-   ```sh
-   PORT=5000
-   SPOTIFY_CLIENT_ID=your_spotify_client_id
-   SPOTIFY_CLIENT_SECRET=your_spotify_client_secret
-   GENIUS_API_KEY=your_genius_api_key
-   GOOGLE_TRANSLATE_API_KEY=your_google_translate_api_key
-   ```
-4. Start the backend server:
-   ```sh
-   node backend/server.js
-   ```
-5. Test the API:
-   ```sh
-   curl http://localhost:5000/ping
-   ```
+### **2️⃣ Set Up Backend**
+```sh
+  cd backend
+  npm install
+```
+#### **Environment Variables** (Create `.env` file in `backend/`)
+```env
+GENIUS_ACCESS_TOKEN=your-genius-api-key
+DEEPL_API_KEY=your-deepl-api-key
+MONGO_URI=your-mongodb-connection-string
+```
+#### **Run Backend**
+```sh
+  npm start
+```
+> Backend runs on **http://localhost:5001**
 
-### **Frontend**
-1. Navigate to the frontend directory:
-   ```sh
-   cd frontend
-   ```
-2. Install frontend dependencies:
-   ```sh
-   npm install
-   ```
-3. Start the frontend server:
-   ```sh
-   npm run dev
-   ```
-4. Open `http://localhost:5173/` in your browser.
+---
 
-## API Endpoints
-### **Authentication**
-- `GET /auth/spotify` - Redirects user to Spotify login.
-- `GET /auth/callback` - Handles Spotify OAuth callback.
+### **3️⃣ Set Up Frontend**
+```sh
+  cd frontend
+  npm install
+```
+#### **Environment Variables** (Create `.env` file in `frontend/`)
+```env
+REACT_APP_BACKEND_URL=http://localhost:5001
+```
+#### **Run Frontend**
+```sh
+  npm start
+```
+> Frontend runs on **http://localhost:3000**
 
-### **Song & Lyrics**
-- `GET /song/current` - Fetches the currently playing song.
-- `GET /lyrics/:songId` - Retrieves lyrics for a given song.
-- `POST /translate` - Translates lyrics line by line.
+---
 
-### **History & Flashcards**
-- `GET /history` - Fetches saved song translations.
-- `POST /history` - Saves a translated song.
-- `DELETE /history` - Clears all saved history.
+## 📡 API Endpoints
+### **1️⃣ Log a Song**
+```http
+POST /api/songs/log
+```
+**Request Body:**
+```json
+{
+  "song": "BESO",
+  "artist": "Rosalía & Rauw Alejandro"
+}
+```
+**Response:**
+```json
+{
+  "message": "Song logged successfully!",
+  "song": {
+    "song": "BESO",
+    "artist": "Rosalía & Rauw Alejandro",
+    "lyricsUrl": "https://genius.com/...","
+  }
+}
+```
 
-## Future Enhancements
-- **AI-Based Lyric Analysis** (Python microservice for deeper insights)
-- **Speech Pronunciation (TTS Support)**
-- **Offline Mode (IndexedDB Support)**
-- **Multi-Language Support**
+### **2️⃣ Get Song History**
+```http
+GET /api/songs/history
+```
+**Response:**
+```json
+[
+  {
+    "song": "BESO",
+    "artist": "Rosalía & Rauw Alejandro"
+  }
+]
+```
 
-## License
-MIT License
+### **3️⃣ Fetch Flashcards**
+```http
+GET /api/songs/flashcards?song=BESO
+```
+**Response:**
+```json
+[
+  { "front": "Ya yo necesito otro beso", "back": "Now I need another kiss" },
+  { "front": "Uno de esos que tú me da'", "back": "One of those that you give me'" }
+]
+```
 
-## Contributors
-- **Shivaganesh Nagamandla** - Developer
+---
+
+## 🌍 Deployment Guide
+### **1️⃣ Deploy Backend** (Render/Railway/Heroku)
+- Push backend to GitHub
+- Deploy on [Render](https://render.com/) or [Railway](https://railway.app/)
+- Set environment variables
+- Get the backend URL (e.g., `https://lyriclingo-backend.onrender.com`)
+
+### **2️⃣ Deploy Frontend** (Vercel/Netlify)
+- Push frontend to GitHub
+- Deploy on [Vercel](https://vercel.com/)
+- Set `REACT_APP_BACKEND_URL=https://lyriclingo-backend.onrender.com`
+- Deploy & get URL (e.g., `https://lyriclingo.vercel.app`)
+
+---
+
+## 🛠️ Tech Stack
+- **Frontend:** React, Tailwind CSS
+- **Backend:** Node.js, Express
+- **Database:** MongoDB Atlas
+- **APIs Used:** Genius API, DeepL API
+- **Hosting:** Vercel (frontend), Render/Railway (backend)
+
+---
+
+## 👥 Contributors
+- **Shivaganesh Nagamandla** - *Developer & Project Lead*
+
+---
+
+## 📜 License
+This project is licensed under the MIT License.
+
+---
+
+## 🎯 Future Improvements
+- ✅ Support for more languages
+- ✅ User authentication
+- ✅ Mobile-friendly UI
+
+🚀 **Built for music lovers & language learners!** 🎶
 
