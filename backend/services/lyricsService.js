@@ -1,20 +1,46 @@
 const axios = require("axios");
 const cheerio = require("cheerio");
 
-/**
- * Fetch the Genius lyrics URL for a given song & artist
- */
 const fetchLyricsUrl = async (song, artist) => {
-    const searchQuery = `${artist} ${song}`.replace(/ /g, "%20");
+    // ✅ Normalize accents (e.g., "Qué" → "Que") for better matching
+    const normalizedSong = song.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    const normalizedArtist = artist.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
+    // ✅ Encode search query properly
+    const searchQuery = encodeURIComponent(`${normalizedArtist} ${normalizedSong}`);
     const searchUrl = `https://genius.com/api/search?q=${searchQuery}`;
 
     try {
         const { data } = await axios.get(searchUrl);
-        const firstHit = data.response.hits[0];
 
-        if (!firstHit) return null;
-        
-        return firstHit.result.url; // ✅ This should return the Genius lyrics page URL
+        // ✅ Format song title the way Genius does in URLs (replace spaces with dashes)
+        const formattedSongForUrl = normalizedSong
+            .toLowerCase()
+            .replace(/\s+/g, "-") // Replace spaces with dashes
+            .replace(/[^a-z0-9-]/g, ""); // Remove special characters
+
+        // 🔍 Find valid song that matches Genius URL formatting
+        const validHit = data.response.hits.find(hit => 
+            hit.type === "song" &&
+            !hit.result.url.includes("genius-english-translations") &&  // ❌ Exclude translations
+            !hit.result.url.includes("traduccion") &&
+            !hit.result.url.includes("deutsche-ubersetzungen") && // ❌ Exclude German translations
+            !hit.result.url.includes("traducción") &&
+            !hit.result.url.includes("portugues") && // ❌ Exclude Portuguese translations
+            !hit.result.url.includes("francais") &&  // ❌ Exclude French translations
+            !hit.result.url.includes("translation") &&
+            !hit.result.url.includes("turkce-ceviri") &&  // ❌ Exclude Turkish translations
+            hit.result.url.toLowerCase().includes(formattedSongForUrl) // ✅ Ensure correct song match in URL
+        );
+
+        if (!validHit) {
+            console.error(`❌ No valid Spanish lyrics found for: ${song} ${artist}`);
+            return null;
+        }
+
+        console.log(`✅ Found Spanish Lyrics URL: ${validHit.result.url}`);
+        return validHit.result.url; // ✅ Returns correct Spanish lyrics URL
+
     } catch (error) {
         console.error("❌ Error fetching lyrics URL:", error.message);
         return null;
