@@ -143,24 +143,6 @@ GET /api/songs/flashcards?song=BESO
 
 ---
 
-## 🌍 Deployment Guide
-
-### **1️⃣ Deploy Backend** (Render/Railway/Heroku)
-
-- Push backend to GitHub
-- Deploy on [Render](https://render.com/) or [Railway](https://railway.app/)
-- Set environment variables
-- Get the backend URL (e.g., `https://lyriclingo-backend.onrender.com`)
-
-### **2️⃣ Deploy Frontend** (Vercel/Netlify)
-
-- Push frontend to GitHub
-- Deploy on [Vercel](https://vercel.com/)
-- Set `VITE_BACKEND_URL=https://lyriclingo-backend.onrender.com`
-- Deploy & get URL (e.g., `https://lyriclingo.vercel.app`)
-
----
-
 ## 🛠️ Tech Stack
 
 - **Frontend:** React, Tailwind CSS
