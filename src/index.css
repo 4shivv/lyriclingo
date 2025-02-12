@@ -60,3 +60,19 @@ h1, h2, h3, p, a {
   max-width: 1200px;
   margin: 0 auto;
 }
+
+/* Responsive Typography Adjustments */
+@media (max-width: 768px) {
+  h1 {
+    font-size: 1.8rem; /* Slightly smaller headings on mobile */
+  }
+  h2 {
+    font-size: 1.6rem; /* Adjusted subheading size */
+  }
+  h3 {
+    font-size: 1.4rem; /* Slightly reduced for tertiary headings */
+  }
+  p, a, span {
+    font-size: 0.9rem; /* Body copy adjusted for mobile readability */
+  }
+}
