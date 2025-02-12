@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import "../styles/Navbar.css";
 
@@ -10,6 +10,8 @@ function Navbar({ isLoggedIn, setIsLoggedIn }) {
   // Make sure you have VITE_BACKEND_URL defined in your Vercel (or local) environment.
   const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:5001";
   
+  const navigate = useNavigate();
+
   const handleLogin = () => {
     window.location.href = `${backendUrl}/api/spotify/login`;
   };
@@ -18,6 +20,7 @@ function Navbar({ isLoggedIn, setIsLoggedIn }) {
     localStorage.removeItem("spotify_access_token");
     localStorage.removeItem("spotify_refresh_token");
     setIsLoggedIn(false);
+    navigate("/");
   };
 
   const toggleMobileMenu = () => {
