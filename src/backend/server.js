@@ -28,13 +28,12 @@ app.use("/api/spotify", spotifyRoutes);
 app.use("/api/songs", songRoutes);
 app.use("/api/lyrics", lyricsRoutes); 
 
-// Serve static files from the React app
-app.use(express.static(path.join(__dirname, "frontend/build")));
+// Serve static files from the React app (built from the frontend)
+app.use(express.static(path.join(__dirname, "../frontend/build")));
 
-// The "catchall" handler: for any request that doesn't
-// match one above, send back the React app.
+// Catchall handler: for any request that doesn't match API routes, send back the index.html from frontend.
 app.get("*", (req, res) => {
-  res.sendFile(path.join(__dirname + "/frontend/build/index.html"));
+  res.sendFile(path.join(__dirname, "../frontend/build/index.html"));
 });
 
 app.get("/", (req, res) => {
