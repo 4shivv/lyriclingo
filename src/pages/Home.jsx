@@ -10,7 +10,7 @@ function Home() {
     <div className="home-container">
       <div className="home-content">
         <h1 className="home-title">Welcome to LyricLingo</h1>
-        <p className="home-subtitle">Learn languages through your favorite songs.</p>
+        <p className="home-subtitle">Learn Spanish through your favorite songs.</p>
         <p className="home-description">
           Connect your Spotify account to discover, translate, and create flashcards from song lyrics.
         </p>
