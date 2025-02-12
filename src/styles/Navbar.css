@@ -215,3 +215,16 @@
     transform: none;                             /* Remove the slide/translate effect */
     box-shadow: none;                            /* Remove any box shadow */
   }
+
+  .desktop-menu {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+
+  /* Hide the desktop menu on small screens */
+  @media (max-width: 768px) {
+    .desktop-menu {
+      display: none;
+    }
+  }

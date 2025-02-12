@@ -34,10 +34,27 @@ function Navbar({ isLoggedIn, setIsLoggedIn }) {
         <span className="logo-text">LyricLingo</span>
       </Link>
 
+      {/* Desktop Menu: Always visible on larger screens */}
+      <div className="desktop-menu">
+        {isLoggedIn ? (
+          <button className="auth-button logout-button" onClick={handleLogout}>
+            Logout
+          </button>
+        ) : (
+          <button className="auth-button login-button" onClick={handleLogin}>
+            Login with Spotify
+          </button>
+        )}
+        <Link to="/flashcards">Flashcards</Link>
+        <Link to="/history">History</Link>
+      </div>
+
+      {/* Mobile Menu toggler */}
       <button className="mobile-menu-button" onClick={toggleMobileMenu}>
         <span className={`menu-icon ${isMobileMenuOpen ? 'menu-open' : ''}`}></span>
       </button>
 
+      {/* Mobile Menu for small screens */}
       <AnimatePresence>
         {isMobileMenuOpen && (
           <motion.div 
