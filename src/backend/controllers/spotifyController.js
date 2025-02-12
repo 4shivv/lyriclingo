@@ -33,21 +33,11 @@ const handleSpotifyCallback = async (req, res) => {
 
 // Get the current song the user is listening to
 const getCurrentSong = async (req, res) => {
-    let accessToken = req.query.accessToken;
-    let refreshToken = req.query.refreshToken;
-
-    // ✅ Fallback to hardcoded tokens if missing
-    if (!accessToken || !refreshToken) {
-        accessToken = "BQBx_nZZ2Yu3rrqNn3RyuSaWKAr47kmpHqbLwsr-gDLjYMsRfNb4JcTMQ9d860E90Tesqxo8JbijqwTup5cfRs9UR_7NUxTelJemv3IDSZwszS3P8xi_HxweFmwPRIYzv8LofyusqXJ-KB4DZs5uTqWXV_fmSAYwPVPVv1fS7gXxYJOUMQMlVyO8eMp_oTXbPZlrswj1QeR8Ae9LK9KWYpnhDUwp";
-        refreshToken = "AQBXvOtg63__h4d4o_IxXCUMNtnJ2j6R6n5Xi8ffjkPh11-gw5mHoHLm_IChHWZ7sshU_ABTuSPPHVCVTfWokjW8hlKAfdQnkwKHUJoV3Tn6OjIytA89zc4QRFUi0lJ6tKs";
-    }
-
-    const songData = await spotifyService.fetchCurrentSong(accessToken, refreshToken);
-    res.json(songData);
+  res.status(501).json({ error: "Not implemented" });
 };
 
 module.exports = { 
-  login, 
+  loginToSpotify: login, 
   handleSpotifyCallback,
   getCurrentSong
 };
