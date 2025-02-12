@@ -3,37 +3,26 @@ import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import "../styles/Navbar.css";
 
-function Navbar() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+function Navbar({ isLoggedIn, setIsLoggedIn }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   
   // Use Vite's environment variable for the backend URL.
   // Make sure you have VITE_BACKEND_URL defined in your Vercel (or local) environment.
   const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:5001";
   
-  useEffect(() => {
-    const accessToken = localStorage.getItem("spotify_access_token");
-    setIsAuthenticated(!!accessToken);
-  }, []);
-
   const handleLogin = () => {
-    // Redirect to the backend's Spotify login endpoint
-    window.location.href = `${backendUrl}/api/spotify/login`;
+    // Replace with your actual Spotify Client ID.
+    const clientId = "YOUR_SPOTIFY_CLIENT_ID";
+    const redirectUri = window.location.origin + "/flashcards";
+    const scopes = "user-read-currently-playing";
+    const spotifyAuthUrl = `https://accounts.spotify.com/authorize?client_id=${clientId}&response_type=token&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${encodeURIComponent(scopes)}`;
+    window.location.href = spotifyAuthUrl;
   };
 
-  const handleLogout = async () => {
-    try {
-      // Call the backend to clear history (if applicable)
-      await fetch(`${backendUrl}/api/songs/logout`, { method: "POST" });
-      console.log("✅ Cleared history on logout");
-      // Remove stored authentication tokens
-      localStorage.removeItem("spotify_access_token");
-      localStorage.removeItem("spotify_refresh_token");
-      // Redirect to home page
-      window.location.href = "/";
-    } catch (error) {
-      console.error("❌ Error during logout:", error);
-    }
+  const handleLogout = () => {
+    localStorage.removeItem("spotify_access_token");
+    localStorage.removeItem("spotify_refresh_token");
+    setIsLoggedIn(false);
   };
 
   const toggleMobileMenu = () => {
@@ -59,7 +48,7 @@ function Navbar() {
           exit={{ opacity: 0, y: -10 }}
           transition={{ duration: 0.2 }}
         >
-          {isAuthenticated ? (
+          {isLoggedIn ? (
             <motion.button 
               className="auth-button logout-button"
               onClick={handleLogout}
