@@ -31,9 +31,22 @@ const handleSpotifyCallback = async (req, res) => {
   }
 };
 
-// Get the current song the user is listening to
+// New function to fetch the currently playing song
 const getCurrentSong = async (req, res) => {
-  res.status(501).json({ error: "Not implemented" });
+  const { accessToken, refreshToken } = req.query;
+  if (!accessToken || !refreshToken) {
+    return res.status(400).json({ error: "Missing access token or refresh token" });
+  }
+  try {
+    const songData = await spotifyService.fetchCurrentSong(accessToken, refreshToken);
+    if (songData.error) {
+      return res.status(404).json({ error: songData.error });
+    }
+    res.json(songData);
+  } catch (error) {
+    console.error("Error fetching current song:", error);
+    res.status(500).json({ error: "Failed to fetch current song" });
+  }
 };
 
 module.exports = { 
