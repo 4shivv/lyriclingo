@@ -16,7 +16,12 @@ function Navbar({ isLoggedIn, setIsLoggedIn }) {
     window.location.href = `${backendUrl}/api/spotify/login`;
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      await fetch(`${backendUrl}/api/songs/clear`, { method: "DELETE" });
+    } catch (error) {
+      console.error("Error clearing history on logout:", error);
+    }
     localStorage.removeItem("spotify_access_token");
     localStorage.removeItem("spotify_refresh_token");
     setIsLoggedIn(false);
