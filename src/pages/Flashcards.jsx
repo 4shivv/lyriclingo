@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "../styles/Flashcards.css";
+import Toast from "../components/Toast";
+import LoadingSpinner from "../components/LoadingSpinner";
 
 import { useNavigate } from "react-router-dom"; // ✅ Import navigation
 
@@ -8,6 +10,8 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn }) {
   const [flashcards, setFlashcards] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [flipped, setFlipped] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [toast, setToast] = useState({ show: false, message: "", type: "error" });
 
   useEffect(() => {
     if (selectedSong) {
@@ -33,6 +37,7 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn }) {
       return;
     }
 
+    setLoading(true);
     try {
       const response = await fetch(`http://localhost:5001/api/spotify/current-song?accessToken=${accessToken}&refreshToken=${refreshToken}`);
       const data = await response.json();
@@ -44,22 +49,22 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn }) {
           body: JSON.stringify(data),
         });
 
-        alert(`🎵 Logged: ${data.song} by ${data.artist}`);
-
-        // ✅ Update selected song and navigate to Flashcards
+        setToast({ show: true, message: `🎵 Logged: ${data.song} by ${data.artist}`, type: "success" });
         setSelectedSong(data);
-        navigate("/flashcards");
       } else {
-        alert("No song currently playing!");
+        setToast({ show: true, message: "No song currently playing!", type: "error" });
       }
     } catch (error) {
       console.error("Error logging song:", error);
-      alert("Error fetching current song.");
+      setToast({ show: true, message: "Error fetching current song.", type: "error" });
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <div className="flashcards-container">
+      {loading && <LoadingSpinner />}
       <h1 className="flashcards-title">
         Flashcards for {selectedSong ? selectedSong.song : "Unknown Song"}
       </h1>
@@ -94,6 +99,8 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn }) {
         <span>{currentIndex + 1} / {flashcards.length}</span>
         <button className="nav-button" onClick={() => setCurrentIndex((prev) => (prev + 1) % flashcards.length)}>➡️</button>
       </div>
+
+      <Toast message={toast.message} type={toast.type} onClose={() => setToast({ ...toast, show: false })} />
     </div>
   );
 }

@@ -1,27 +1,48 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom"; // Import navigation
 import { motion, AnimatePresence } from "framer-motion";
+import Toast from "../components/Toast";
+import LoadingSpinner from "../components/LoadingSpinner";
 import "../styles/History.css";
 
 function History({ setSelectedSong }) {
   const [history, setHistory] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [toast, setToast] = useState({ show: false, message: "", type: "error" });
   const navigate = useNavigate(); // Initialize navigation
 
   useEffect(() => {
-    fetch("http://localhost:5001/api/songs/history")
-      .then((res) => res.json())
-      .then((data) => {
+    const fetchHistory = async () => {
+      setLoading(true);
+      try {
+        const res = await fetch("http://localhost:5001/api/songs/history");
+        const data = await res.json();
         console.log("Fetched History:", data); // ✅ Debugging: Check if data arrives
         setHistory(data);
-      })
-      .catch((error) => console.error("Error fetching history:", error));
+      } catch (error) {
+        console.error("Error fetching history:", error);
+        setToast({ show: true, message: "Error fetching history.", type: "error" });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchHistory();
   }, []);
 
   // ✅ Function to clear history
   const clearHistory = async () => {
-    await fetch("http://localhost:5001/api/songs/clear", { method: "DELETE" });
-    setHistory([]); // ✅ Update frontend immediately
-    alert("History Cleared!");
+    setLoading(true);
+    try {
+      await fetch("http://localhost:5001/api/songs/clear", { method: "DELETE" });
+      setHistory([]); // ✅ Update frontend immediately
+      setToast({ show: true, message: "History Cleared!", type: "success" });
+    } catch (error) {
+      console.error("Error clearing history:", error);
+      setToast({ show: true, message: "Error clearing history.", type: "error" });
+    } finally {
+      setLoading(false);
+    }
   };
 
   // ✅ Navigate to flashcards for selected song
@@ -32,6 +53,7 @@ function History({ setSelectedSong }) {
 
   return (
     <div className="history-container">
+      {loading && <LoadingSpinner />}
       <motion.h1 
         className="history-title"
         initial={{ opacity: 0, y: -20 }}
@@ -97,6 +119,7 @@ function History({ setSelectedSong }) {
           )}
         </AnimatePresence>
       </motion.div>
+      <Toast message={toast.message} type={toast.type} onClose={() => setToast({ ...toast, show: false })} />
     </div>
   );
 }
