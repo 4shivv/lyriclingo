@@ -48,3 +48,134 @@
     background: rgba(255, 255, 255, 0.2);
     box-shadow: 0px 4px 8px rgba(255, 255, 255, 0.1);
   }
+
+  .mobile-menu-button {
+    display: none;
+    background: none;
+    border: none;
+    padding: 10px;
+    cursor: pointer;
+    z-index: 2;
+  }
+
+  .menu-icon {
+    display: block;
+    width: 25px;
+    height: 2px;
+    background-color: white;
+    position: relative;
+    transition: background-color 0.3s ease;
+  }
+
+  .menu-icon::before,
+  .menu-icon::after {
+    content: '';
+    position: absolute;
+    width: 25px;
+    height: 2px;
+    background-color: white;
+    transition: transform 0.3s ease;
+  }
+
+  .menu-icon::before {
+    top: -8px;
+  }
+
+  .menu-icon::after {
+    bottom: -8px;
+  }
+
+  .menu-open .menu-icon {
+    background-color: transparent;
+  }
+
+  .menu-open .menu-icon::before {
+    transform: translateY(8px) rotate(45deg);
+  }
+
+  .menu-open .menu-icon::after {
+    transform: translateY(-8px) rotate(-45deg);
+  }
+
+  @media (max-width: 768px) {
+    .mobile-menu-button {
+      display: block;
+    }
+
+    .menu {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100vh;
+      background: rgba(15, 15, 16, 0.98);
+      padding: 80px 20px 20px;
+      flex-direction: column;
+      align-items: center;
+      gap: 25px;
+      opacity: 0;
+      transform: translateY(-10px);
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+
+    .menu.menu-open {
+      display: flex;
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .menu a {
+      width: 80%;
+      text-align: center;
+      padding: 15px;
+      font-size: 1.2rem;
+      border-radius: 8px;
+      transition: background 0.3s ease;
+    }
+
+    .menu a:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .auth-button {
+      width: 80%;
+      margin: 10px 0;
+      padding: 15px;
+      font-size: 1.2rem;
+    }
+
+    .logo-container {
+      margin-left: 0;
+      z-index: 2;
+    }
+
+    .logo-image {
+      height: 35px;
+    }
+
+    .logo-text {
+      font-size: 1.3rem;
+    }
+  }
+
+  /* Animation for menu items */
+  @keyframes slideIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @media (max-width: 768px) {
+    .menu.menu-open a,
+    .menu.menu-open button {
+      animation: slideIn 0.3s ease forwards;
+      animation-delay: calc(var(--item-index) * 0.1s);
+      opacity: 0;
+    }
+  }
