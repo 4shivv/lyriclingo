@@ -106,10 +106,19 @@ const getFlashcardsForSong = async (req, res) => {
     }
     console.log(`✅ Found song in DB with lyrics URL: ${song.lyricsUrl}`);
 
+    // Normalize BACKEND_URL to ensure it includes a protocol
+    const normalizedBackendUrl = BACKEND_URL.startsWith("http")
+      ? BACKEND_URL
+      : `https://${BACKEND_URL}`;
+
     // Fetch Lyrics from the Lyrics API
     const response = await fetch(
-      `${BACKEND_URL}/api/lyrics/fetch-lyrics?lyricsUrl=${encodeURIComponent(song.lyricsUrl)}`
+      `${normalizedBackendUrl}/api/lyrics/fetch-lyrics?lyricsUrl=${encodeURIComponent(song.lyricsUrl)}`
     );
+    if (!response.ok) {
+      console.error("Failed to fetch lyrics:", response.statusText);
+      return res.status(500).json({ error: "Failed to fetch lyrics from Genius" });
+    }
     const data = await response.json();
 
     if (!data.lyrics || data.lyrics.trim().length === 0) {
@@ -168,7 +177,7 @@ const getFlashcardsForSong = async (req, res) => {
     // 5️⃣ Generate flashcards.
     let flashcards = frontLines.map((line, index) => ({
       front: line,
-      back: (backLines[index] || "Translation unavailable"),
+      back: backLines[index] || "Translation unavailable",
     }));
 
     console.log(`✅ Generated ${flashcards.length} flashcards for: ${songTitle}`);
