@@ -11,8 +11,7 @@ redis.on("error", (error) => {
   console.error("Redis error:", error);
 });
 
-// Use BACKEND_URL environment variable if available.
-// In production ensure this is set to your live backend URL.
+// Use BACKEND_URL environment variable if available. Otherwise, we'll use the request's host.
 const BACKEND_URL = process.env.BACKEND_URL;
 
 // ✅ Log a new song and automatically fetch the lyrics URL
