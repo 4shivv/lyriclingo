@@ -10,6 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@mongodb-js/saslprep": "^1.2.0",
     "framer-motion": "^12.4.2",
     "ioredis": "^5.4.2",
     "mongodb": "^6.13.0",
