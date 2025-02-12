@@ -3,8 +3,11 @@ import { motion } from "framer-motion";
 import "../styles/Home.css";
 
 function Home() {
+  // Read the backend URL from Vite's environment variables, falling back to localhost if not set.
+  const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:5001";
+
   const handleLogin = () => {
-    window.location.href = "http://localhost:5001/api/spotify/login"; // Redirect to Spotify login
+    window.location.href = `${backendUrl}/api/spotify/login`;
   };
 
   return (
