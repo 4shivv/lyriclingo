@@ -7,8 +7,9 @@ function Navbar() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   
-  // Define your backend URL from environment variables; fallback to local for development.
-  const backendUrl = process.env.REACT_APP_BACKEND_URL || "http://localhost:5001";
+  // Use Vite's environment variable for the backend URL.
+  // Make sure you have VITE_BACKEND_URL defined in your Vercel (or local) environment.
+  const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:5001";
   
   useEffect(() => {
     const accessToken = localStorage.getItem("spotify_access_token");
