@@ -42,11 +42,12 @@
     color: white;
     text-decoration: none;
     margin-left: 20px;
+    transition: color 0.3s ease, transform 0.2s ease;
   }
   
   .menu a:hover {
-    background: rgba(255, 255, 255, 0.2);
-    box-shadow: 0px 4px 8px rgba(255, 255, 255, 0.1);
+    color: #1aa34a;
+    transform: translateX(5px);
   }
 
   .mobile-menu-button {
@@ -56,6 +57,7 @@
     padding: 10px;
     cursor: pointer;
     z-index: 2;
+    transition: transform 0.2s ease;
   }
 
   .menu-icon {
@@ -178,4 +180,18 @@
       animation-delay: calc(var(--item-index) * 0.1s);
       opacity: 0;
     }
+  }
+
+  .auth-button {
+    transition: background-color 0.3s ease, transform 0.2s ease, color 0.3s ease, box-shadow 0.2s ease;
+  }
+
+  .auth-button:hover {
+    transform: scale(1.05);
+    background-color: #1aa34a;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  }
+
+  .mobile-menu-button:hover {
+    transform: scale(1.1);
   }
