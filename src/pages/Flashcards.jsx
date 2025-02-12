@@ -5,7 +5,8 @@ import LoadingSpinner from "../components/LoadingSpinner";
 
 import { useNavigate } from "react-router-dom"; // ✅ Import navigation
 
-const backendUrl = process.env.REACT_APP_BACKEND_URL || "http://localhost:5001";
+// Use Vite's env variable for backend URL; fallback to localhost for development.
+const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:5001";
 
 function Flashcards({ selectedSong, setSelectedSong, isLoggedIn }) {
   const navigate = useNavigate(); // ✅ Initialize navigation
@@ -14,6 +15,8 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn }) {
   const [flipped, setFlipped] = useState(false);
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState({ show: false, message: "", type: "error" });
+  const [currentSong, setCurrentSong] = useState(null);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     if (selectedSong) {
@@ -30,6 +33,8 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn }) {
     }
   }, [selectedSong]); // ✅ Re-fetch flashcards when selectedSong changes
 
+  // Function to log the current song.
+  // (Adjust the API endpoint and payload as needed based on your backend route.)
   const logCurrentSong = async () => {
     const accessToken = localStorage.getItem("spotify_access_token");
     const refreshToken = localStorage.getItem("spotify_refresh_token");
@@ -58,6 +63,7 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn }) {
           type: "success",
         });
         setSelectedSong(data);
+        setCurrentSong(data);
       } else {
         setToast({
           show: true,
@@ -65,8 +71,9 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn }) {
           type: "error",
         });
       }
-    } catch (error) {
-      console.error("Error logging song:", error);
+    } catch (err) {
+      console.error("Error logging song:", err);
+      setError(err.message);
       setToast({
         show: true,
         message: "Error fetching current song.",
@@ -77,9 +84,15 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn }) {
     }
   };
 
+  // Log the current song when the component mounts.
+  useEffect(() => {
+    logCurrentSong();
+  }, []);
+
   return (
     <div className="flashcards-container">
       {loading && <LoadingSpinner />}
+      {error && <div className="error">Error: {error}</div>}
       <h1 className="flashcards-title">
         Flashcards for {selectedSong ? selectedSong.song : "Unknown Song"}
       </h1>
@@ -90,6 +103,15 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn }) {
         <button className="log-song-button" onClick={logCurrentSong}>
           🎵 Log Current Song
         </button>
+      )}
+
+      {currentSong ? (
+        <div>
+          <h2>Current Song</h2>
+          <p>{currentSong.song} by {currentSong.artist}</p>
+        </div>
+      ) : (
+        <p>Loading current song...</p>
       )}
 
       <div className="flashcard-wrapper">
