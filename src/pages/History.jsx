@@ -5,6 +5,9 @@ import Toast from "../components/Toast";
 import LoadingSpinner from "../components/LoadingSpinner";
 import "../styles/History.css";
 
+// Use backendUrl from environment variable
+const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:5001";
+
 function History({ setSelectedSong }) {
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -30,11 +33,11 @@ function History({ setSelectedSong }) {
     fetchHistory();
   }, []);
 
-  // ✅ Function to clear history
+  // ✅ Function to clear history using backendUrl instead of localhost
   const clearHistory = async () => {
     setLoading(true);
     try {
-      await fetch("http://localhost:5001/api/songs/clear", { method: "DELETE" });
+      await fetch(`${backendUrl}/api/songs/clear`, { method: "DELETE" });
       setHistory([]); // ✅ Update frontend immediately
       setToast({ show: true, message: "History Cleared!", type: "success" });
     } catch (error) {

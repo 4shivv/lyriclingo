@@ -34,7 +34,6 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn }) {
   }, [selectedSong]); // ✅ Re-fetch flashcards when selectedSong changes
 
   // Function to log the current song.
-  // (Adjust the API endpoint and payload as needed based on your backend route.)
   const logCurrentSong = async () => {
     const accessToken = localStorage.getItem("spotify_access_token");
     const refreshToken = localStorage.getItem("spotify_refresh_token");
@@ -64,15 +63,15 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn }) {
         if (logData.error) {
           setToast({ show: true, message: logData.error, type: "error" });
         } else {
+          // logData is expected to be: { message, song }
+          // Set state from the song property so that selectedSong is a plain object.
           setToast({
             show: true,
-            message: `🎵 Logged: ${logData.song} by ${logData.artist}`,
+            message: `🎵 Logged: ${logData.song.song} by ${logData.song.artist}`,
             type: "success"
           });
-          // Use the response from the log endpoint so later calls (like flashcards)
-          // are able to find the song in history.
-          setSelectedSong(logData);
-          setCurrentSong(logData);
+          setSelectedSong(logData.song);
+          setCurrentSong(logData.song);
         }
       } else {
         setToast({
