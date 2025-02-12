@@ -6,33 +6,34 @@ import "../styles/Navbar.css";
 function Navbar() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-
+  
+  // Define your backend URL from environment variables; fallback to local for development.
+  const backendUrl = process.env.REACT_APP_BACKEND_URL || "http://localhost:5001";
+  
   useEffect(() => {
     const accessToken = localStorage.getItem("spotify_access_token");
-    setIsAuthenticated(!!accessToken); // Check if token exists
+    setIsAuthenticated(!!accessToken);
   }, []);
 
   const handleLogin = () => {
-    window.location.href = "http://localhost:5001/api/spotify/login"; // Redirects to Spotify's login page
-  };   
+    // Redirect to the backend's Spotify login endpoint
+    window.location.href = `${backendUrl}/api/spotify/login`;
+  };
 
   const handleLogout = async () => {
     try {
-      // ✅ Call the backend to clear history
-      await fetch("http://localhost:5001/api/songs/logout", { method: "POST" });
-  
+      // Call the backend to clear history (if applicable)
+      await fetch(`${backendUrl}/api/songs/logout`, { method: "POST" });
       console.log("✅ Cleared history on logout");
-  
-      // ✅ Remove stored authentication tokens
+      // Remove stored authentication tokens
       localStorage.removeItem("spotify_access_token");
       localStorage.removeItem("spotify_refresh_token");
-  
-      // ✅ Redirect to home page
+      // Redirect to home page
       window.location.href = "/";
     } catch (error) {
       console.error("❌ Error during logout:", error);
     }
-  }; 
+  };
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
