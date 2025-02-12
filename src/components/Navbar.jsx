@@ -11,8 +11,9 @@ function Navbar({ isLoggedIn, setIsLoggedIn }) {
   const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:5001";
   
   const handleLogin = () => {
-    // Replace with your actual Spotify Client ID.
-    const clientId = "YOUR_SPOTIFY_CLIENT_ID";
+    // Use the Spotify Client ID from Vite's environment variables.
+    // Make sure to set VITE_SPOTIFY_CLIENT_ID in your .env file.
+    const clientId = import.meta.env.VITE_SPOTIFY_CLIENT_ID || "YOUR_SPOTIFY_CLIENT_ID";
     const redirectUri = window.location.origin + "/flashcards";
     const scopes = "user-read-currently-playing";
     const spotifyAuthUrl = `https://accounts.spotify.com/authorize?client_id=${clientId}&response_type=token&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${encodeURIComponent(scopes)}`;
