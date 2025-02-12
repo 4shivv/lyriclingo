@@ -1,47 +1,69 @@
 .home-container {
+  position: relative;
   display: flex;
-  justify-content: center;
   align-items: center;
-  height: 80vh;
-  text-align: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: url('/path/to/your/music-background.jpg') center/cover no-repeat;
+}
+
+.home-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);  /* Dark overlay for better contrast */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
 }
 
 .home-content {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  color: white;
   max-width: 600px;
 }
 
 .home-title {
   font-size: 2.5rem;
   font-weight: bold;
-  color: white;
   margin-bottom: 10px;
 }
 
-.home-subtitle {
+.home-tagline {
   font-size: 1.5rem;
-  color: #cccccc;
+  font-weight: 500;
+  color: #f0f0f0;
   margin-bottom: 20px;
 }
 
-.home-description {
+.home-subtitle {
   font-size: 1.2rem;
-  color: #bbbbbb;
-  margin-bottom: 30px;
+  margin: 10px 0;
+}
+
+.home-description {
+  font-size: 1rem;
+  margin: 20px 0;
 }
 
 /* ✅ Renamed class to match button in Home.jsx */
 .spotify-connect-button {
-  padding: 12px 24px;
-  font-size: 1.2rem;
-  background: #1DB954; /* Spotify Green */
+  background-color: #1DB954;
   color: white;
   border: none;
+  padding: 14px 24px;
   border-radius: 8px;
   cursor: pointer;
   transition: background 0.3s ease, transform 0.2s ease;
+  font-size: 1rem;
 }
 
 .spotify-connect-button:hover {
-  background: #1aa34a;
+  background-color: #1aa34a;
   transform: scale(1.05);
 }
