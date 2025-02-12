@@ -12,6 +12,26 @@ function Navbar({ isLoggedIn, setIsLoggedIn }) {
   
   const navigate = useNavigate();
 
+  // Define Framer Motion variants for smoother mobile menu animations
+  const menuVariants = {
+    hidden: { opacity: 0, y: -20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.3,
+        ease: "easeOut",
+        staggerChildren: 0.1,
+      },
+    },
+    exit: { opacity: 0, y: -20, transition: { duration: 0.3, ease: "easeIn" } },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: -10 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.3 } },
+  };
+
   const handleLogin = () => {
     window.location.href = `${backendUrl}/api/spotify/login`;
   };
@@ -39,37 +59,43 @@ function Navbar({ isLoggedIn, setIsLoggedIn }) {
       </button>
 
       <AnimatePresence>
-        <motion.div 
-          className={`menu ${isMobileMenuOpen ? 'menu-open' : ''}`}
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -10 }}
-          transition={{ duration: 0.2 }}
-        >
-          {isLoggedIn ? (
-            <motion.button 
-              className="auth-button logout-button"
-              onClick={handleLogout}
-              style={{ "--item-index": 0 }}
-            >
-              Logout
-            </motion.button>
-          ) : (
-            <motion.button 
-              className="auth-button login-button"
-              onClick={handleLogin}
-              style={{ "--item-index": 0 }}
-            >
-              Login with Spotify
-            </motion.button>
-          )}
-          <Link to="/flashcards" style={{ "--item-index": 1 }} onClick={() => setIsMobileMenuOpen(false)}>
-            Flashcards
-          </Link>
-          <Link to="/history" style={{ "--item-index": 2 }} onClick={() => setIsMobileMenuOpen(false)}>
-            History
-          </Link>
-        </motion.div>
+        {isMobileMenuOpen && (
+          <motion.div
+            className="menu"
+            variants={menuVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+          >
+            {isLoggedIn ? (
+              <motion.button
+                className="auth-button logout-button"
+                onClick={handleLogout}
+                variants={itemVariants}
+              >
+                Logout
+              </motion.button>
+            ) : (
+              <motion.button
+                className="auth-button login-button"
+                onClick={handleLogin}
+                variants={itemVariants}
+              >
+                Login with Spotify
+              </motion.button>
+            )}
+            <motion.div variants={itemVariants}>
+              <Link to="/flashcards" onClick={() => setIsMobileMenuOpen(false)}>
+                Flashcards
+              </Link>
+            </motion.div>
+            <motion.div variants={itemVariants}>
+              <Link to="/history" onClick={() => setIsMobileMenuOpen(false)}>
+                History
+              </Link>
+            </motion.div>
+          </motion.div>
+        )}
       </AnimatePresence>
     </nav>
   );
