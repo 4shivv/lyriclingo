@@ -3,7 +3,7 @@
     min-height: 100vh;
     text-align: center;
     padding: 50px;
-    background: linear-gradient(to bottom right, #223027, #1a1b24); /* Updated gradient background */
+    background: linear-gradient(to bottom right, #2a3a3e, #1a1b24); /* Lighter gradient background */
   }
   
   /* Overlay to improve text contrast on the history page */
