@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "../styles/Flashcards.css";
 import Toast from "../components/Toast";
+import LoadingSpinner from "../components/LoadingSpinner"; // ✅ Import LoadingSpinner for log feedback
 
 import { useNavigate } from "react-router-dom"; // ✅ Import navigation
 
@@ -15,6 +16,7 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn }) {
   const [toast, setToast] = useState({ show: false, message: "", type: "error" });
   const [currentSong, setCurrentSong] = useState(null);
   const [error, setError] = useState(null);
+  const [logging, setLogging] = useState(false); // New state to track logging status
 
   useEffect(() => {
     if (selectedSong) {
@@ -33,11 +35,13 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn }) {
 
   // Function to log the current song.
   const logCurrentSong = async () => {
+    setLogging(true); // Begin logging spinner
     const accessToken = localStorage.getItem("spotify_access_token");
     const refreshToken = localStorage.getItem("spotify_refresh_token");
 
     if (!accessToken || !refreshToken) {
       alert("You need to log in with Spotify first!");
+      setLogging(false);
       return;
     }
 
@@ -85,6 +89,8 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn }) {
         message: "Error fetching current song.",
         type: "error"
       });
+    } finally {
+      setLogging(false); // End logging spinner regardless of success or error
     }
   };
 
@@ -97,8 +103,8 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn }) {
 
       {/* ✅ Log Current Song Button - Now updates flashcards immediately */}
       {isLoggedIn && (
-        <button className="log-song-button" onClick={logCurrentSong}>
-          🎵 Log Current Song
+        <button className="log-song-button" onClick={logCurrentSong} disabled={logging}>
+          {logging ? <LoadingSpinner /> : "🎵 Log Current Song"}
         </button>
       )}
 
