@@ -3,7 +3,6 @@ const cors = require("cors");
 const mongoose = require("mongoose");
 require("dotenv").config();
 const Redis = require("ioredis");
-const redis = new Redis(); // Default Redis connection (localhost:6379)
 const path = require("path");
 
 const spotifyRoutes = require("./routes/spotifyRoutes");
@@ -22,6 +21,15 @@ mongoose
 // Middleware
 app.use(cors());
 app.use(express.json());
+
+// Use the REDIS_URL environment variable, or fallback to localhost if not set
+const redisURL = process.env.REDIS_URL || "redis://127.0.0.1:6379";
+const redis = new Redis(redisURL);
+
+// Log Redis connection errors
+redis.on("error", (err) => {
+  console.error("Redis error:", err);
+});
 
 // ✅ API Routes - Ensure these match correctly
 app.use("/api/spotify", spotifyRoutes);
