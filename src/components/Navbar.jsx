@@ -11,19 +11,7 @@ function Navbar({ isLoggedIn, setIsLoggedIn }) {
   const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:5001";
   
   const handleLogin = () => {
-    // Retrieve the Spotify Client ID from Vite's environment variables.
-    const clientId = import.meta.env.VITE_SPOTIFY_CLIENT_ID;
-
-    if (!clientId) {
-      console.error("Spotify Client ID is not defined. Please set VITE_SPOTIFY_CLIENT_ID in your environment.");
-      alert("Spotify Client ID is not configured. Contact the administrator.");
-      return;
-    }
-
-    const redirectUri = window.location.origin + "/flashcards";
-    const scopes = "user-read-currently-playing";
-    const spotifyAuthUrl = `https://accounts.spotify.com/authorize?client_id=${clientId}&response_type=token&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${encodeURIComponent(scopes)}`;
-    window.location.href = spotifyAuthUrl;
+    window.location.href = `${backendUrl}/api/spotify/login`;
   };
 
   const handleLogout = () => {
