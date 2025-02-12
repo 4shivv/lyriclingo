@@ -14,7 +14,7 @@ redis.on("error", (error) => {
 // Use BACKEND_URL environment variable if available. Otherwise, we'll use the request's host.
 const BACKEND_URL = process.env.BACKEND_URL;
 
-// ✅ Log a new song and automatically fetch the lyrics URL
+// ✅ Log a new song (triggered by user action) and fetch the lyrics URL
 const logSong = async (req, res) => {
   try {
     const { song, artist } = req.body;
