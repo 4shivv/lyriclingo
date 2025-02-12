@@ -88,11 +88,6 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn }) {
     }
   };
 
-  // Log the current song when the component mounts.
-  useEffect(() => {
-    logCurrentSong();
-  }, []);
-
   return (
     <div className="flashcards-container">
       <h1 className="flashcards-title">
