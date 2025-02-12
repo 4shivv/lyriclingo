@@ -11,8 +11,8 @@ redis.on("error", (error) => {
   console.error("Redis error:", error);
 });
 
-// Use BACKEND_URL environment variable if available (otherwise default to localhost)
-const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:5001";
+// Use BACKEND_URL environment variable if available (otherwise default to 127.0.0.1)
+const BACKEND_URL = process.env.BACKEND_URL || "http://127.0.0.1:5001";
 
 // ✅ Log a new song and automatically fetch the lyrics URL
 const logSong = async (req, res) => {
