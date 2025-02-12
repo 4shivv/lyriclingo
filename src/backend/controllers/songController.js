@@ -4,7 +4,12 @@ const { fetchLyricsUrl } = require("../services/lyricsService"); // Import Geniu
 const { translateBatch } = require("../services/translationService"); // ✅ Import batch translation
 const axios = require("axios");
 const Redis = require("ioredis");
-const redis = new Redis(); // Initialize Redis
+const redis = new Redis(process.env.REDIS_URL || "redis://127.0.0.1:6379");
+
+// Optionally add an error listener to handle connection issues gracefully:
+redis.on("error", (error) => {
+  console.error("Redis error:", error);
+});
 
 // Use BACKEND_URL environment variable if available (otherwise default to localhost)
 const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:5001";
