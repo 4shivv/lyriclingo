@@ -106,10 +106,11 @@ const getFlashcardsForSong = async (req, res) => {
     }
     console.log(`✅ Found song in DB with lyrics URL: ${song.lyricsUrl}`);
 
-    // Normalize BACKEND_URL to ensure it includes a protocol
-    const normalizedBackendUrl = BACKEND_URL.startsWith("http")
-      ? BACKEND_URL
-      : `https://${BACKEND_URL}`;
+    // Normalize BACKEND_URL to ensure it includes a protocol.
+    // If process.env.BACKEND_URL is not set, use the current request host.
+    const normalizedBackendUrl = BACKEND_URL
+      ? (BACKEND_URL.startsWith("http") ? BACKEND_URL : `https://${BACKEND_URL}`)
+      : `${req.protocol}://${req.get('host')}`;
 
     // Fetch Lyrics from the Lyrics API
     const response = await fetch(
