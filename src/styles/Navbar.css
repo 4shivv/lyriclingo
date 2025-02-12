@@ -42,12 +42,16 @@
     color: white;
     text-decoration: none;
     margin-left: 20px;
-    transition: color 0.3s ease, transform 0.2s ease;
+    padding: 8px 12px;
+    border-radius: 5px;
+    transition: color 0.3s ease, transform 0.2s ease, background-color 0.3s ease, box-shadow 0.2s ease;
   }
   
   .menu a:hover {
     color: #1aa34a;
     transform: translateX(5px);
+    background-color: rgba(26, 163, 74, 0.15);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
   }
 
   .mobile-menu-button {
