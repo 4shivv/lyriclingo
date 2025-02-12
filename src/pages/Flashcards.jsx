@@ -104,7 +104,7 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn }) {
       {/* ✅ Log Current Song Button - Now updates flashcards immediately */}
       {isLoggedIn && (
         <button className="log-song-button" onClick={logCurrentSong} disabled={logging}>
-          {logging ? <LoadingSpinner /> : "🎵 Log Current Song"}
+          {logging ? <LoadingSpinner size={20} color="#fff" /> : "🎵 Log Current Song"}
         </button>
       )}
 

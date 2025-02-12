@@ -1,21 +1,31 @@
 import React from "react";
-import { motion } from "framer-motion";
+import PropTypes from "prop-types";
+import "./LoadingSpinner.css";
 
-function LoadingSpinner() {
+function LoadingSpinner({ size, color }) {
   return (
-    <motion.div
+    <div
+      className="loading-spinner"
       style={{
-        width: "40px",
-        height: "40px",
-        border: "4px solid #1DB954",
-        borderTop: "4px solid transparent",
-        borderRadius: "50%",
-        margin: "20px auto"
+        width: size,
+        height: size,
+        borderTopColor: color,
+        borderRightColor: color,
+        borderBottomColor: color,
+        borderLeftColor: "transparent",
       }}
-      animate={{ rotate: 360 }}
-      transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-    />
+    ></div>
   );
 }
+
+LoadingSpinner.propTypes = {
+  size: PropTypes.number,
+  color: PropTypes.string,
+};
+
+LoadingSpinner.defaultProps = {
+  size: 40,      // default size if none provided
+  color: "#6200ee", // default color if none provided
+};
 
 export default LoadingSpinner; 
