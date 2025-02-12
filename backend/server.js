@@ -4,6 +4,7 @@ const mongoose = require("mongoose");
 require("dotenv").config();
 const Redis = require("ioredis");
 const redis = new Redis(); // Default Redis connection (localhost:6379)
+const path = require("path");
 
 const spotifyRoutes = require("./routes/spotifyRoutes");
 const songRoutes = require("./routes/songRoutes");
@@ -26,6 +27,15 @@ app.use(express.json());
 app.use("/api/spotify", spotifyRoutes);
 app.use("/api/songs", songRoutes);
 app.use("/api/lyrics", lyricsRoutes); 
+
+// Serve static files from the React app
+app.use(express.static(path.join(__dirname, "frontend/build")));
+
+// The "catchall" handler: for any request that doesn't
+// match one above, send back the React app.
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname + "/frontend/build/index.html"));
+});
 
 app.get("/", (req, res) => {
   res.send("LyricLingo Backend is Running!");
