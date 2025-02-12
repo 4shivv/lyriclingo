@@ -64,7 +64,17 @@ function Navbar({ isLoggedIn, setIsLoggedIn }) {
         {isMobileMenuOpen && (
           <motion.div 
             className={`menu ${isMobileMenuOpen ? 'menu-open' : ''}`}
-            style={{ display: "flex", flexDirection: "column", alignItems: "center" }}
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              position: "absolute",
+              top: "100%",
+              left: 0,
+              width: "100%",
+              backgroundColor: "rgba(0, 0, 0, 0.8)",
+              padding: "10px 0"
+            }}
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
