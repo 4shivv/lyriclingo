@@ -3,7 +3,7 @@
     min-height: 100vh;
     text-align: center;
     padding: 50px;
-    background: url('/assets/history-bg.jpg') center/cover no-repeat;
+    background-color: #1a1b24; /* Replace with your desired color */
   }
   
   /* Overlay to improve text contrast on the history page */
@@ -14,7 +14,7 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.4);
+    background: rgba(0, 0, 0, 0.3); /* Adjust overlay opacity if needed */
     z-index: 0;
     pointer-events: none;
   }
