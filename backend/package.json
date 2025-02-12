@@ -19,5 +19,8 @@
     "passport": "^0.7.0",
     "passport-spotify": "^2.0.0",
     "spotify-web-api-node": "^5.0.2"
+  },
+  "devDependencies": {
+    "vite": "^6.1.0"
   }
 }
