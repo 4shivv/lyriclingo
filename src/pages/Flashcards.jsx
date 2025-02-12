@@ -5,6 +5,8 @@ import LoadingSpinner from "../components/LoadingSpinner";
 
 import { useNavigate } from "react-router-dom"; // ✅ Import navigation
 
+const backendUrl = process.env.REACT_APP_BACKEND_URL || "http://localhost:5001";
+
 function Flashcards({ selectedSong, setSelectedSong, isLoggedIn }) {
   const navigate = useNavigate(); // ✅ Initialize navigation
   const [flashcards, setFlashcards] = useState([]);
@@ -15,7 +17,7 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn }) {
 
   useEffect(() => {
     if (selectedSong) {
-      fetch(`http://localhost:5001/api/songs/flashcards?song=${encodeURIComponent(selectedSong.song)}`)
+      fetch(`${backendUrl}/api/songs/flashcards?song=${encodeURIComponent(selectedSong.song)}`)
         .then(res => res.json())
         .then(data => {
           if (data.error) {
@@ -39,24 +41,37 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn }) {
 
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost:5001/api/spotify/current-song?accessToken=${accessToken}&refreshToken=${refreshToken}`);
+      const response = await fetch(
+        `${backendUrl}/api/spotify/current-song?accessToken=${accessToken}&refreshToken=${refreshToken}`
+      );
       const data = await response.json();
 
       if (data.song) {
-        await fetch("http://localhost:5001/api/songs/log", {
+        await fetch(`${backendUrl}/api/songs/log`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(data),
         });
-
-        setToast({ show: true, message: `🎵 Logged: ${data.song} by ${data.artist}`, type: "success" });
+        setToast({
+          show: true,
+          message: `🎵 Logged: ${data.song} by ${data.artist}`,
+          type: "success",
+        });
         setSelectedSong(data);
       } else {
-        setToast({ show: true, message: "No song currently playing!", type: "error" });
+        setToast({
+          show: true,
+          message: "No song currently playing!",
+          type: "error",
+        });
       }
     } catch (error) {
       console.error("Error logging song:", error);
-      setToast({ show: true, message: "Error fetching current song.", type: "error" });
+      setToast({
+        show: true,
+        message: "Error fetching current song.",
+        type: "error",
+      });
     } finally {
       setLoading(false);
     }

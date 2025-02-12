@@ -6,6 +6,8 @@ const axios = require("axios");
 const Redis = require("ioredis");
 const redis = new Redis(); // Initialize Redis
 
+// Use BACKEND_URL environment variable if available (otherwise default to localhost)
+const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:5001";
 
 // ✅ Log a new song and automatically fetch the lyrics URL
 const logSong = async (req, res) => {
@@ -101,7 +103,7 @@ const getFlashcardsForSong = async (req, res) => {
 
     // Fetch Lyrics from the Lyrics API
     const response = await fetch(
-      `http://localhost:5001/api/lyrics/fetch-lyrics?lyricsUrl=${encodeURIComponent(song.lyricsUrl)}`
+      `${BACKEND_URL}/api/lyrics/fetch-lyrics?lyricsUrl=${encodeURIComponent(song.lyricsUrl)}`
     );
     const data = await response.json();
 
