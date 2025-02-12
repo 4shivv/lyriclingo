@@ -2,7 +2,7 @@
   position: relative;
   min-height: 100vh; /* full viewport height */
   width: 100%;
-  background: linear-gradient(to bottom right, #2a3a3e, #1a1b24); /* Lighter gradient background */
+  background: linear-gradient(to bottom right, #334E47, #1a1b24); /* Updated gradient background */
 }
 
 /* Overlay to darken the background image lightly */
