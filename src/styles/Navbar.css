@@ -209,7 +209,9 @@
 
   /* Specific faint grey hover effect for Flashcards and History links */
   .menu a[href="/flashcards"]:hover,
-  .menu a[href="/history"]:hover {
+  .menu a[href="/history"]:hover,
+  .desktop-menu a[href="/flashcards"]:hover,
+  .desktop-menu a[href="/history"]:hover {
     background-color: rgba(211, 211, 211, 0.3);  /* Faint grey background */
     color: white;                                /* Keep text white */
     transform: none;                             /* Remove the slide/translate effect */
