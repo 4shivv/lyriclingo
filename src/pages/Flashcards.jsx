@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import "../styles/Flashcards.css";
 import Toast from "../components/Toast";
-import LoadingSpinner from "../components/LoadingSpinner";
 
 import { useNavigate } from "react-router-dom"; // ✅ Import navigation
 
@@ -13,7 +12,6 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn }) {
   const [flashcards, setFlashcards] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [flipped, setFlipped] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState({ show: false, message: "", type: "error" });
   const [currentSong, setCurrentSong] = useState(null);
   const [error, setError] = useState(null);
@@ -43,7 +41,6 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn }) {
       return;
     }
 
-    setLoading(true);
     try {
       // Fetch the currently playing song from Spotify
       const currentResponse = await fetch(
@@ -88,8 +85,6 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn }) {
         message: "Error fetching current song.",
         type: "error"
       });
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -100,8 +95,6 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn }) {
 
   return (
     <div className="flashcards-container">
-      {loading && <LoadingSpinner />}
-      {error && <div className="error">Error: {error}</div>}
       <h1 className="flashcards-title">
         Flashcards for {selectedSong ? selectedSong.song : "Unknown Song"}
       </h1>
@@ -114,13 +107,11 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn }) {
         </button>
       )}
 
-      {currentSong ? (
+      {currentSong && (
         <div>
           <h2>Current Song</h2>
           <p>{currentSong.song} by {currentSong.artist}</p>
         </div>
-      ) : (
-        <p>Loading current song...</p>
       )}
 
       <div className="flashcard-wrapper">

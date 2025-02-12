@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom"; // Import navigation
 import { motion, AnimatePresence } from "framer-motion";
 import Toast from "../components/Toast";
-import LoadingSpinner from "../components/LoadingSpinner";
 import "../styles/History.css";
 
 // Use backendUrl from environment variable
@@ -10,7 +9,7 @@ const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:5001";
 
 function History({ setSelectedSong }) {
   const [history, setHistory] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState({ show: false, message: "", type: "error" });
   const navigate = useNavigate(); // Initialize navigation
 
@@ -54,9 +53,13 @@ function History({ setSelectedSong }) {
     navigate("/flashcards");
   };
 
+  // When loading, render nothing (spinner removed)
+  if (loading) {
+    return null;
+  }
+
   return (
     <div className="history-container">
-      {loading && <LoadingSpinner />}
       <motion.h1 
         className="history-title"
         initial={{ opacity: 0, y: -20 }}
