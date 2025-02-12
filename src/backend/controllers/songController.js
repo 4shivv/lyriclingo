@@ -116,8 +116,14 @@ const getFlashcardsForSong = async (req, res) => {
       `${normalizedBackendUrl}/api/lyrics/fetch-lyrics?lyricsUrl=${encodeURIComponent(song.lyricsUrl)}`
     );
     if (!response.ok) {
-      console.error("Failed to fetch lyrics:", response.statusText);
-      return res.status(500).json({ error: "Failed to fetch lyrics from Genius" });
+      const errorData = await response.text(); // Get additional error details
+      console.error(
+        `Failed to fetch lyrics. Status: ${response.status}, Message: ${errorData}`
+      );
+      return res.status(500).json({ 
+         error: "Failed to fetch lyrics from Genius", 
+         details: errorData 
+      });
     }
     const data = await response.json();
 
