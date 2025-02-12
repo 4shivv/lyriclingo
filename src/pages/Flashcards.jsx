@@ -96,49 +96,51 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn }) {
 
   return (
     <div className="flashcards-container">
-      <h1 className="flashcards-title">
-        Flashcards for {selectedSong ? selectedSong.song : "Unknown Song"}
-      </h1>
-      <p className="flashcards-subtitle">Click the card to flip 🔄</p>
+      <div className="flashcards-content">
+        <h1 className="flashcards-title">
+          Flashcards for {selectedSong ? selectedSong.song : "Unknown Song"}
+        </h1>
+        <p className="flashcards-subtitle">Click the card to flip 🔄</p>
 
-      {/* ✅ Log Current Song Button - Now updates flashcards immediately */}
-      {isLoggedIn && (
-        <button className="log-song-button" onClick={logCurrentSong} disabled={logging}>
-          {logging ? <LoadingSpinner size={20} color="#fff" /> : "🎵 Log Current Song"}
-        </button>
-      )}
+        {/* ✅ Log Current Song Button - Now updates flashcards immediately */}
+        {isLoggedIn && (
+          <button className="log-song-button" onClick={logCurrentSong} disabled={logging}>
+            {logging ? <LoadingSpinner size={20} color="#fff" /> : "🎵 Log Current Song"}
+          </button>
+        )}
 
-      {currentSong && (
-        <div>
-          <h2>Current Song</h2>
-          <p>{currentSong.song} by {currentSong.artist}</p>
-        </div>
-      )}
+        {currentSong && (
+          <div>
+            <h2>Current Song</h2>
+            <p>{currentSong.song} by {currentSong.artist}</p>
+          </div>
+        )}
 
-      <div className="flashcard-wrapper">
-        <div className="flashcard-container">
-          {flashcards.length > 0 ? (
-            <div className={`flashcard ${flipped ? "flipped" : ""}`} onClick={() => setFlipped(!flipped)}>
-              <div className="flashcard-face flashcard-front">
-                {flashcards[currentIndex].front}
+        <div className="flashcard-wrapper">
+          <div className="flashcard-container">
+            {flashcards.length > 0 ? (
+              <div className={`flashcard ${flipped ? "flipped" : ""}`} onClick={() => setFlipped(!flipped)}>
+                <div className="flashcard-face flashcard-front">
+                  {flashcards[currentIndex].front}
+                </div>
+                <div className="flashcard-face flashcard-back">
+                  {flashcards[currentIndex].back}
+                </div>
               </div>
-              <div className="flashcard-face flashcard-back">
-                {flashcards[currentIndex].back}
-              </div>
-            </div>
-          ) : (
-            <p>No flashcards available for this song.</p>
-          )}
+            ) : (
+              <p>No flashcards available for this song.</p>
+            )}
+          </div>
         </div>
-      </div>
 
-      <div className="flashcard-controls">
-        <button className="nav-button" onClick={() => setCurrentIndex((prev) => (prev === 0 ? flashcards.length - 1 : prev - 1))}>⬅️</button>
-        <span>{currentIndex + 1} / {flashcards.length}</span>
-        <button className="nav-button" onClick={() => setCurrentIndex((prev) => (prev + 1) % flashcards.length)}>➡️</button>
-      </div>
+        <div className="flashcard-controls">
+          <button className="nav-button" onClick={() => setCurrentIndex((prev) => (prev === 0 ? flashcards.length - 1 : prev - 1))}>⬅️</button>
+          <span>{currentIndex + 1} / {flashcards.length}</span>
+          <button className="nav-button" onClick={() => setCurrentIndex((prev) => (prev + 1) % flashcards.length)}>➡️</button>
+        </div>
 
-      <Toast message={toast.message} type={toast.type} onClose={() => setToast({ ...toast, show: false })} />
+        <Toast message={toast.message} type={toast.type} onClose={() => setToast({ ...toast, show: false })} />
+      </div>
     </div>
   );
 }
