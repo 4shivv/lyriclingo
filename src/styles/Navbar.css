@@ -48,10 +48,10 @@
   }
   
   .menu a:hover {
-    color: #1aa34a;
+    color: white;
     transform: translateX(5px);
-    background-color: rgba(26, 163, 74, 0.15);
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    background-color: #1aa34a;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
   }
 
   .mobile-menu-button {
