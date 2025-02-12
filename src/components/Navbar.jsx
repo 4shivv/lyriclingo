@@ -32,9 +32,18 @@ function Navbar({ isLoggedIn, setIsLoggedIn }) {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
 
+  // New helper to delay navigation on mobile (letting the exit animation run)
+  const handleMobileNavClick = (path, e) => {
+    e.preventDefault();
+    setIsMobileMenuOpen(false);
+    setTimeout(() => {
+      navigate(path);
+    }, 250);
+  };
+
   return (
     <nav className="navbar">
-      <Link to="/" className="logo-container">
+      <Link to="/" className="logo-container" onClick={() => setIsMobileMenuOpen(false)}>
         <img src="/IMG_0862.png" alt="LyricLingo Logo" className="logo-image" />
         <span className="logo-text">LyricLingo</span>
       </Link>
@@ -83,7 +92,10 @@ function Navbar({ isLoggedIn, setIsLoggedIn }) {
             {isLoggedIn ? (
               <motion.button 
                 className="auth-button logout-button"
-                onClick={handleLogout}
+                onClick={() => {
+                  setIsMobileMenuOpen(false);
+                  handleLogout();
+                }}
                 style={{ "--item-index": 0 }}
               >
                 Logout
@@ -91,16 +103,19 @@ function Navbar({ isLoggedIn, setIsLoggedIn }) {
             ) : (
               <motion.button 
                 className="auth-button login-button"
-                onClick={handleLogin}
+                onClick={(e) => {
+                  setIsMobileMenuOpen(false);
+                  handleLogin();
+                }}
                 style={{ "--item-index": 0 }}
               >
                 Login with Spotify
               </motion.button>
             )}
-            <Link to="/flashcards" style={{ "--item-index": 1 }} onClick={() => setIsMobileMenuOpen(false)}>
+            <Link to="/flashcards" style={{ "--item-index": 1 }} onClick={(e) => handleMobileNavClick("/flashcards", e)}>
               Flashcards
             </Link>
-            <Link to="/history" style={{ "--item-index": 2 }} onClick={() => setIsMobileMenuOpen(false)}>
+            <Link to="/history" style={{ "--item-index": 2 }} onClick={(e) => handleMobileNavClick("/history", e)}>
               History
             </Link>
           </motion.div>
