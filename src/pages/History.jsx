@@ -15,7 +15,7 @@ function History({ setSelectedSong }) {
     const fetchHistory = async () => {
       setLoading(true);
       try {
-        const res = await fetch("http://localhost:5001/api/songs/history");
+        const res = await fetch(`${backendUrl}/api/songs/history`);
         const data = await res.json();
         console.log("Fetched History:", data); // ✅ Debugging: Check if data arrives
         setHistory(data);

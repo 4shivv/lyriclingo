@@ -46,29 +46,39 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn }) {
 
     setLoading(true);
     try {
-      const response = await fetch(
+      // Fetch the currently playing song from Spotify
+      const currentResponse = await fetch(
         `${backendUrl}/api/spotify/current-song?accessToken=${accessToken}&refreshToken=${refreshToken}`
       );
-      const data = await response.json();
+      const currentData = await currentResponse.json();
 
-      if (data.song) {
-        await fetch(`${backendUrl}/api/songs/log`, {
+      if (currentData.song) {
+        // Log the song in your history by posting it to your API.
+        const logResponse = await fetch(`${backendUrl}/api/songs/log`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(data),
+          body: JSON.stringify(currentData)
         });
-        setToast({
-          show: true,
-          message: `🎵 Logged: ${data.song} by ${data.artist}`,
-          type: "success",
-        });
-        setSelectedSong(data);
-        setCurrentSong(data);
+        const logData = await logResponse.json();
+
+        if (logData.error) {
+          setToast({ show: true, message: logData.error, type: "error" });
+        } else {
+          setToast({
+            show: true,
+            message: `🎵 Logged: ${logData.song} by ${logData.artist}`,
+            type: "success"
+          });
+          // Use the response from the log endpoint so later calls (like flashcards)
+          // are able to find the song in history.
+          setSelectedSong(logData);
+          setCurrentSong(logData);
+        }
       } else {
         setToast({
           show: true,
           message: "No song currently playing!",
-          type: "error",
+          type: "error"
         });
       }
     } catch (err) {
@@ -77,7 +87,7 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn }) {
       setToast({
         show: true,
         message: "Error fetching current song.",
-        type: "error",
+        type: "error"
       });
     } finally {
       setLoading(false);
