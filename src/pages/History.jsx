@@ -18,7 +18,8 @@ function History({ setSelectedSong }) {
     setLoading(true);
     try {
       const accessToken = localStorage.getItem("spotify_access_token");
-      const res = await fetch(`${backendUrl}/api/songs/history?accessToken=${accessToken}`);
+      // Append a timestamp to bust cache
+      const res = await fetch(`${backendUrl}/api/songs/history?accessToken=${accessToken}&t=${Date.now()}`);
       const data = await res.json();
       console.log("Fetched History:", data);
       setHistory(data);
@@ -35,12 +36,14 @@ function History({ setSelectedSong }) {
     fetchHistory();
   }, []);
 
-  // Update clearHistory to re-fetch after deletion and add a header.
+  // Update clearHistory to add a confirmation prompt
   const clearHistory = async () => {
+    if (!window.confirm("Are you sure you want to clear your entire history?")) {
+      return;
+    }
     setLoading(true);
     try {
       const accessToken = localStorage.getItem("spotify_access_token");
-      // Include accessToken and headers in the clear history request
       await fetch(`${backendUrl}/api/songs/clear?accessToken=${accessToken}`, {
         method: "DELETE",
         headers: { "Content-Type": "application/json" }
@@ -120,15 +123,15 @@ function History({ setSelectedSong }) {
       <motion.div className="history-list">
         <AnimatePresence>
           {history.length > 0 ? (
-            history.map((entry, index) => (
+            history.map((entry) => (
               <motion.div
-                key={index}
+                key={entry._id}
                 className="history-item"
                 onClick={() => handleSongClick(entry)}
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: 20 }}
-                transition={{ delay: index * 0.1 }}
+                transition={{ delay: 0.1 }}
                 whileHover={{ 
                   scale: 1.02,
                   x: 10,
