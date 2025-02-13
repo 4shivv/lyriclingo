@@ -13,35 +13,41 @@ function History({ setSelectedSong }) {
   const [toast, setToast] = useState({ show: false, message: "", type: "error" });
   const navigate = useNavigate(); // Initialize navigation
 
-  useEffect(() => {
-    const fetchHistory = async () => {
-      setLoading(true);
-      try {
-        const accessToken = localStorage.getItem("spotify_access_token");
-        // Now include the accessToken to fetch the user-specific history
-        const res = await fetch(`${backendUrl}/api/songs/history?accessToken=${accessToken}`);
-        const data = await res.json();
-        console.log("Fetched History:", data);
-        setHistory(data);
-      } catch (error) {
-        console.error("Error fetching history:", error);
-        setToast({ show: true, message: "Error fetching history.", type: "error" });
-      } finally {
-        setLoading(false);
-      }
-    };
+  // Extracted fetchHistory as a reusable function
+  const fetchHistory = async () => {
+    setLoading(true);
+    try {
+      const accessToken = localStorage.getItem("spotify_access_token");
+      const res = await fetch(`${backendUrl}/api/songs/history?accessToken=${accessToken}`);
+      const data = await res.json();
+      console.log("Fetched History:", data);
+      setHistory(data);
+    } catch (error) {
+      console.error("Error fetching history:", error);
+      setToast({ show: true, message: "Error fetching history.", type: "error" });
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  // Fetch history on component mount
+  useEffect(() => {
     fetchHistory();
   }, []);
 
+  // Update clearHistory to re-fetch after deletion and add a header.
   const clearHistory = async () => {
     setLoading(true);
     try {
       const accessToken = localStorage.getItem("spotify_access_token");
-      // Include accessToken in the clear history request
-      await fetch(`${backendUrl}/api/songs/clear?accessToken=${accessToken}`, { method: "DELETE" });
-      setHistory([]);
+      // Include accessToken and headers in the clear history request
+      await fetch(`${backendUrl}/api/songs/clear?accessToken=${accessToken}`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" }
+      });
       setToast({ show: true, message: "History Cleared!", type: "success" });
+      // Re-fetch history to reflect deletion
+      fetchHistory();
     } catch (error) {
       console.error("Error clearing history:", error);
       setToast({ show: true, message: "Error clearing history.", type: "error" });
@@ -50,17 +56,22 @@ function History({ setSelectedSong }) {
     }
   };
 
+  // Update handleDeleteEntry to re-fetch after deletion and add a header.
   const handleDeleteEntry = async (entry, e) => {
-    e.stopPropagation();
+    e.stopPropagation(); // Prevent triggering other click events
     if (!window.confirm(`Are you sure you want to delete "${entry.song}"?`)) {
       return;
     }
     try {
       const accessToken = localStorage.getItem("spotify_access_token");
-      // Include accessToken in the delete request for that entry.
-      await fetch(`${backendUrl}/api/songs/delete/${entry._id}?accessToken=${accessToken}`, { method: "DELETE" });
-      setHistory((prev) => prev.filter((item) => item._id !== entry._id));
+      // Include accessToken in the DELETE request and specify headers
+      await fetch(`${backendUrl}/api/songs/delete/${entry._id}?accessToken=${accessToken}`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" }
+      });
       setToast({ show: true, message: "Entry deleted!", type: "success" });
+      // Instead of manually filtering the local state, re-fetch from backend
+      fetchHistory();
     } catch (error) {
       console.error("Error deleting entry:", error);
       setToast({ show: true, message: "Error deleting entry.", type: "error" });
