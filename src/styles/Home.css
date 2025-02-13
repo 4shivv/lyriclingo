@@ -1,10 +1,9 @@
 .home-container {
   position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 100vh;
+  width: 100vw;
+  height: 100vh;
   background: url('/public/0haOGWdnNL0-HD.jpg') center/cover no-repeat;
+  overflow: hidden;
 }
 
 .home-overlay {
