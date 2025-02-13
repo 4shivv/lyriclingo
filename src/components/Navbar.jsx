@@ -45,7 +45,7 @@ function Navbar({ isLoggedIn, setIsLoggedIn }) {
     <nav className="navbar">
       <Link to="/" className="logo-container" onClick={() => setIsMobileMenuOpen(false)}>
         <img src="/IMG_0862.png" alt="LyricLingo Logo" className="logo-image" />
-        <span className="logo-text">LyricLingo</span>
+        <span className="logo-text"></span>
       </Link>
 
       {/* Desktop Menu: Always visible on larger screens */}
