@@ -17,9 +17,11 @@ function History({ setSelectedSong }) {
     const fetchHistory = async () => {
       setLoading(true);
       try {
-        const res = await fetch(`${backendUrl}/api/songs/history`);
+        const accessToken = localStorage.getItem("spotify_access_token");
+        // Now include the accessToken to fetch the user-specific history
+        const res = await fetch(`${backendUrl}/api/songs/history?accessToken=${accessToken}`);
         const data = await res.json();
-        console.log("Fetched History:", data); // ✅ Debugging: Check if data arrives
+        console.log("Fetched History:", data);
         setHistory(data);
       } catch (error) {
         console.error("Error fetching history:", error);
@@ -32,12 +34,13 @@ function History({ setSelectedSong }) {
     fetchHistory();
   }, []);
 
-  // ✅ Function to clear history using backendUrl instead of localhost
   const clearHistory = async () => {
     setLoading(true);
     try {
-      await fetch(`${backendUrl}/api/songs/clear`, { method: "DELETE" });
-      setHistory([]); // ✅ Update frontend immediately
+      const accessToken = localStorage.getItem("spotify_access_token");
+      // Include accessToken in the clear history request
+      await fetch(`${backendUrl}/api/songs/clear?accessToken=${accessToken}`, { method: "DELETE" });
+      setHistory([]);
       setToast({ show: true, message: "History Cleared!", type: "success" });
     } catch (error) {
       console.error("Error clearing history:", error);
@@ -47,16 +50,15 @@ function History({ setSelectedSong }) {
     }
   };
 
-  // Add this new function below clearHistory (inside the History component):
   const handleDeleteEntry = async (entry, e) => {
-    e.stopPropagation(); // Prevents triggering handleSongClick
+    e.stopPropagation();
     if (!window.confirm(`Are you sure you want to delete "${entry.song}"?`)) {
       return;
     }
     try {
-      // Assumes your backend supports deletion of individual entries at this endpoint.
-      await fetch(`${backendUrl}/api/songs/delete/${entry._id}`, { method: "DELETE" });
-      // Remove the deleted entry from the local state.
+      const accessToken = localStorage.getItem("spotify_access_token");
+      // Include accessToken in the delete request for that entry.
+      await fetch(`${backendUrl}/api/songs/delete/${entry._id}?accessToken=${accessToken}`, { method: "DELETE" });
       setHistory((prev) => prev.filter((item) => item._id !== entry._id));
       setToast({ show: true, message: "Entry deleted!", type: "success" });
     } catch (error) {
