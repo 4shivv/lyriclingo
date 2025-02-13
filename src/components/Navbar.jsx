@@ -44,7 +44,7 @@ function Navbar({ isLoggedIn, setIsLoggedIn }) {
   return (
     <nav className="navbar">
       <Link to="/" className="logo-container" onClick={() => setIsMobileMenuOpen(false)}>
-        <img src="/IMG_0862.png" alt="LyricLingo Logo" className="logo-image" />
+        <img src="/Subject.png" alt="LyricLingo Logo" className="logo-image" />
         <span className="logo-text"></span>
       </Link>
 
