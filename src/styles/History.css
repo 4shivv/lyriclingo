@@ -116,3 +116,26 @@
   background: #999;
   transform: scale(1.05);
 }
+
+/* Container for the date and delete button */
+.history-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Delete History Button */
+.delete-history-button {
+  background: #b30000;
+  color: white;
+  border: none;
+  padding: 6px 10px;
+  font-size: 0.9rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.delete-history-button:hover {
+  background: #cc0000;
+}

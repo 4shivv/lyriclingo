@@ -47,6 +47,24 @@ function History({ setSelectedSong }) {
     }
   };
 
+  // Add this new function below clearHistory (inside the History component):
+  const handleDeleteEntry = async (entry, e) => {
+    e.stopPropagation(); // Prevents triggering handleSongClick
+    if (!window.confirm(`Are you sure you want to delete "${entry.song}"?`)) {
+      return;
+    }
+    try {
+      // Assumes your backend supports deletion of individual entries at this endpoint.
+      await fetch(`${backendUrl}/api/songs/delete/${entry._id}`, { method: "DELETE" });
+      // Remove the deleted entry from the local state.
+      setHistory((prev) => prev.filter((item) => item._id !== entry._id));
+      setToast({ show: true, message: "Entry deleted!", type: "success" });
+    } catch (error) {
+      console.error("Error deleting entry:", error);
+      setToast({ show: true, message: "Error deleting entry.", type: "error" });
+    }
+  };
+
   // ✅ Navigate to flashcards for selected song
   const handleSongClick = (song) => {
     setSelectedSong(song);
@@ -108,9 +126,17 @@ function History({ setSelectedSong }) {
                   <span className="history-song">{entry.song}</span> - 
                   <span className="history-artist"> {entry.artist}</span>
                 </div>
-                <span className="history-date">
-                  {new Date(entry.timestamp).toLocaleDateString()}
-                </span>
+                <div className="history-actions">
+                  <span className="history-date">
+                    {new Date(entry.timestamp).toLocaleDateString()}
+                  </span>
+                  <button 
+                    className="delete-history-button"
+                    onClick={(e) => handleDeleteEntry(entry, e)}
+                  >
+                    Delete
+                  </button>
+                </div>
               </motion.div>
             ))
           ) : (
