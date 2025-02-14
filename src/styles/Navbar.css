@@ -130,6 +130,8 @@
       opacity: 0;
       transform: translateY(-10px);
       transition: opacity 0.3s ease, transform 0.3s ease;
+      will-change: opacity, transform; /* Optimize for performance */
+
     }
 
     .menu.menu-open {
