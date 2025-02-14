@@ -70,7 +70,7 @@
 @media (max-width: 768px) {
   .home-content {
     width: 90%; 
-    padding: 20px; /* padding 10px to 20px */
+    padding: 10px; 
     box-sizing: border-box;
     margin: 0 auto;
     display: flex;
