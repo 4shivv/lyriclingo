@@ -47,8 +47,8 @@ function AppContent() {
   useEffect(() => {
     const routeTitleMap = {
       "/": "LyricLingo",
-      "/flashcards": "LyricLingo - Flashcards",
-      "/history": "LyricLingo - History",
+      "/flashcards": "Flashcards - LyricLingo",
+      "/history": "History - LyricLingo",
     };
     document.title = routeTitleMap[location.pathname] || "LyricLingo";
   }, [location]);
