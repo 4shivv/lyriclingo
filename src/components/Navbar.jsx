@@ -77,6 +77,12 @@ function Navbar({ isLoggedIn, setIsLoggedIn }) {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.3, ease: "easeInOut" }}
+            onAnimationComplete={() => {
+              if (!isMobileMenuOpen) {
+                // Only navigate if the menu is closed
+                navigate(path);
+              }
+            }}
           >
             {isLoggedIn ? (
               <motion.button 
