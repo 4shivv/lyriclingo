@@ -33,7 +33,7 @@ function Home() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
           >
-            Discover a new rhythm for language learning.
+            Discover a new rhythm for language learning
           </motion.h2>
           <motion.p 
             className="home-subtitle"
@@ -41,7 +41,7 @@ function Home() {
             animate={{ opacity: 1 }}
             transition={{ delay: 0.4 }}
           >
-            Learn Spanish through your favorite songs.
+            Learn Spanish through your favorite songs
           </motion.p>
           <motion.p 
             className="home-description"
