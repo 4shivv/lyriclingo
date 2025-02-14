@@ -23,7 +23,7 @@ a:hover {
 }
 
 body {
-  background: linear-gradient(to bottom right, #1a2725, #0f0f10, #232532); /* New gradient with #1a2725 */
+  background: linear-gradient(to bottom right, #1a2725, #1a1b24, #232532); /* New gradient covers entire page */
   color: white;
   font-family: "Inter", sans-serif;
   margin: 0;
