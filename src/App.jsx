@@ -44,6 +44,15 @@ function AppContent() {
     }
   }, [navigate]);
 
+  useEffect(() => {
+    const routeTitleMap = {
+      "/": "LyricLingo - Home",
+      "/flashcards": "LyricLingo - Flashcards",
+      "/history": "LyricLingo - History",
+    };
+    document.title = routeTitleMap[location.pathname] || "LyricLingo";
+  }, [location]);
+
   const pageVariants = {
     initial: { opacity: 0, y: 20 },
     animate: { opacity: 1, y: 0 },
