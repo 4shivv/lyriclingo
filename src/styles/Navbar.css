@@ -116,7 +116,7 @@
     }
 
     .menu {
-      display: none;
+      display: flex; /* Changed from none to flex */
       position: fixed;
       top: 0;
       left: 0;
