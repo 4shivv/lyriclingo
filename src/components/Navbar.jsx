@@ -5,6 +5,7 @@ import "../styles/Navbar.css";
 
 function Navbar({ isLoggedIn, setIsLoggedIn }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isClosing, setIsClosing] = useState(false);
   
   // Use Vite's environment variable for the backend URL.
   // Make sure you have VITE_BACKEND_URL defined in your Vercel (or local) environment.
@@ -29,15 +30,18 @@ function Navbar({ isLoggedIn, setIsLoggedIn }) {
   };
 
   const toggleMobileMenu = () => {
-    setIsMobileMenuOpen(!isMobileMenuOpen);
+    if (isClosing) return;
+    setIsMobileMenuOpen(prev => !prev);
   };
 
   // New helper to delay navigation on mobile (letting the exit animation run)
   const handleMobileNavClick = (path, e) => {
     e.preventDefault();
+    setIsClosing(true);
     setIsMobileMenuOpen(false);
     setTimeout(() => {
       navigate(path);
+      setIsClosing(false);
     }, 300); /* Changed from 250 to 300 */
   };
 
@@ -79,8 +83,7 @@ function Navbar({ isLoggedIn, setIsLoggedIn }) {
             transition={{ duration: 0.3, ease: "easeInOut" }}
             onAnimationComplete={() => {
               if (!isMobileMenuOpen) {
-                // Only navigate if the menu is closed
-                navigate(path);
+                setIsClosing(false);
               }
             }}
           >
