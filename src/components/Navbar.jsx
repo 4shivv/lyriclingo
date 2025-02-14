@@ -34,7 +34,6 @@ function Navbar({ isLoggedIn, setIsLoggedIn }) {
     setIsMobileMenuOpen(prev => !prev);
   };
 
-  // New helper to delay navigation on mobile (letting the exit animation run)
   const handleMobileNavClick = (path, e) => {
     e.preventDefault();
     setIsClosing(true);
@@ -42,7 +41,7 @@ function Navbar({ isLoggedIn, setIsLoggedIn }) {
     setTimeout(() => {
       navigate(path);
       setIsClosing(false);
-    }, 300); /* Changed from 250 to 300 */
+    }, 300);
   };
 
   return (
