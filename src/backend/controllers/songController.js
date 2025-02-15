@@ -199,5 +199,19 @@ const getFlashcardsForSong = async (req, res) => {
   }
 };
 
+const deleteSong = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const deletedSong = await Song.findByIdAndDelete(id);
+    if (!deletedSong) {
+      return res.status(404).json({ error: "Song not found" });
+    }
+    res.json({ message: "Song deleted successfully!" });
+  } catch (error) {
+    console.error("Error deleting song:", error);
+    res.status(500).json({ error: "Failed to delete song." });
+  }
+};
+
 // ✅ Ensure all functions are correctly exported
-module.exports = { logSong, getSongHistory, clearHistory, getFlashcardsForSong };
+module.exports = { logSong, getSongHistory, clearHistory, getFlashcardsForSong, deleteSong };
