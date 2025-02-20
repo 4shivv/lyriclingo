@@ -93,13 +93,13 @@
 
 /* Front Side */
 .flashcard-front {
-  background: rgba(231, 181, 57, 0.1); /* Faint yellow with opacity */
+  background: rgba(231, 181, 57, 0.5); /* Faint yellow with opacity */
   color: #e0e0e0; /* Light gray text for contrast */
 }
 
 /* Back Side */
 .flashcard-back {
-  background: rgba(231, 181, 57, 0.2); /* Slightly darker faint yellow */
+  background: rgba(231, 181, 57, 0.4); /* Slightly darker faint yellow */
   color: #e0e0e0; /* Light gray text for contrast */
   transform: rotateY(180deg);
 }
