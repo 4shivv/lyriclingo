@@ -197,6 +197,12 @@ const getFlashcardsForSong = async (req, res) => {
       back: backLines[index].replace(new RegExp(`^${DELIMITER}|${DELIMITER}$`, 'g'), '').trim(),
     }));
 
+    // Post-process to remove any remaining '|' or '||' characters
+    flashcards = flashcards.map(card => ({
+      front: card.front.replace(/\|+/g, '').trim(),
+      back: card.back.replace(/\|+/g, '').trim(),
+    }));
+
     // Cache the flashcards
     await redis.setex(cacheKey, 86400, JSON.stringify(flashcards));
 
