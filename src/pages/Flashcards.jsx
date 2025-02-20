@@ -129,9 +129,13 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn }) {
         </div>
 
         <div className="flashcard-controls">
-          <button className="nav-button" onClick={() => setCurrentIndex((prev) => (prev === 0 ? flashcards.length - 1 : prev - 1))}>⬅️</button>
+          <button className="nav-button" onClick={() => setCurrentIndex((prev) => (prev === 0 ? flashcards.length - 1 : prev - 1))}>
+            Previous
+          </button>
           <span>{currentIndex + 1} / {flashcards.length}</span>
-          <button className="nav-button" onClick={() => setCurrentIndex((prev) => (prev + 1) % flashcards.length)}>➡️</button>
+          <button className="nav-button" onClick={() => setCurrentIndex((prev) => (prev + 1) % flashcards.length)}>
+            Next
+          </button>
         </div>
 
         <Toast message={toast.message} type={toast.type} onClose={() => setToast({ ...toast, show: false })} />
