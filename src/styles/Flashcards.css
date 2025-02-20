@@ -131,12 +131,12 @@
 
 /* Log Current Song Button */
 .log-song-button {
-  background: #1DB954; /* Updated to match nav buttons */
+  background: #1DB954; /* Main background color */
   color: white;
-  border: none;
+  border: 2px solid transparent; /* Transparent border for hover effect */
   padding: 12px 20px; /* Increased padding for better touch targets */
   font-size: 1rem;
-  border-radius: 8px; /* Changed to match nav buttons */
+  border-radius: 8px; /* Rounded corners */
   cursor: pointer;
   transition: background 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease; /* Added box-shadow transition */
   display: flex;
@@ -150,9 +150,10 @@
 }
 
 .log-song-button:hover {
-  background: #1aa34a;
-  transform: scale(1.05);
+  background: #1aa34a; /* Darker shade on hover */
+  transform: scale(1.05); /* Slightly enlarge on hover */
   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3); /* Enhanced shadow on hover */
+  border: 2px solid #1DB954; /* Show border on hover */
 }
 
 /* Loading State */
