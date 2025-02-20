@@ -87,41 +87,68 @@ const clearHistory = async (req, res) => {
 const getFlashcardsForSong = async (req, res) => {
   try {
     const songTitle = req.query.song;
-    const sourceLanguage = req.query.lang || "es";
+    const sourceLanguage = req.query.lang || "es"; // Default to Spanish input
     const cacheKey = `flashcards:${songTitle}`;
 
+    // Check Redis cache first
     const cachedFlashcards = await redis.get(cacheKey);
     if (cachedFlashcards) {
+      console.log(`⚡ Serving flashcards from cache for: ${songTitle}`);
       return res.json(JSON.parse(cachedFlashcards));
     }
 
+    console.log(`🔎 Looking for song: ${songTitle}`);
+
+    // Find song in the DB
     const song = await Song.findOne({ song: songTitle });
     if (!song || !song.lyricsUrl) {
       return res.status(404).json({ error: "Song not found in history" });
     }
+    console.log(`✅ Found song in DB with lyrics URL: ${song.lyricsUrl}`);
 
+    // Normalize BACKEND_URL to ensure it includes a protocol.
+    // If process.env.BACKEND_URL is not set, use the current request host.
     const normalizedBackendUrl = BACKEND_URL
       ? (BACKEND_URL.startsWith("http") ? BACKEND_URL : `https://${BACKEND_URL}`)
       : `${req.protocol}://${req.get('host')}`;
 
+    // Fetch Lyrics from the Lyrics API
     const response = await fetch(
       `${normalizedBackendUrl}/api/lyrics/fetch-lyrics?lyricsUrl=${encodeURIComponent(song.lyricsUrl)}`
     );
     if (!response.ok) {
-      const errorData = await response.text();
-      return res.status(500).json({ error: "Failed to fetch lyrics from Genius", details: errorData });
+      const errorData = await response.text(); // Get additional error details
+      console.error(
+        `Failed to fetch lyrics. Status: ${response.status}, Message: ${errorData}`
+      );
+      return res.status(500).json({ 
+         error: "Failed to fetch lyrics from Genius", 
+         details: errorData 
+      });
     }
     const data = await response.json();
 
-    let cleanedLyrics = data.lyrics.replace(/\[.*?\]/g, "").replace(/\s+/g, " ").trim();
+    if (!data.lyrics || data.lyrics.trim().length === 0) {
+      return res.status(500).json({ error: "Failed to fetch lyrics from Genius" });
+    }
+    console.log("🔍 Raw Lyrics Received:", data.lyrics);
 
+    // 1️⃣ Clean the lyrics
+    let cleanedLyrics = data.lyrics
+      .replace(/\[.*?\]/g, "")
+      .replace(/\s+/g, " ")
+      .trim();
+
+    // 2️⃣ Translate the full lyrics as a single block
     let translatedResult = await translateBatch([cleanedLyrics], sourceLanguage);
     let translatedLyrics = translatedResult[0] || "Translation unavailable";
 
-    const splitRegex = /(?<=\w[.!?])\s+|(?<!\s)(?=[A-Z])/g;
+    // 3️⃣ Split both original and translated texts using your regex.
+    const splitRegex = /\s+(?=[\p{Lu}])/u;
     let frontLines = cleanedLyrics.split(splitRegex).filter(line => line.trim().length > 0);
     let backLines = translatedLyrics.split(splitRegex).filter(line => line.trim().length > 0);
 
+    // Helper: Merge isolated punctuation segments throughout the array.
     const mergeIsolatedSegments = (lines, isolatedChars) => {
       const merged = [];
       let i = 0;
@@ -143,6 +170,10 @@ const getFlashcardsForSong = async (req, res) => {
     frontLines = mergeIsolatedSegments(frontLines, isolatedPunctuations);
     backLines = mergeIsolatedSegments(backLines, isolatedPunctuations);
 
+    console.log(`🔹 After merging, Original Lyrics segments: ${frontLines.length}`);
+    console.log(`🔹 After merging, Translated Lyrics segments: ${backLines.length}`);
+
+    // 4️⃣ Equalize segment counts if needed.
     while (backLines.length < frontLines.length) {
       backLines.push("Translation unavailable");
     }
@@ -150,11 +181,15 @@ const getFlashcardsForSong = async (req, res) => {
       backLines.pop();
     }
 
+    // 5️⃣ Generate flashcards.
     let flashcards = frontLines.map((line, index) => ({
       front: line,
       back: backLines[index] || "Translation unavailable",
     }));
 
+    console.log(`✅ Generated ${flashcards.length} flashcards for: ${songTitle}`);
+
+    // 6️⃣ Cache the flashcards in Redis for 24 hours.
     await redis.setex(cacheKey, 86400, JSON.stringify(flashcards));
 
     res.json(flashcards);
