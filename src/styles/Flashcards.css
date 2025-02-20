@@ -116,14 +116,17 @@
 .nav-button {
   background: transparent; /* Make background transparent */
   color: white; /* Change text color to white */
-  border: none; /* Remove border */
+  border: 2px solid white; /* Add a white border */
+  border-radius: 8px; /* Rounded corners */
   font-size: 1.5rem; /* Increase font size for better visibility */
   cursor: pointer; /* Change cursor to pointer */
-  transition: transform 0.2s ease; /* Add transition for hover effect */
+  transition: transform 0.2s ease, background 0.3s ease; /* Add transition for hover effect */
+  padding: 10px; /* Add padding for better touch targets */
 }
 
 .nav-button:hover {
   transform: scale(1.1); /* Slightly enlarge on hover */
+  background: rgba(255, 255, 255, 0.1); /* Add a subtle background on hover */
 }
 
 /* Log Current Song Button */
