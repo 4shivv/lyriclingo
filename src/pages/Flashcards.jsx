@@ -102,11 +102,13 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn }) {
         </h1>
         <p className="flashcards-subtitle">Click the card to flip 🔄</p>
 
-        {/* ✅ Log Current Song Button - Now updates flashcards immediately */}
+        {/* Log Current Song Button Wrapper */}
         {isLoggedIn && (
-          <button className="log-song-button" onClick={logCurrentSong} disabled={logging}>
-            {logging ? <LoadingSpinner size={20} color="#fff" /> : "🎵 Log Current Song"}
-          </button>
+          <div className="log-button-wrapper"> {/* Added wrapper for spacing */}
+            <button className="log-song-button" onClick={logCurrentSong} disabled={logging}>
+              {logging ? <LoadingSpinner size={20} color="#fff" /> : "🎵 Log Current Song"}
+            </button>
+          </div>
         )}
 
         <div className="flashcard-wrapper">
