@@ -143,11 +143,41 @@ const getFlashcardsForSong = async (req, res) => {
     let translatedResult = await translateBatch([cleanedLyrics], sourceLanguage);
     let translatedLyrics = translatedResult[0] || "Translation unavailable";
 
-    // 3️⃣ Split both original and translated texts using your regex.
-    // Updated split regex: do not split if the whitespace is preceded by "("
-    const splitRegex = /(?<!\()\s+(?=[\p{Lu}])/u;
-    let frontLines = cleanedLyrics.split(splitRegex).filter(line => line.trim().length > 0);
-    let backLines = translatedLyrics.split(splitRegex).filter(line => line.trim().length > 0);
+    // Custom function to split text without splitting inside parentheses.
+    const splitLyrics = (text) => {
+      const lines = [];
+      let current = "";
+      let parenDepth = 0;
+      for (let i = 0; i < text.length; i++) {
+        const char = text[i];
+        if (char === "(") {
+          parenDepth++;
+        } else if (char === ")") {
+          if (parenDepth > 0) parenDepth--;
+        }
+        if (/\s/.test(char)) {
+          // Only split if not inside parentheses AND the next character is uppercase.
+          if (parenDepth === 0 && i + 1 < text.length && /[\p{Lu}]/u.test(text[i + 1])) {
+            if (current.trim().length > 0) {
+              lines.push(current.trim());
+            }
+            current = "";
+            continue;
+          } else {
+            current += char;
+          }
+        } else {
+          current += char;
+        }
+      }
+      if (current.trim().length > 0) {
+        lines.push(current.trim());
+      }
+      return lines;
+    };
+
+    let frontLines = splitLyrics(cleanedLyrics);
+    let backLines = splitLyrics(translatedLyrics);
 
     // Helper: Merge isolated punctuation segments throughout the array.
     const mergeIsolatedSegments = (lines, isolatedChars) => {
