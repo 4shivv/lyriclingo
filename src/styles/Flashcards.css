@@ -93,13 +93,13 @@
 
 /* Front Side */
 .flashcard-front {
-  background: #2a2d3a;
+  background: #4a4e5d;
   color: white;
 }
 
 /* Back Side */
 .flashcard-back {
-  background: #3c3f50;
+  background: #5a5e6b;
   color: white;
   transform: rotateY(180deg);
 }
