@@ -15,13 +15,13 @@ button {
   
   /* Log Song Button */
   .log-song-button {
-    /* background: #1DB954; */
+    background: transparent;
     color: white;
     margin-bottom: 20px;
   }
   
   .log-song-button:hover {
-    background: #1aa34a;
+    background: rgba(255, 255, 255, 0.1);
     transform: scale(1.05);
   }
   

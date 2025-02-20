@@ -131,8 +131,8 @@
 
 /* Log Current Song Button */
 .log-button-wrapper .log-song-button {
-  background: #1DB954; /* Main background color */
-  color: white;
+  background: transparent; /* Make background transparent */
+  color: white; /* Text color */
   border: 2px solid transparent; /* Transparent border for hover effect */
   padding: 12px 20px; /* Increased padding for better touch targets */
   font-size: 1rem;
@@ -150,7 +150,7 @@
 }
 
 .log-button-wrapper .log-song-button:hover {
-  background: #1aa34a; /* Darker shade on hover */
+  background: rgba(255, 255, 255, 0.1); /* Subtle background on hover */
   transform: scale(1.05); /* Slightly enlarge on hover */
   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3); /* Enhanced shadow on hover */
   border: 2px solid #1DB954; /* Show border on hover */
