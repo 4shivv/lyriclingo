@@ -117,12 +117,13 @@
   background: #1DB954;
   color: white;
   border: none;
-  padding: 12px 20px; /* Increased padding for better touch targets */
+  padding: 12px 24px; /* Increased padding for uniform size */
   font-size: 1.2rem;
   border-radius: 8px;
   cursor: pointer;
   transition: background 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease; /* Added box-shadow transition */
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Added shadow for depth */
+  min-width: 120px; /* Ensures buttons are the same width */
 }
 
 .nav-button:hover {
