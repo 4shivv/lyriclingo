@@ -100,7 +100,6 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn }) {
         <h1 className="flashcards-title">
           Flashcards for {selectedSong ? selectedSong.song : "Unknown Song"}
         </h1>
-        <p className="flashcards-subtitle">Click the card to flip 🔄</p>
 
         {/* Log Current Song Button Wrapper */}
         {isLoggedIn && (
