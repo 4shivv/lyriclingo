@@ -87,11 +87,6 @@ function History({ setSelectedSong }) {
     navigate("/flashcards");
   };
 
-  // When loading, render nothing (spinner removed)
-  if (loading) {
-    return null;
-  }
-
   return (
     <div className="history-container">
       <motion.h1 
