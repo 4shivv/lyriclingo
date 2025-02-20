@@ -130,11 +130,11 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn }) {
 
         <div className="flashcard-controls">
           <button className="nav-button" onClick={() => setCurrentIndex((prev) => (prev === 0 ? flashcards.length - 1 : prev - 1))}>
-            Previous
+            &#8592; {/* Left Arrow */}
           </button>
           <span>{currentIndex + 1} / {flashcards.length}</span>
           <button className="nav-button" onClick={() => setCurrentIndex((prev) => (prev + 1) % flashcards.length)}>
-            Next
+            &#8594; {/* Right Arrow */}
           </button>
         </div>
 
