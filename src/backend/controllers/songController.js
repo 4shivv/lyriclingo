@@ -87,7 +87,7 @@ const clearHistory = async (req, res) => {
 const getFlashcardsForSong = async (req, res) => {
   try {
     const songTitle = req.query.song;
-    const sourceLanguage = req.query.lang || "es"; // Default to Spanish input
+    const sourceLanguage = req.query.lang || "es";
     const cacheKey = `flashcards:${songTitle}`;
 
     // Check Redis cache first
@@ -133,42 +133,35 @@ const getFlashcardsForSong = async (req, res) => {
     }
     console.log("🔍 Raw Lyrics Received:", data.lyrics);
 
-    // 1️⃣ Clean the lyrics
+    // Clean the lyrics and split into lines first
     let cleanedLyrics = data.lyrics
       .replace(/\[.*?\]/g, "")
       .replace(/\s+/g, " ")
       .trim();
 
-    // 2️⃣ Translate the full lyrics as a single block
-    let translatedResult = await translateBatch([cleanedLyrics], sourceLanguage);
-    let translatedLyrics = translatedResult[0] || "Translation unavailable";
-
-    // Custom function to split text without splitting inside parentheses.
+    // Split lyrics into lines before translation
     const splitLyrics = (text) => {
       const lines = [];
       let current = "";
       let parenDepth = 0;
+      
       for (let i = 0; i < text.length; i++) {
         const char = text[i];
-        if (char === "(") {
-          parenDepth++;
-        } else if (char === ")") {
+        if (char === "(") parenDepth++;
+        else if (char === ")") {
           if (parenDepth > 0) parenDepth--;
         }
+        
         if (/\s/.test(char)) {
-          // Only split if not inside parentheses AND the next character is uppercase.
           if (parenDepth === 0 && i + 1 < text.length && /[\p{Lu}]/u.test(text[i + 1])) {
             if (current.trim().length > 0) {
               lines.push(current.trim());
             }
             current = "";
             continue;
-          } else {
-            current += char;
           }
-        } else {
-          current += char;
         }
+        current += char;
       }
       if (current.trim().length > 0) {
         lines.push(current.trim());
@@ -176,35 +169,21 @@ const getFlashcardsForSong = async (req, res) => {
       return lines;
     };
 
+    // Get front lines
     let frontLines = splitLyrics(cleanedLyrics);
-    let backLines = splitLyrics(translatedLyrics);
 
-    // Helper: Merge isolated punctuation segments throughout the array.
-    const mergeIsolatedSegments = (lines, isolatedChars) => {
-      const merged = [];
-      let i = 0;
-      while (i < lines.length) {
-        let current = lines[i].trim();
-        if (isolatedChars.includes(current) && i + 1 < lines.length) {
-          let next = lines[i + 1].trim();
-          merged.push(current + next);
-          i += 2;
-        } else {
-          merged.push(current);
-          i++;
-        }
-      }
-      return merged;
-    };
+    // Join lines with a special delimiter that won't appear in normal text
+    const DELIMITER = "|||";
+    const textToTranslate = frontLines.join(DELIMITER);
 
-    const isolatedPunctuations = ["(", "¿", "¡"];
-    frontLines = mergeIsolatedSegments(frontLines, isolatedPunctuations);
-    backLines = mergeIsolatedSegments(backLines, isolatedPunctuations);
+    // Translate the entire text at once
+    const translatedResult = await translateBatch([textToTranslate], sourceLanguage);
+    const translatedText = translatedResult[0] || "Translation unavailable";
 
-    console.log(`🔹 After merging, Original Lyrics segments: ${frontLines.length}`);
-    console.log(`🔹 After merging, Translated Lyrics segments: ${backLines.length}`);
+    // Split the translated text back into lines using the same delimiter
+    let backLines = translatedText.split(DELIMITER);
 
-    // 4️⃣ Equalize segment counts if needed.
+    // Ensure arrays have the same length
     while (backLines.length < frontLines.length) {
       backLines.push("Translation unavailable");
     }
@@ -212,15 +191,13 @@ const getFlashcardsForSong = async (req, res) => {
       backLines.pop();
     }
 
-    // 5️⃣ Generate flashcards.
+    // Create flashcards
     let flashcards = frontLines.map((line, index) => ({
       front: line,
-      back: backLines[index] || "Translation unavailable",
+      back: backLines[index].trim(),
     }));
 
-    console.log(`✅ Generated ${flashcards.length} flashcards for: ${songTitle}`);
-
-    // 6️⃣ Cache the flashcards in Redis for 24 hours.
+    // Cache the flashcards
     await redis.setex(cacheKey, 86400, JSON.stringify(flashcards));
 
     res.json(flashcards);
