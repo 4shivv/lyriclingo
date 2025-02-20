@@ -150,10 +150,10 @@
 }
 
 .log-button-wrapper .log-song-button:hover {
-  background: rgba(231, 181, 57, 0.4); /* Subtle background on hover */
+  background: rgba(231, 181, 57, 0.4); /* Fill with a similar color to flashcard button */
   transform: scale(1.05); /* Slightly enlarge on hover */
   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3); /* Enhanced shadow on hover */
-  /* No change to border color */
+  border: 2px solid white; /* Keep the border color the same */
 }
 
 /* Loading State */
