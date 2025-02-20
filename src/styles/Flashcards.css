@@ -63,12 +63,12 @@
   transition: transform 0.6s;
   cursor: pointer;
   background: #222;
-  border-radius: 12px;
+  border-radius: 8px;
   box-shadow: none; /* 0px 4px 10px rgba(0, 0, 0, 0.3) */
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 20px;
+  padding: 8px;
 }
 /* hi */
 .flashcard.flipped {
