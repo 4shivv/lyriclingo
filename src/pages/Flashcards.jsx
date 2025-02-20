@@ -109,13 +109,6 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn }) {
           </button>
         )}
 
-        {currentSong && (
-          <div>
-            <h2>Current Song</h2>
-            <p>{currentSong.song} by {currentSong.artist}</p>
-          </div>
-        )}
-
         <div className="flashcard-wrapper">
           <div className="flashcard-container">
             {flashcards.length > 0 ? (
