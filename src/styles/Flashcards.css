@@ -93,13 +93,13 @@
 
 /* Front Side */
 .flashcard-front {
-  background: linear-gradient(to bottom right, rgba(231, 181, 57, 0.4), rgba(231, 181, 57, 0.2)); /* Gradient effect */
+  background: linear-gradient(to bottom right, rgba(231, 181, 57, 0.5), rgba(231, 181, 57, 0.2)); /* Gradient effect */
   color: #e0e0e0; /* Light gray text for contrast */
 }
 
 /* Back Side */
 .flashcard-back {
-  background: linear-gradient(to bottom right, rgba(231, 181, 57, 0.5), rgba(231, 181, 57, 0.3)); /* Gradient effect */
+  background: linear-gradient(to bottom right, rgba(231, 181, 57, 0.6), rgba(231, 181, 57, 0.3)); /* Gradient effect */
   color: #e0e0e0; /* Light gray text for contrast */
   transform: rotateY(180deg);
 }
