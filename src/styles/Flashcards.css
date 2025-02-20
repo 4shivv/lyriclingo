@@ -130,7 +130,7 @@
 }
 
 /* Log Current Song Button */
-.log-song-button {
+.log-button-wrapper .log-song-button {
   background: #1DB954; /* Main background color */
   color: white;
   border: 2px solid transparent; /* Transparent border for hover effect */
@@ -149,7 +149,7 @@
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Added shadow for depth */
 }
 
-.log-song-button:hover {
+.log-button-wrapper .log-song-button:hover {
   background: #1aa34a; /* Darker shade on hover */
   transform: scale(1.05); /* Slightly enlarge on hover */
   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3); /* Enhanced shadow on hover */
