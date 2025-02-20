@@ -181,7 +181,7 @@ const getFlashcardsForSong = async (req, res) => {
     const translatedText = translatedResult[0] || "Translation unavailable";
 
     // Split the translated text back into lines using the same delimiter
-    let backLines = translatedText.split(DELIMITER);
+    let backLines = translatedText.split(DELIMITER).map(line => line.trim());
 
     // Ensure arrays have the same length
     while (backLines.length < frontLines.length) {
@@ -194,7 +194,7 @@ const getFlashcardsForSong = async (req, res) => {
     // Create flashcards
     let flashcards = frontLines.map((line, index) => ({
       front: line,
-      back: backLines[index].trim(),
+      back: backLines[index],
     }));
 
     // Cache the flashcards
