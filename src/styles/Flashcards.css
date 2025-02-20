@@ -62,7 +62,7 @@
   transform-style: preserve-3d;
   transition: transform 0.6s;
   cursor: pointer;
-  background: #222;
+  background: none; /* #222; */
   border-radius: 8px;
   box-shadow: none; /* 0px 4px 10px rgba(0, 0, 0, 0.3) */
   display: flex;
