@@ -60,7 +60,13 @@ const scrapeLyrics = async (lyricsUrl) => {
             lyrics += $(element).text() + "\n";
         });
 
-        return lyrics.trim();
+        // Remove tags like [Chorus], [Intro], etc.
+        lyrics = lyrics.replace(/\[.*?\]/g, "").trim();
+
+        // Ensure clean line breaks
+        lyrics = lyrics.replace(/\n\s*\n/g, "\n\n");
+
+        return lyrics;
     } catch (error) {
         console.error("❌ Error scraping lyrics:", error.message);
         return null;
