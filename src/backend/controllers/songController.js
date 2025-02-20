@@ -144,7 +144,7 @@ const getFlashcardsForSong = async (req, res) => {
     let translatedLyrics = translatedResult[0] || "Translation unavailable";
 
     // 3️⃣ Split both original and translated texts using your regex.
-    // Updated regex: do not split when the whitespace is preceded by an opening parenthesis.
+    // Updated split regex: do not split if the whitespace is preceded by "("
     const splitRegex = /(?<!\()\s+(?=[\p{Lu}])/u;
     let frontLines = cleanedLyrics.split(splitRegex).filter(line => line.trim().length > 0);
     let backLines = translatedLyrics.split(splitRegex).filter(line => line.trim().length > 0);

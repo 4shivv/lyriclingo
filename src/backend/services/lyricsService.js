@@ -63,8 +63,8 @@ const scrapeLyrics = async (lyricsUrl) => {
         // Remove tags like [Chorus], [Intro], etc.
         lyrics = lyrics.replace(/\[.*?\]/g, "").trim();
 
-        // Split lines based on capital letters, keeping capitalization in parentheses
-        const splitRegex = /(?<=\w[.!?])\s+|(?<!\s)(?=[A-Z])/g;
+        // Updated split regex: add a negative lookbehind to prevent splits when the uppercase letter is preceded by "("
+        const splitRegex = /(?<=\w[.!?])\s+|(?<!(?:\(|\s))(?=[A-Z])/g;
         lyrics = lyrics.split(splitRegex).map(line => line.trim()).join("\n");
 
         // Ensure clean line breaks
