@@ -131,7 +131,7 @@
 
 /* Log Current Song Button */
 .log-button-wrapper .log-song-button {
-  background: rgba(0, 0, 0, 0.5); /* Dark background with opacity */
+  background: transparent; /* Dark background with opacity */
   color: white; /* Text color */
   border: 2px solid white; /* White border */
   padding: 12px 20px; /* Increased padding for better touch targets */
