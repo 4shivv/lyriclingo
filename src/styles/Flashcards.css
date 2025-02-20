@@ -93,13 +93,13 @@
 
 /* Front Side */
 .flashcard-front {
-  background: #4a4e5d;
+  background: #2a3b2d; /* Darker green shade */
   color: white;
 }
 
 /* Back Side */
 .flashcard-back {
-  background: #5a5e6b;
+  background: #3b4c3d; /* Slightly lighter green for contrast */
   color: white;
   transform: rotateY(180deg);
 }
