@@ -113,10 +113,6 @@ const getFlashcardsForSong = async (req, res) => {
     }
     const data = await response.json();
 
-    if (!data.lyrics || data.lyrics.trim().length === 0) {
-      return res.status(500).json({ error: "Failed to fetch lyrics from Genius" });
-    }
-
     let cleanedLyrics = data.lyrics.replace(/\[.*?\]/g, "").replace(/\s+/g, " ").trim();
 
     let translatedResult = await translateBatch([cleanedLyrics], sourceLanguage);
