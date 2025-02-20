@@ -138,7 +138,7 @@
   font-size: 1rem;
   border-radius: 8px; /* Rounded corners */
   cursor: pointer;
-  transition: background 0.3s ease, transform 0.2s ease; /* Adjusted transition */
+  transition: transform 0.2s ease, background 0.3s ease; /* Adjusted transition */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -150,8 +150,8 @@
 }
 
 .log-button-wrapper .log-song-button:hover {
-  background: rgba(231, 181, 57, 0.4); /* Fill with a similar color to flashcard button */
-  transform: scale(1.05); /* Slightly enlarge on hover */
+  transform: scale(1.1); /* Slightly enlarge on hover */
+  background: rgba(255, 255, 255, 0.1); /* Add a subtle background on hover */
   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3); /* Enhanced shadow on hover */
   border: 2px solid white; /* Keep the border color the same */
 }
