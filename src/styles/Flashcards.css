@@ -138,7 +138,7 @@
   font-size: 1rem;
   border-radius: 8px; /* Rounded corners */
   cursor: pointer;
-  transition: background 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease; /* Added box-shadow transition */
+  transition: background 0.3s ease, transform 0.2s ease; /* Adjusted transition */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -150,10 +150,10 @@
 }
 
 .log-button-wrapper .log-song-button:hover {
-  background: linear-gradient(to bottom right, rgba(231, 181, 57, 0.6), rgba(231, 181, 57, 0.4)); /* Gradient effect on hover */
+  background: rgba(231, 181, 57, 0.4); /* Subtle background on hover */
   transform: scale(1.05); /* Slightly enlarge on hover */
   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3); /* Enhanced shadow on hover */
-  border: 2px solid #1DB954; /* Show green border on hover */
+  /* No change to border color */
 }
 
 /* Loading State */
