@@ -193,8 +193,8 @@ const getFlashcardsForSong = async (req, res) => {
 
     // Create flashcards
     let flashcards = frontLines.map((line, index) => ({
-      front: line,
-      back: backLines[index].replace(new RegExp(DELIMITER, 'g'), '').trim(),
+      front: line.replace(new RegExp(`^${DELIMITER}|${DELIMITER}$`, 'g'), '').trim(),
+      back: backLines[index].replace(new RegExp(`^${DELIMITER}|${DELIMITER}$`, 'g'), '').trim(),
     }));
 
     // Cache the flashcards
