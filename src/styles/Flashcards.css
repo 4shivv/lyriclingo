@@ -26,6 +26,8 @@
   padding: 50px;
   max-width: 600px;
   margin: auto;
+  transform: translateY(50px) !important;
+
 }
 
 /* Title and Subtitlee */
