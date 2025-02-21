@@ -149,6 +149,7 @@
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Added shadow for depth */
 }
 
+
 .log-button-wrapper .log-song-button:hover {
   transform: scale(1.1); /* Slightly enlarge on hover */
   background: rgba(255, 255, 255, 0.1); /* Add a subtle background on hover */
