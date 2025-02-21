@@ -50,6 +50,7 @@ function Toast({ message, type = "error", onClose, duration = 3000 }) {
             color: "white",
             padding: "12px 16px",
             borderRadius: "8px",
+            border: "1px solid rgba(255,255,255,0.2)",
             zIndex: 10000,
             display: "flex",
             alignItems: "center",
@@ -64,11 +65,14 @@ function Toast({ message, type = "error", onClose, duration = 3000 }) {
               background: "transparent",
               border: "none",
               color: "white",
-              fontSize: "1rem",
+              fontSize: "1.2rem",
               cursor: "pointer",
+              padding: "0 4px",
+              lineHeight: "1",
             }}
+            aria-label="Close"
           >
-            &times;
+            &#10005;
           </button>
         </motion.div>
       )}
