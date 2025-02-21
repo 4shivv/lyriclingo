@@ -6,10 +6,6 @@ function Home() {
   // Read the backend URL from Vite's environment variables, falling back to localhost if not set.
   const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:5001";
 
-  const handleLogin = () => {
-    window.location.href = `${backendUrl}/api/spotify/login`;
-  };
-
   return (
     <div className="home-container">
       <div className="home-overlay">
@@ -51,19 +47,7 @@ function Home() {
           >
             Connect your Spotify account to discover, translate, and create flashcards from song lyrics.
           </motion.p>
-          
-          {/* ✅ Connect Button Works Like Navbar Login */}
-          <motion.button 
-            className="spotify-connect-button"
-            onClick={handleLogin}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.8 }}
-          >
-            Connect to Spotify
-          </motion.button>
+          {/* Connect button removed */}
         </motion.div>
       </div>
     </div>
