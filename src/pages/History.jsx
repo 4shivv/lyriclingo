@@ -81,7 +81,7 @@ function History({ setSelectedSong }) {
     }
   };
 
-  // ✅ Navigate to flashcards for selected song
+  // Navigate to flashcards for selected song
   const handleSongClick = (song) => {
     setSelectedSong(song);
     navigate("/flashcards");
