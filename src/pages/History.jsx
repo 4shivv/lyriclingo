@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom"; // Import navigation
 import { motion, AnimatePresence } from "framer-motion";
 import Toast from "../components/Toast";
-import LoadingSpinner from "../components/LoadingSpinner";
+import LoadingSpinner from "../components/LoadingSpinner"; // Import spinner for clear history
 import "../styles/History.css";
 
 // Use backendUrl from environment variable
@@ -11,16 +11,18 @@ const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:5001";
 function History({ setSelectedSong }) {
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [clearing, setClearing] = useState(false); // New state for clear history action
+  const [clearLoading, setClearLoading] = useState(false); // New state for clear history spinner
   const [toast, setToast] = useState({ show: false, message: "", type: "error" });
   const navigate = useNavigate(); // Initialize navigation
 
+  // Fetch history from API
   const fetchHistory = async () => {
     setLoading(true);
     try {
       const accessToken = localStorage.getItem("spotify_access_token");
-      // Append a timestamp to bust cache
-      const res = await fetch(`${backendUrl}/api/songs/history?accessToken=${accessToken}&t=${Date.now()}`);
+      const res = await fetch(
+        `${backendUrl}/api/songs/history?accessToken=${accessToken}&t=${Date.now()}`
+      );
       const data = await res.json();
       setHistory(data);
     } catch (error) {
@@ -35,9 +37,9 @@ function History({ setSelectedSong }) {
     fetchHistory();
   }, []);
 
+  // Clear history without confirmation and with spinner
   const clearHistory = async () => {
-    if (!window.confirm("Are you sure you want to clear your entire history?")) return;
-    setClearing(true);
+    setClearLoading(true);
     try {
       const accessToken = localStorage.getItem("spotify_access_token");
       await fetch(`${backendUrl}/api/songs/clear?accessToken=${accessToken}`, {
@@ -50,10 +52,11 @@ function History({ setSelectedSong }) {
       console.error("Error clearing history:", error);
       setToast({ show: true, message: "Error clearing history.", type: "error" });
     } finally {
-      setClearing(false);
+      setClearLoading(false);
     }
   };
 
+  // Navigate to flashcards for selected song
   const handleSongClick = (song) => {
     setSelectedSong(song);
     navigate("/flashcards");
@@ -84,7 +87,7 @@ function History({ setSelectedSong }) {
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
       >
-        {clearing ? <LoadingSpinner size={20} color="#fff" /> : "🗑 Clear History"}
+        {clearLoading ? <LoadingSpinner size={20} color="#fff" /> : "🗑 Clear History"}
       </motion.button>
 
       <motion.div className="history-list">
