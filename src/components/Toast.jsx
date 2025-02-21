@@ -51,3 +51,5 @@ function Toast({ message, type = "error", onClose, duration = 3000 }) {
 }
 
 export default Toast; 
+
+/* final */
