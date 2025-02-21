@@ -26,7 +26,7 @@
   padding: 80px; /* Increased top padding */
   max-width: 800px; /* Increased max-width for larger content */
   margin: auto;
-  transform: translateY(100px) !important;
+  transform: translateY(85px) !important;
 }
 
 /* Title and Subtitle */
