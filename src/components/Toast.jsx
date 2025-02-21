@@ -1,55 +1,67 @@
 import React, { useEffect } from "react";
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
+
+const toastVariants = {
+  initial: { opacity: 0, y: 50 },
+  animate: { opacity: 1, y: 0 },
+  exit: { opacity: 0, y: 50 },
+};
 
 function Toast({ message, type = "error", onClose, duration = 3000 }) {
   useEffect(() => {
+    if (!message) return;
     const timer = setTimeout(() => {
       onClose();
     }, duration);
+    return () => clearTimeout(timer);
+  }, [message, duration, onClose]);
 
-    return () => clearTimeout(timer); // Cleanup the timer on unmount
-  }, [duration, onClose]);
+  if (!message) return null;
 
-  return (
+  // Use background color based on toast type
+  const backgroundColor = type === "error" ? "#e74c3c" : "#1DB954";
+
+  return createPortal(
     <AnimatePresence>
-      {message && (
-        <motion.div
-          initial={{ opacity: 0, y: 50 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: 50 }}
+      <motion.div
+        variants={toastVariants}
+        initial="initial"
+        animate="animate"
+        exit="exit"
+        transition={{ duration: 0.3 }}
+        style={{
+          position: "fixed",
+          bottom: "20px",
+          right: "20px",
+          background: backgroundColor,
+          color: "white",
+          padding: "16px 24px",
+          borderRadius: "12px",
+          zIndex: 10000,
+          display: "flex",
+          alignItems: "center",
+          gap: "12px",
+          boxShadow: "0 4px 12px rgba(0, 0, 0, 0.3)",
+        }}
+      >
+        <span style={{ fontSize: "1rem" }}>{message}</span>
+        <button
+          onClick={onClose}
           style={{
-            position: "fixed",
-            bottom: "20px",
-            right: "20px",
-            background: type === "error" ? "#e74c3c" : "#1DB954",
+            background: "transparent",
+            border: "none",
             color: "white",
-            padding: "12px 24px",
-            borderRadius: "8px",
-            zIndex: 1000,
-            display: "flex",
-            alignItems: "center",
-            gap: "8px"
+            fontSize: "1.2rem",
+            cursor: "pointer",
           }}
         >
-          <span>{message}</span>
-          <button 
-            onClick={onClose}
-            style={{ 
-              background: "none", 
-              border: "none", 
-              color: "white",
-              cursor: "pointer",
-              padding: "4px"
-            }}
-          >
-            ✕
-          </button>
-        </motion.div>
-      )}
-    </AnimatePresence>
+          &times;
+        </button>
+      </motion.div>
+    </AnimatePresence>,
+    document.body
   );
 }
 
-export default Toast; 
-
-/* final */
+export default Toast;
