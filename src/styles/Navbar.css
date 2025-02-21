@@ -232,3 +232,16 @@
       display: none;
     }
   }
+
+.spotify-icon {
+  height: 20px;
+  width: auto;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+
+.desktop-menu a.active {
+  background: rgba(255, 255, 255, 0.2);
+  padding: 8px 12px;
+  border-radius: 8px;
+}
