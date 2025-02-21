@@ -7,7 +7,7 @@
 }
 
 .history-content {
-  transform: translateY(50px); /* Shift content downward; adjust as needed */
+  transform: translateY(75px); /* Shift content downward; adjust as needed */
 }
 
 /* Overlay to improve text contrast on the history page */

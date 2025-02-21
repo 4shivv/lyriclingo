@@ -73,7 +73,6 @@ function History({ setSelectedSong }) {
         >
           Translation History
         </motion.h1>
-        
         <motion.p 
           className="history-subtitle"
           initial={{ opacity: 0 }}
