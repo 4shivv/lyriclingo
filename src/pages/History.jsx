@@ -64,75 +64,77 @@ function History({ setSelectedSong }) {
 
   return (
     <div className="history-container">
-      <motion.h1 
-        className="history-title"
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-      >
-        Translation History
-      </motion.h1>
-      
-      <motion.p 
-        className="history-subtitle"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.2 }}
-      >
-        View your previously translated songs.
-      </motion.p>
+      {/* New content wrapper with downward shift */}
+      <div className="history-content">
+        <motion.h1 
+          className="history-title"
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+        >
+          Translation History
+        </motion.h1>
+        
+        <motion.p 
+          className="history-subtitle"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.2 }}
+        >
+          View your previously translated songs.
+        </motion.p>
 
-      <motion.button 
-        className="clear-history-button"
-        onClick={clearHistory}
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-      >
-        {clearLoading ? <LoadingSpinner size={20} color="#fff" /> : "🗑 Clear History"}
-      </motion.button>
+        <motion.button 
+          className="clear-history-button"
+          onClick={clearHistory}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+        >
+          {clearLoading ? <LoadingSpinner size={20} color="#fff" /> : "🗑 Clear History"}
+        </motion.button>
 
-      <motion.div className="history-list">
-        <AnimatePresence>
-          {history.length > 0 ? (
-            history.map((entry) => (
-              <motion.div
-                key={entry._id}
-                className="history-item"
-                onClick={() => handleSongClick(entry)}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 20 }}
-                transition={{ delay: 0.1 }}
-                whileHover={{ 
-                  scale: 1.02,
-                  x: 10,
-                  transition: { duration: 0.2 }
-                }}
+        <motion.div className="history-list">
+          <AnimatePresence>
+            {history.length > 0 ? (
+              history.map((entry) => (
+                <motion.div
+                  key={entry._id}
+                  className="history-item"
+                  onClick={() => handleSongClick(entry)}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: 20 }}
+                  transition={{ delay: 0.1 }}
+                  whileHover={{ 
+                    scale: 1.02,
+                    x: 10,
+                    transition: { duration: 0.2 }
+                  }}
+                >
+                  <div className="history-info">
+                    <span className="history-song">{entry.song}</span> - 
+                    <span className="history-artist"> {entry.artist}</span>
+                  </div>
+                  <div className="history-actions">
+                    <span className="history-date">
+                      {new Date(entry.timestamp).toLocaleDateString()}
+                    </span>
+                  </div>
+                </motion.div>
+              ))
+            ) : (
+              <motion.p 
+                className="history-empty"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.3 }}
               >
-                <div className="history-info">
-                  <span className="history-song">{entry.song}</span> - 
-                  <span className="history-artist"> {entry.artist}</span>
-                </div>
-                <div className="history-actions">
-                  <span className="history-date">
-                    {new Date(entry.timestamp).toLocaleDateString()}
-                  </span>
-                  {/* Delete button removed */}
-                </div>
-              </motion.div>
-            ))
-          ) : (
-            <motion.p 
-              className="history-empty"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.3 }}
-            >
-              No songs logged yet.
-            </motion.p>
-          )}
-        </AnimatePresence>
-      </motion.div>
-      <Toast message={toast.message} type={toast.type} onClose={() => setToast({ ...toast, show: false })} />
+                No songs logged yet.
+              </motion.p>
+            )}
+          </AnimatePresence>
+        </motion.div>
+        <Toast message={toast.message} type={toast.type} onClose={() => setToast({ ...toast, show: false })} />
+      </div>
     </div>
   );
 }

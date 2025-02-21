@@ -6,6 +6,10 @@
   background: linear-gradient(to bottom right, #334E47, #1a1b24); /* Updated gradient background */
 }
 
+.history-content {
+  transform: translateY(50px); /* Shift content downward; adjust as needed */
+}
+
 /* Overlay to improve text contrast on the history page */
 .history-container::after {
   content: "";
