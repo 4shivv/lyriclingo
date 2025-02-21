@@ -61,10 +61,10 @@ function Home() {
             animate="animate"
             transition={{ delay: 0.7, duration: 0.3 }}
           >
-            <a href="https://github.com/yourusername" target="_blank" rel="noopener noreferrer">
+            <a href="https://github.com/4shivv" target="_blank" rel="noopener noreferrer">
               <img src="/github-logo.png" alt="GitHub" className="social-icon" />
             </a>
-            <a href="https://linkedin.com/in/yourusername" target="_blank" rel="noopener noreferrer">
+            <a href="https://www.linkedin.com/in/shivaganesh-nagamandla" target="_blank" rel="noopener noreferrer">
               <img src="/linkedin-logo.png" alt="LinkedIn" className="social-icon" />
             </a>
           </motion.div>
