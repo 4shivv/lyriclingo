@@ -27,13 +27,13 @@
 
 /* Title and Subtitle */
 .history-title {
-  font-size: 3rem; /* Updated to match flashcards-title */
+  font-size: 3rem; /* Increased to match flashcards-title */
   font-weight: bold;
   color: white;
 }
 
 .history-subtitle {
-  font-size: 1.5rem; /* Updated to match flashcards-subtitle */
+  font-size: 1.5rem; /* Increased to match flashcards-subtitle */
   color: #cccccc;
   margin-bottom: 20px;
 }
@@ -48,23 +48,26 @@
   margin: 0 auto;
 }
 
-/* Individual History Item */
+/* Updated History Item styling to mimic the log-song button */
 .history-item {
   width: 100%;
   padding: 12px;
-  background: #2a2d3a;
+  background: transparent; /* Transparent background */
   color: white;
+  border: 2px solid white; /* White border */
   border-radius: 8px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  transition: background 0.3s ease, transform 0.2s ease;
+  transition: transform 0.2s ease, background 0.3s ease;
   cursor: pointer;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 .history-item:hover {
-  background: #3c3f50;
+  background: rgba(255, 255, 255, 0.1); /* Subtle white overlay */
   transform: scale(1.02);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
 }
 
 /* Song and Artist Info */
@@ -92,7 +95,7 @@
   color: #888888;
 }
 
-/* Updated Clear History Button to match flashcards/log-song buttons */
+/* Clear History Button - updated to match log-song button style */
 .clear-history-button {
   background: transparent;
   color: white;
@@ -118,7 +121,7 @@
   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
 }
 
-/* Updated Delete History Button */
+/* Delete History Button - updated styling */
 .delete-history-button {
   background: transparent;
   color: white;

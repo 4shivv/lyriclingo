@@ -13,7 +13,6 @@ function History({ setSelectedSong }) {
   const [toast, setToast] = useState({ show: false, message: "", type: "error" });
   const navigate = useNavigate(); // Initialize navigation
 
-  // Extracted fetchHistory as a reusable function
   const fetchHistory = async () => {
     setLoading(true);
     try {
@@ -21,7 +20,6 @@ function History({ setSelectedSong }) {
       // Append a timestamp to bust cache
       const res = await fetch(`${backendUrl}/api/songs/history?accessToken=${accessToken}&t=${Date.now()}`);
       const data = await res.json();
-      console.log("Fetched History:", data);
       setHistory(data);
     } catch (error) {
       console.error("Error fetching history:", error);
@@ -31,12 +29,10 @@ function History({ setSelectedSong }) {
     }
   };
 
-  // Fetch history on component mount
   useEffect(() => {
     fetchHistory();
   }, []);
 
-  // Update clearHistory to add a confirmation prompt
   const clearHistory = async () => {
     if (!window.confirm("Are you sure you want to clear your entire history?")) {
       return;
@@ -49,7 +45,6 @@ function History({ setSelectedSong }) {
         headers: { "Content-Type": "application/json" }
       });
       setToast({ show: true, message: "History Cleared!", type: "success" });
-      // Re-fetch history to reflect deletion
       fetchHistory();
     } catch (error) {
       console.error("Error clearing history:", error);
@@ -59,21 +54,18 @@ function History({ setSelectedSong }) {
     }
   };
 
-  // Update handleDeleteEntry to re-fetch after deletion and add a header.
   const handleDeleteEntry = async (entry, e) => {
-    e.stopPropagation(); // Prevent triggering other click events
+    e.stopPropagation();
     if (!window.confirm(`Are you sure you want to delete "${entry.song}"?`)) {
       return;
     }
     try {
       const accessToken = localStorage.getItem("spotify_access_token");
-      // Include accessToken in the DELETE request and specify headers
       await fetch(`${backendUrl}/api/songs/delete/${entry._id}?accessToken=${accessToken}`, {
         method: "DELETE",
         headers: { "Content-Type": "application/json" }
       });
       setToast({ show: true, message: "Entry deleted!", type: "success" });
-      // Instead of manually filtering the local state, re-fetch from backend
       fetchHistory();
     } catch (error) {
       console.error("Error deleting entry:", error);
@@ -81,7 +73,6 @@ function History({ setSelectedSong }) {
     }
   };
 
-  // Navigate to flashcards for selected song
   const handleSongClick = (song) => {
     setSelectedSong(song);
     navigate("/flashcards");
