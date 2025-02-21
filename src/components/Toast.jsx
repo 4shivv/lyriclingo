@@ -3,15 +3,14 @@ import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 
 const toastVariants = {
-  initial: { opacity: 0, y: 50 },
+  initial: { opacity: 0, y: 40 },
   animate: { opacity: 1, y: 0 },
-  exit: { opacity: 0, y: 50 },
+  exit: { opacity: 0, y: 40 },
 };
 
 function Toast({ message, type = "error", onClose, duration = 3000 }) {
   const [isVisible, setIsVisible] = useState(true);
 
-  // Restart visibility when message changes
   useEffect(() => {
     setIsVisible(true);
     if (!message) return;
@@ -21,10 +20,8 @@ function Toast({ message, type = "error", onClose, duration = 3000 }) {
     return () => clearTimeout(timer);
   }, [message, duration]);
 
-  // When the exit animation is complete, call onClose
   useEffect(() => {
     if (!isVisible && message) {
-      // Allow a short delay for the exit animation (matches transition duration)
       const timer = setTimeout(() => {
         onClose();
       }, 300);
@@ -51,23 +48,23 @@ function Toast({ message, type = "error", onClose, duration = 3000 }) {
             right: "20px",
             background: backgroundColor,
             color: "white",
-            padding: "16px 24px",
-            borderRadius: "12px",
+            padding: "12px 16px",
+            borderRadius: "8px",
             zIndex: 10000,
             display: "flex",
             alignItems: "center",
-            gap: "12px",
-            boxShadow: "0 4px 12px rgba(0, 0, 0, 0.3)",
+            gap: "8px",
+            boxShadow: "0 2px 6px rgba(0, 0, 0, 0.25)",
           }}
         >
-          <span style={{ fontSize: "1rem" }}>{message}</span>
+          <span style={{ fontSize: "0.9rem" }}>{message}</span>
           <button
             onClick={() => setIsVisible(false)}
             style={{
               background: "transparent",
               border: "none",
               color: "white",
-              fontSize: "1.2rem",
+              fontSize: "1rem",
               cursor: "pointer",
             }}
           >
