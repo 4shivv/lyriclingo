@@ -6,6 +6,12 @@ function Home() {
   // Read the backend URL from Vite's environment variables, falling back to localhost if not set.
   const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:5001";
 
+  // Variants for the icons container
+  const iconVariants = {
+    initial: { opacity: 0, scale: 0.8 },
+    animate: { opacity: 1, scale: 1 }
+  };
+
   return (
     <div className="home-container">
       <div className="home-overlay">
@@ -47,7 +53,21 @@ function Home() {
           >
             Connect your Spotify account to discover, translate, and create flashcards from song lyrics.
           </motion.p>
-          {/* Connect button removed */}
+          {/* Social Links Section */}
+          <motion.div
+            className="social-links"
+            variants={iconVariants}
+            initial="initial"
+            animate="animate"
+            transition={{ delay: 0.7, duration: 0.3 }}
+          >
+            <a href="https://github.com/yourusername" target="_blank" rel="noopener noreferrer">
+              <img src="/github-logo.png" alt="GitHub" className="social-icon" />
+            </a>
+            <a href="https://linkedin.com/in/yourusername" target="_blank" rel="noopener noreferrer">
+              <img src="/linkedin-logo.png" alt="LinkedIn" className="social-icon" />
+            </a>
+          </motion.div>
         </motion.div>
       </div>
     </div>

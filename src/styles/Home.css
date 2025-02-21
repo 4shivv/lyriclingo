@@ -50,21 +50,23 @@
   margin: 20px 0;
 }
 
-/* ✅ Renamed class to match button in Home.jsx */
-.spotify-connect-button {
-  background-color: #1DB954;
-  color: white;
-  border: none;
-  padding: 14px 24px;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background 0.3s ease, transform 0.2s ease;
-  font-size: 1rem;
+/* Social Links Container */
+.social-links {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin-top: 20px;
 }
 
-.spotify-connect-button:hover {
-  background-color: #1aa34a;
-  transform: scale(1.05);
+/* Social Icons */
+.social-icon {
+  width: 40px;
+  height: 40px;
+  transition: transform 0.2s ease;
+}
+
+.social-icon:hover {
+  transform: scale(1.1);
 }
 
 @media (max-width: 768px) {
