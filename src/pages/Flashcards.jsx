@@ -4,9 +4,16 @@ import Toast from "../components/Toast";
 import LoadingSpinner from "../components/LoadingSpinner"; // ✅ Import LoadingSpinner for log feedback
 
 import { useNavigate } from "react-router-dom"; // ✅ Import navigation
+import { motion } from "framer-motion";
 
 // Use Vite's env variable for backend URL; fallback to localhost for development.
 const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:5001";
+
+// Variants for text and button animations (adjust durations as needed)
+const textVariants = {
+  initial: { opacity: 0, y: 20 },
+  animate: { opacity: 1, y: 0 }
+};
 
 function Flashcards({ selectedSong, setSelectedSong, isLoggedIn }) {
   const navigate = useNavigate(); // ✅ Initialize navigation
@@ -97,17 +104,30 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn }) {
   return (
     <div className="flashcards-container">
       <div className="flashcards-content">
-        <h1 className="flashcards-title">
+        {/* Animated Title */}
+        <motion.h1 
+          className="flashcards-title"
+          variants={textVariants}
+          initial="initial"
+          animate="animate"
+          transition={{ duration: 0.3 }}
+        >
           Flashcards for {selectedSong ? selectedSong.song : "Unknown Song"}
-        </h1>
+        </motion.h1>
 
-        {/* Log Current Song Button Wrapper */}
+        {/* Animated Log Current Song Button Wrapper */}
         {isLoggedIn && (
-          <div className="log-button-wrapper"> {/* Added wrapper for spacing */}
+          <motion.div 
+            className="log-button-wrapper"
+            variants={textVariants}
+            initial="initial"
+            animate="animate"
+            transition={{ duration: 0.3, delay: 0.1 }}
+          >
             <button className="log-song-button" onClick={logCurrentSong} disabled={logging}>
               {logging ? <LoadingSpinner size={20} color="#fff" /> : "🎵 Log Current Song"}
             </button>
-          </div>
+          </motion.div>
         )}
 
         <div className="flashcard-wrapper">
@@ -127,7 +147,14 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn }) {
           </div>
         </div>
 
-        <div className="flashcard-controls">
+        {/* Animated Flashcard Controls */}
+        <motion.div 
+          className="flashcard-controls"
+          variants={textVariants}
+          initial="initial"
+          animate="animate"
+          transition={{ duration: 0.3, delay: 0.2 }}
+        >
           <button className="nav-button" onClick={() => setCurrentIndex((prev) => (prev === 0 ? flashcards.length - 1 : prev - 1))}>
             &#8592; {/* Left Arrow */}
           </button>
@@ -135,7 +162,7 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn }) {
           <button className="nav-button" onClick={() => setCurrentIndex((prev) => (prev + 1) % flashcards.length)}>
             &#8594; {/* Right Arrow */}
           </button>
-        </div>
+        </motion.div>
 
         <Toast message={toast.message} type={toast.type} onClose={() => setToast({ ...toast, show: false })} />
       </div>
