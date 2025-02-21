@@ -23,22 +23,21 @@
   position: relative;
   z-index: 2;
   text-align: center;
-  padding: 50px;
-  max-width: 600px;
+  padding: 80px; /* Increased top padding */
+  max-width: 800px; /* Increased max-width for larger content */
   margin: auto;
   transform: translateY(150px) !important;
-
 }
 
-/* Title and Subtitlee */
+/* Title and Subtitle */
 .flashcards-title {
-  font-size: 2rem;
+  font-size: 3rem; /* Increased from 2rem */
   font-weight: bold;
   color: white;
 }
 
 .flashcards-subtitle {
-  font-size: 1.2rem;
+  font-size: 1.5rem; /* Increased from 1.2rem */
   color: #cccccc;
   margin-bottom: 20px;
 }
@@ -72,7 +71,7 @@
   justify-content: center;
   padding: 8px;
 }
-/* hi */
+
 .flashcard.flipped {
   transform: rotateY(180deg);
 }
@@ -150,7 +149,6 @@
   margin-right: auto;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Added shadow for depth */
 }
-
 
 .log-button-wrapper .log-song-button:hover {
   transform: scale(1.1); /* Slightly enlarge on hover */
