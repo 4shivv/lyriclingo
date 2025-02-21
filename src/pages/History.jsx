@@ -13,11 +13,11 @@ function History({ setSelectedSong }) {
   const [toast, setToast] = useState({ show: false, message: "", type: "error" });
   const navigate = useNavigate(); // Initialize navigation
 
+  // Fetch history from API
   const fetchHistory = async () => {
     setLoading(true);
     try {
       const accessToken = localStorage.getItem("spotify_access_token");
-      // Append a timestamp to bust cache
       const res = await fetch(`${backendUrl}/api/songs/history?accessToken=${accessToken}&t=${Date.now()}`);
       const data = await res.json();
       setHistory(data);
@@ -33,10 +33,9 @@ function History({ setSelectedSong }) {
     fetchHistory();
   }, []);
 
+  // Clear history
   const clearHistory = async () => {
-    if (!window.confirm("Are you sure you want to clear your entire history?")) {
-      return;
-    }
+    if (!window.confirm("Are you sure you want to clear your entire history?")) return;
     setLoading(true);
     try {
       const accessToken = localStorage.getItem("spotify_access_token");
@@ -54,11 +53,10 @@ function History({ setSelectedSong }) {
     }
   };
 
+  // Delete a single entry
   const handleDeleteEntry = async (entry, e) => {
     e.stopPropagation();
-    if (!window.confirm(`Are you sure you want to delete "${entry.song}"?`)) {
-      return;
-    }
+    if (!window.confirm(`Are you sure you want to delete "${entry.song}"?`)) return;
     try {
       const accessToken = localStorage.getItem("spotify_access_token");
       await fetch(`${backendUrl}/api/songs/delete/${entry._id}?accessToken=${accessToken}`, {
@@ -73,6 +71,7 @@ function History({ setSelectedSong }) {
     }
   };
 
+  // Navigate to flashcards for selected song
   const handleSongClick = (song) => {
     setSelectedSong(song);
     navigate("/flashcards");

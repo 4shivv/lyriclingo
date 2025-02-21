@@ -59,7 +59,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  transition: transform 0.2s ease, background 0.3s ease;
+  transition: transform 0.2s ease, background 0.3s ease, box-shadow 0.3s ease;
   cursor: pointer;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
@@ -95,7 +95,7 @@
   color: #888888;
 }
 
-/* Clear History Button - updated to match log-song button style */
+/* Clear History Button updated to match log-song button style */
 .clear-history-button {
   background: transparent;
   color: white;
@@ -104,7 +104,7 @@
   font-size: 1rem;
   border-radius: 8px;
   cursor: pointer;
-  transition: transform 0.2s ease, background 0.3s ease;
+  transition: transform 0.2s ease, background 0.3s ease, box-shadow 0.3s ease;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -121,7 +121,7 @@
   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
 }
 
-/* Delete History Button - updated styling */
+/* Delete History Button updated styling */
 .delete-history-button {
   background: transparent;
   color: white;
