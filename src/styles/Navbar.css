@@ -114,68 +114,70 @@
     .mobile-menu-button {
       display: block;
     }
-
+  
+    /* Updated mobile menu: a small pop-up instead of full-screen */
     .menu {
-      display: none; 
+      display: none;
       position: fixed;
-      top: 0;
-      left: 0; 
-      width: 100%;
-      height: 50vh;
+      top: 60px; /* positions menu just below the navbar */
+      right: 20px; /* aligns the menu to the right; use 'left: 50%' and transform for center if preferred */
+      width: 80%;
+      max-width: 300px;
       background: 
-      linear-gradient(to bottom right, rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)),
-      linear-gradient(to bottom right, #334E47, #1a1b24);
+        linear-gradient(to bottom right, rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)),
+        linear-gradient(to bottom right, #334E47, #1a1b24);
       background-blend-mode: multiply;
-      padding: 80px 20px 20px;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
       flex-direction: column;
-      align-items: left;
-      gap: 25px;
+      align-items: center;
+      gap: 15px;
       opacity: 0;
       transform: translateY(-10px);
       transition: opacity 0.3s ease, transform 0.3s ease;
-      will-change: opacity, transform; /* Optimize for performance */
+      z-index: 1000;
     }
-
+  
     .menu.menu-open {
       display: flex;
       opacity: 1;
       transform: translateY(0);
     }
-
+  
     .menu a {
-      width: 80%;
+      width: 100%;
       text-align: center;
-      padding: 15px;
+      padding: 12px;
       font-size: 1.2rem;
       border-radius: 8px;
       transition: background 0.3s ease;
     }
-
+  
     .menu a:hover {
       background: rgba(255, 255, 255, 0.1);
     }
-
+  
     .auth-button {
-      width: 80%;
+      width: 100%;
       margin: 10px 0;
-      margin-left: 7%;
-      padding: 15px;
+      padding: 12px;
       font-size: 1.2rem;
     }
-
+  
     .logo-container {
       margin-left: 0;
       z-index: 2;
     }
-
+  
     .logo-image {
       height: 35px;
     }
-
+  
     .logo-text {
       font-size: 1.3rem;
     }
-  }
+  }  
 
   /* Animation for menu items */
   @keyframes slideIn {
