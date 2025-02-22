@@ -117,7 +117,6 @@
   
     /* Updated mobile menu: a small pop-up instead of full-screen */
     .menu {
-      display: none;
       position: fixed;
       top: 60px; /* positions menu just below the navbar */
       right: 20px; /* aligns the menu to the right; use 'left: 50%' and transform for center if preferred */
