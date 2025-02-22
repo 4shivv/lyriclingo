@@ -114,12 +114,13 @@
     .mobile-menu-button {
       display: block;
     }
-  
-    /* Updated mobile menu: a small pop-up instead of full-screen */
+    
+    /* Always rendered as flex */
     .menu {
+      display: flex; /* Always flex so it’s in the DOM */
       position: fixed;
-      top: 60px; /* positions menu just below the navbar */
-      right: 20px; /* aligns the menu to the right; use 'left: 50%' and transform for center if preferred */
+      top: 60px; /* just below navbar */
+      right: 20px;
       width: 80%;
       max-width: 300px;
       background: 
@@ -132,18 +133,24 @@
       flex-direction: column;
       align-items: center;
       gap: 15px;
+      
+      /* Hidden by default */
       opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
       transform: translateY(-10px);
-      transition: opacity 0.3s ease, transform 0.3s ease;
+      transition: opacity 0.3s ease, transform 0.3s ease, visibility 0.3s ease;
       z-index: 1000;
     }
-  
+    
+    /* When menu is open, make it visible */
     .menu.menu-open {
-      display: flex;
       opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
       transform: translateY(0);
     }
-  
+    
     .menu a {
       width: 100%;
       text-align: center;
@@ -151,32 +158,39 @@
       font-size: 1.2rem;
       border-radius: 8px;
       transition: background 0.3s ease;
+      /* Center text using flex */
+      display: flex;
+      justify-content: center;
+      align-items: center;
     }
-  
+    
     .menu a:hover {
       background: rgba(255, 255, 255, 0.1);
     }
-  
+    
     .auth-button {
       width: 100%;
       margin: 10px 0;
       padding: 12px;
       font-size: 1.2rem;
+      text-align: center;
+      display: flex;
+      justify-content: center;
     }
-  
+    
     .logo-container {
       margin-left: 0;
       z-index: 2;
     }
-  
+    
     .logo-image {
       height: 35px;
     }
-  
+    
     .logo-text {
       font-size: 1.3rem;
     }
-  }  
+  }   
 
   /* Animation for menu items */
   @keyframes slideIn {
