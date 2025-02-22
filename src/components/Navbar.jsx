@@ -111,7 +111,7 @@ function Navbar({ isLoggedIn, setIsLoggedIn }) {
                 style={{ "--item-index": 0 }}
                 aria-label="Login with Spotify"
               >
-                <img src="/Spotify_Primary_Logo_RGB_Green.png.png" alt="Spotify Icon" className="spotify-icon" />
+                <img src="/Spotify_Primary_Logo_RGB_Green.png" alt="Spotify Icon" className="spotify-icon" />
                 Login with Spotify
               </motion.button>
             )}
