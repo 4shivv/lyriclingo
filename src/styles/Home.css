@@ -40,21 +40,25 @@
   letter-spacing: 1px; /* Slight spacing for bold, gradient text */
 }
 
-/* Tagline with subtle text shadow */
 .home-tagline {
   font-size: 1.8rem;
-  font-weight: 500;
+  font-weight: 600;
   color: #f0f0f0;
   margin-bottom: 20px;
   text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+  
+  /* Add a subtle tinted glow that matches your gradient colors */
+  text-shadow: 0 0 6px rgba(236, 76, 60, 0.3); /* #e74c3c with reduced opacity */
 }
 
-/* Subtitle with subtle glow or emphasis */
 .home-subtitle {
   font-size: 1.5rem;
   margin: 10px 0;
-  text-shadow: 0 0 4px rgba(255, 255, 255, 0.2);
+  /* Outline or stroke in a color from the gradient */
+  -webkit-text-stroke: 0.5px #fcdc4d; /* Thin stroke in a lighter gradient color */
+  -webkit-text-fill-color: #ffffff;   /* Text remains white, stroke adds accent */
 }
+
 
 /* Description with slightly brighter color for readability */
 .home-description {
