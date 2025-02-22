@@ -34,6 +34,7 @@
   margin-bottom: 10px;
   /* Gradient text trick */
   background: linear-gradient(90deg, #fcdc4d 0%, #e74c3c 35%, #fcdc4d 65%);
+  background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   letter-spacing: 1px; /* Slight spacing for bold, gradient text */
