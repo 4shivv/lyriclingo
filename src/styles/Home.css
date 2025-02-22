@@ -12,7 +12,7 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.7);  /* Darker overlay for better contrast */
+  background: rgba(0, 0, 0, 0.7);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -27,27 +27,40 @@
   max-width: 600px;
 }
 
+/* HOME TITLE: Subtle gradient text + slight letter spacing */
 .home-title {
-  font-size: 3rem; /* Increased font size */
+  font-size: 3rem;
   font-weight: bold;
   margin-bottom: 10px;
+  letter-spacing: 1.5px;
+  background: linear-gradient(90deg, #ffffff, #cccccc);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0px 2px 4px rgba(0, 0, 0, 0.3);
 }
 
+/* HOME TAGLINE: Add a light text-shadow + color shift */
 .home-tagline {
-  font-size: 1.8rem; /* Increased font size */
+  font-size: 1.8rem;
   font-weight: 500;
   color: #f0f0f0;
   margin-bottom: 20px;
+  text-shadow: 0px 1px 3px rgba(0, 0, 0, 0.4);
 }
 
+/* HOME SUBTITLE: Crisp white with slight letter-spacing */
 .home-subtitle {
-  font-size: 1.5rem; /* Increased font size */
+  font-size: 1.4rem;
   margin: 10px 0;
+  color: #ffffff;
+  letter-spacing: 0.5px;
 }
 
+/* HOME DESCRIPTION: Subtle text shadow for emphasis */
 .home-description {
-  font-size: 1.2rem; /* Increased font size */
+  font-size: 1.2rem;
   margin: 20px 0;
+  text-shadow: 0px 1px 2px rgba(0, 0, 0, 0.4);
 }
 
 /* Social Links Container */
@@ -69,28 +82,32 @@
   transform: scale(1.1);
 }
 
+/* RESPONSIVENESS */
 @media (max-width: 768px) {
   .home-content {
-    width: 90%; 
+    width: 90%;
     padding: 10px; 
     box-sizing: border-box;
     margin: 0 auto;
-    margin-right: 8%; /* Adjust this value to move left */
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     text-align: center;
   }
+  
   .home-title {
     font-size: 2rem;
   }
+
   .home-tagline {
     font-size: 1.2rem;
   }
+
   .home-subtitle {
     font-size: 1rem;
   }
+
   .home-description {
     font-size: 0.9rem;
   }
