@@ -4,7 +4,6 @@ const DEEPL_API_KEY = process.env.DEEPL_API_KEY;
 
 /**
  * Comprehensive mapping of Spanish song contractions to their full forms
- * This handles the informal language and abbreviations common in lyrics
  */
 const SPANISH_CONTRACTIONS = {
     // Common verb contractions
@@ -90,8 +89,7 @@ const SPANISH_CONTRACTIONS = {
 };
 
 /**
- * Preprocesses Spanish text to expand contractions and normalize formatting
- * for more accurate translation
+ * Preprocesses Spanish text to expand contractions while preserving original formatting
  * 
  * @param {string} text - Spanish text to preprocess
  * @returns {string} - Preprocessed text ready for translation
@@ -131,34 +129,23 @@ const preprocessSpanishText = (text) => {
         return possibleExpansion ? possibleExpansion + ending : match;
     });
     
-    // Add a period at the end if missing punctuation to help translation accuracy
-    if (!/[.!?;,:]$/.test(processedText)) {
-        processedText += ".";
-    }
+    // NO PERIODS ADDED - preserve original formatting exactly
     
     return processedText;
 };
 
 /**
- * Post-processes translated text to fix common issues and ensure quality
+ * Post-processes translated text to fix common issues while maintaining original formatting
  * 
  * @param {string} translatedText - Raw translation from DeepL
- * @param {string} originalText - Original Spanish text
  * @returns {string} - Cleaned and improved translation
  */
-const postprocessTranslation = (translatedText, originalText) => {
+const postprocessTranslation = (translatedText) => {
     if (!translatedText) return "Translation unavailable";
     
     let processed = translatedText;
     
-    // Remove trailing period if we added one in preprocessing
-    if (processed.endsWith(".") && 
-        !/[.!?;,:]$/.test(originalText) && 
-        !/[.!?;,:]$/.test(originalText.slice(0, -1))) {
-        processed = processed.slice(0, -1);
-    }
-    
-    // Fix common DeepL translation artifacts
+    // Fix common DeepL translation artifacts without altering punctuation
     processed = processed
         .replace(/\|+/g, '') // Remove pipe characters
         .replace(/\s+/g, ' ') // Normalize whitespace
@@ -190,8 +177,6 @@ const postprocessTranslation = (translatedText, originalText) => {
 
 /**
  * Translates an array of text lines using DeepL API with enhanced Spanish preprocessing
- * Each array element is treated as a separate text to translate,
- * eliminating the need for delimiters
  * 
  * @param {Array} textArray - List of lines/texts to translate
  * @param {String} sourceLanguage - Language code (default: "es" for Spanish)
@@ -226,11 +211,9 @@ const translateBatch = async (textArray, sourceLanguage = "es") => {
             { headers: { "Content-Type": "application/x-www-form-urlencoded" } }
         );
 
-        // Process and postprocess translations
-        const translations = response.data.translations.map((t, index) => {
-            // Get the corresponding original text for context in postprocessing
-            const originalText = filteredArray[index] || "";
-            return postprocessTranslation(t.text, originalText);
+        // Process translations
+        const translations = response.data.translations.map(t => {
+            return postprocessTranslation(t.text);
         });
         
         // Reinsert empty strings to maintain alignment with original array
