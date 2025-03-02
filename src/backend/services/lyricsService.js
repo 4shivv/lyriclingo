@@ -2,45 +2,122 @@ const axios = require("axios");
 const cheerio = require("cheerio");
 
 const fetchLyricsUrl = async (song, artist) => {
-    // ✅ Normalize accents (e.g., "Qué" → "Que") for better matching
+    // Normalize accents for better matching
     const normalizedSong = song.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
     const normalizedArtist = artist.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 
-    // ✅ Encode search query properly
+    // Encode search query
     const searchQuery = encodeURIComponent(`${normalizedArtist} ${normalizedSong}`);
     const searchUrl = `https://genius.com/api/search?q=${searchQuery}`;
 
     try {
         const { data } = await axios.get(searchUrl);
-
-        // ✅ Format song title the way Genius does in URLs (replace spaces with dashes)
-        const formattedSongForUrl = normalizedSong
-            .toLowerCase()
-            .replace(/\s+/g, "-") // Replace spaces with dashes
-            .replace(/[^a-z0-9-]/g, ""); // Remove special characters
-
-        // 🔍 Find valid song that matches Genius URL formatting
-        const validHit = data.response.hits.find(hit => 
-            hit.type === "song" &&
-            !hit.result.url.includes("genius-english-translations") &&  // ❌ Exclude translations
-            !hit.result.url.includes("traduccion") &&
-            !hit.result.url.includes("deutsche-ubersetzungen") && // ❌ Exclude German translations
-            !hit.result.url.includes("traducción") &&
-            !hit.result.url.includes("portugues") && // ❌ Exclude Portuguese translations
-            !hit.result.url.includes("francais") &&  // ❌ Exclude French translations
-            !hit.result.url.includes("translation") &&
-            !hit.result.url.includes("turkce-ceviri") &&  // ❌ Exclude Turkish translations
-            hit.result.url.toLowerCase().includes(formattedSongForUrl) // ✅ Ensure correct song match in URL
-        );
-
-        if (!validHit) {
-            console.error(`❌ No valid Spanish lyrics found for: ${song} ${artist}`);
+        
+        if (!data.response.hits || data.response.hits.length === 0) {
+            console.error(`❌ No results found for: ${song} by ${artist}`);
             return null;
         }
 
-        console.log(`✅ Found Spanish Lyrics URL: ${validHit.result.url}`);
-        return validHit.result.url; // ✅ Returns correct Spanish lyrics URL
+        // Format song title for URL matching
+        const formattedSongForUrl = normalizedSong
+            .toLowerCase()
+            .replace(/\s+/g, "-")
+            .replace(/[^a-z0-9-]/g, "");
+            
+        // Format artist name for URL matching
+        const formattedArtistForUrl = normalizedArtist
+            .toLowerCase()
+            .replace(/\s+/g, "-")
+            .replace(/[^a-z0-9-]/g, "");
 
+        // Translation keyword patterns to detect in URLs
+        const translationPatterns = [
+            /translation/i,
+            /traduccion/i,
+            /traducción/i,
+            /ubersetzung/i,
+            /terjemahan/i,
+            /traduzione/i,
+            /vertaling/i,
+            /traduction/i,
+            /oversattelse/i,
+            /prijevod/i,
+            /oversættelse/i,
+            /prevod/i,
+            /perkthim/i,
+            /forditas/i,
+            /fordítás/i,
+            /tlumaczenie/i,
+            /tłumaczenie/i,
+            /tradução/i,
+            /perevod/i,
+            /çeviri/i,
+            /ceviri/i,
+            /turkce/i,
+            /türkçe/i,
+            /letra-de-.*?-en-/i, // Common pattern for translated lyrics
+            /-en-ingles/i,
+            /-en-espanol/i,
+            /-en-español/i,
+            /-in-english/i
+        ];
+
+        // Rank and sort hits by relevance
+        const rankedHits = data.response.hits
+            .filter(hit => hit.type === "song")
+            .map(hit => {
+                const url = hit.result.url.toLowerCase();
+                const urlPath = new URL(url).pathname;
+                
+                // Scoring system: Higher is better
+                let score = 0;
+                
+                // Basic match for both artist and song in URL path
+                if (urlPath.includes(formattedArtistForUrl) && urlPath.includes(formattedSongForUrl)) {
+                    score += 50;
+                }
+                
+                // URL contains song name formatted properly (highest priority)
+                if (urlPath.includes(formattedSongForUrl)) {
+                    score += 30;
+                }
+                
+                // URL contains artist name formatted properly
+                if (urlPath.includes(formattedArtistForUrl)) {
+                    score += 20;
+                }
+                
+                // Check for any translation pattern indicators (negative score)
+                for (const pattern of translationPatterns) {
+                    if (pattern.test(url)) {
+                        score -= 100; // Heavy penalty for translation indicators
+                        break;
+                    }
+                }
+                
+                // Genius annotation URLs are preferred
+                if (!url.includes("genius-annotated")) {
+                    score -= 5;
+                }
+                
+                // Shorter URLs likely indicate original content
+                score -= urlPath.split("/").length;
+                
+                return { hit, score };
+            })
+            .sort((a, b) => b.score - a.score); // Sort by descending score
+
+        // Check if we have any valid non-translation hits
+        if (rankedHits.length === 0) {
+            console.error(`❌ No valid hits found for: ${song} by ${artist}`);
+            return null;
+        }
+
+        // Log information about top hit
+        const bestHit = rankedHits[0].hit;
+        console.log(`✅ Found URL: ${bestHit.result.url} (Score: ${rankedHits[0].score})`);
+        
+        return bestHit.result.url;
     } catch (error) {
         console.error("❌ Error fetching lyrics URL:", error.message);
         return null;
