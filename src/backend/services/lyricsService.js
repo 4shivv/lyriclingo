@@ -93,11 +93,26 @@ const scrapeLyrics = async (lyricsUrl) => {
         // Clean up multiple consecutive newlines
         lyrics = lyrics.replace(/\n\s*\n\s*\n+/g, "\n\n");
         
-        // Trim whitespace from each line while preserving line breaks
+        // Process each line for optimal translation
         lyrics = lyrics.split('\n')
-                       .map(line => line.trim())
-                       // Remove any lines that are empty or only have punctuation
-                       .filter(line => /\w+/.test(line))
+                       .map(line => {
+                          // Trim whitespace
+                          line = line.trim();
+                          
+                          // Handle lines with apostrophes (common in Spanish lyrics with elisions)
+                          // e.g., "e'" becomes "es", "pa'" becomes "para"
+                          line = line.replace(/ e'(\s|$)/g, " es$1")
+                                     .replace(/ pa'(\s|$)/g, " para$1")
+                                     .replace(/ to'(\s|$)/g, " todo$1")
+                                     .replace(/ na'(\s|$)/g, " nada$1")
+                                     .replace(/ 'ta(\s|$)/g, " esta$1")
+                                     .replace(/ 'toy /g, " estoy ")
+                                     .replace(/ da'(\s|$)/g, " dar$1");
+                                     
+                          return line;
+                       })
+                       // Only filter out truly empty lines
+                       .filter(line => line.length > 0 && /[a-zA-Z0-9áéíóúüñÁÉÍÓÚÜÑ]/.test(line))
                        .join('\n')
                        .trim();
         

@@ -13,20 +13,39 @@ const DEEPL_API_KEY = process.env.DEEPL_API_KEY;
  */
 const translateBatch = async (textArray, sourceLanguage = "es") => {
     try {
-        // Filter out empty strings to avoid wasting API calls
-        const filteredArray = textArray.filter(text => text && text.trim().length > 0);
+        // Prepare texts for translation - preserve all meaningful content
+        const preparedArray = textArray.map(text => {
+            if (!text || text.trim().length === 0) return "";
+            
+            // Normalize text to handle special characters and ensure consistent handling
+            let normalizedText = text
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, c => c) // Keep accents but normalize them
+                .trim();
+                
+            // Add a period at the end if missing punctuation to help translation accuracy
+            if (!/[.!?;,:]$/.test(normalizedText)) {
+                normalizedText += ".";
+            }
+            
+            return normalizedText;
+        });
+        
+        // Filter out empty strings for the API call
+        const filteredArray = preparedArray.filter(text => text.length > 0);
         
         // If no valid texts, return empty array
         if (filteredArray.length === 0) {
             return [];
         }
         
-        // Create the params object with the text array (DeepL API accepts arrays directly)
+        // Create the params object with enhanced translation parameters
         const params = new URLSearchParams();
         params.append("auth_key", DEEPL_API_KEY);
         filteredArray.forEach(text => params.append("text", text));
         params.append("source_lang", sourceLanguage.toUpperCase());
         params.append("target_lang", "EN");
+        params.append("preserve_formatting", "1"); // Maintain original formatting
         
         const response = await axios.post(
             "https://api-free.deepl.com/v2/translate",
@@ -34,10 +53,17 @@ const translateBatch = async (textArray, sourceLanguage = "es") => {
             { headers: { "Content-Type": "application/x-www-form-urlencoded" } }
         );
 
-        // Map the translations to match the original array structure
-        const translations = response.data.translations.map(t => t.text);
+        // Process and verify translations
+        const translations = response.data.translations.map(t => {
+            // Remove trailing period if we added one
+            let translation = t.text;
+            if (translation.endsWith(".") && !/[.!?;,:]$/.test(t.text.slice(0, -1))) {
+                translation = translation.slice(0, -1);
+            }
+            return translation;
+        });
         
-        // If original array had empty strings, we need to reinsert them to maintain alignment
+        // Reinsert empty strings to maintain alignment
         const result = [];
         let translationIndex = 0;
         
@@ -48,6 +74,9 @@ const translateBatch = async (textArray, sourceLanguage = "es") => {
                 result.push("");
             }
         }
+        
+        // Log translation diagnostics
+        console.log(`✅ Translated ${translations.length} lines successfully`);
         
         return result;
     } catch (error) {
