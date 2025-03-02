@@ -48,28 +48,57 @@ const fetchLyricsUrl = async (song, artist) => {
 };
 
 /**
- * Scrape lyrics from a Genius lyrics URL
+ * Scrape lyrics from a Genius lyrics URL with improved line break handling
  */
 const scrapeLyrics = async (lyricsUrl) => {
     try {
         const { data } = await axios.get(lyricsUrl);
         const $ = cheerio.load(data);
-
+        
         let lyrics = "";
-        $("div[data-lyrics-container='true']").each((_, element) => {
-            lyrics += $(element).text() + "\n";
+        
+        // Select the lyrics container
+        const lyricsContainer = $('[data-lyrics-container="true"]');
+        
+        // Process each element in the lyrics container
+        lyricsContainer.each((_, container) => {
+            $(container).find('br').replaceWith('\n'); // Replace <br> tags with newlines
+            
+            // Process each direct child of the lyrics container
+            $(container).contents().each((_, node) => {
+                if (node.type === 'text') {
+                    // Add text nodes directly
+                    lyrics += $(node).text();
+                } else if (node.name === 'a' || node.name === 'span' || node.name === 'i') {
+                    // Handle inline elements that contain lyrics
+                    lyrics += $(node).text();
+                } else if (node.name === 'div') {
+                    // New line for div elements (usually line breaks in Genius)
+                    if (lyrics && !lyrics.endsWith('\n')) {
+                        lyrics += '\n';
+                    }
+                    lyrics += $(node).text() + '\n';
+                }
+            });
+            
+            // Add a newline after each container
+            if (!lyrics.endsWith('\n')) {
+                lyrics += '\n';
+            }
         });
-
-        // Remove tags like [Chorus], [Intro], etc.
-        lyrics = lyrics.replace(/\[.*?\]/g, "").trim();
-
-        // Updated split regex: add a negative lookbehind to prevent splits when the uppercase letter is preceded by "("
-        const splitRegex = /(?<=\w[.!?])\s+|(?<!(?:\(|\s))(?=[A-Z])/g;
-        lyrics = lyrics.split(splitRegex).map(line => line.trim()).join("\n");
-
-        // Ensure clean line breaks
-        lyrics = lyrics.replace(/\n\s*\n/g, "\n\n");
-
+        
+        // Remove section markers like [Verse], [Chorus], etc.
+        lyrics = lyrics.replace(/\[.*?\]\n?/g, "");
+        
+        // Clean up multiple consecutive newlines
+        lyrics = lyrics.replace(/\n\s*\n\s*\n+/g, "\n\n");
+        
+        // Trim whitespace from each line while preserving line breaks
+        lyrics = lyrics.split('\n')
+                       .map(line => line.trim())
+                       .join('\n')
+                       .trim();
+        
         return lyrics;
     } catch (error) {
         console.error("❌ Error scraping lyrics:", error.message);

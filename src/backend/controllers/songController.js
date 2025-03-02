@@ -106,8 +106,7 @@ const getFlashcardsForSong = async (req, res) => {
     }
     console.log(`✅ Found song in DB with lyrics URL: ${song.lyricsUrl}`);
 
-    // Normalize BACKEND_URL to ensure it includes a protocol.
-    // If process.env.BACKEND_URL is not set, use the current request host.
+    // Normalize BACKEND_URL to ensure it includes a protocol
     const normalizedBackendUrl = BACKEND_URL
       ? (BACKEND_URL.startsWith("http") ? BACKEND_URL : `https://${BACKEND_URL}`)
       : `${req.protocol}://${req.get('host')}`;
@@ -116,8 +115,9 @@ const getFlashcardsForSong = async (req, res) => {
     const response = await fetch(
       `${normalizedBackendUrl}/api/lyrics/fetch-lyrics?lyricsUrl=${encodeURIComponent(song.lyricsUrl)}`
     );
+    
     if (!response.ok) {
-      const errorData = await response.text(); // Get additional error details
+      const errorData = await response.text();
       console.error(
         `Failed to fetch lyrics. Status: ${response.status}, Message: ${errorData}`
       );
@@ -126,64 +126,54 @@ const getFlashcardsForSong = async (req, res) => {
          details: errorData 
       });
     }
+    
     const data = await response.json();
 
     if (!data.lyrics || data.lyrics.trim().length === 0) {
       return res.status(500).json({ error: "Failed to fetch lyrics from Genius" });
     }
-    console.log("🔍 Raw Lyrics Received:", data.lyrics);
+    
+    console.log("🔍 Raw Lyrics Received");
 
-    // Clean the lyrics and split into lines first
-    let cleanedLyrics = data.lyrics
-      .replace(/\[.*?\]/g, "")
-      .replace(/\s+/g, " ")
-      .trim();
+    // Split lyrics by line breaks to preserve original structure
+    const lyricsLines = data.lyrics.split('\n')
+      .map(line => line.trim())
+      .filter(line => line.length > 0); // Remove empty lines
+    
+    console.log(`📝 Found ${lyricsLines.length} lyric lines`);
 
-    // Split lyrics into lines before translation
-    const splitLyrics = (text) => {
-      const lines = [];
-      let current = "";
-      let parenDepth = 0;
-      
-      for (let i = 0; i < text.length; i++) {
-        const char = text[i];
-        if (char === "(") parenDepth++;
-        else if (char === ")") {
-          if (parenDepth > 0) parenDepth--;
-        }
-        
-        if (/\s/.test(char)) {
-          if (parenDepth === 0 && i + 1 < text.length && /[\p{Lu}]/u.test(text[i + 1])) {
-            if (current.trim().length > 0) {
-              lines.push(current.trim());
-            }
-            current = "";
-            continue;
-          }
-        }
-        current += char;
-      }
-      if (current.trim().length > 0) {
-        lines.push(current.trim());
-      }
-      return lines;
-    };
-
-    // Get front lines
-    let frontLines = splitLyrics(cleanedLyrics);
-
-    // Join lines with a special delimiter that won't appear in normal text
+    // Prepare arrays for translation
+    let frontLines = lyricsLines;
+    
+    // Use a custom delimiter that won't appear in normal text
     const DELIMITER = "|||";
-    const textToTranslate = frontLines.join(DELIMITER);
-
-    // Translate the entire text at once
-    const translatedResult = await translateBatch([textToTranslate], sourceLanguage);
-    const translatedText = translatedResult[0] || "Translation unavailable";
-
-    // Split the translated text back into lines using the same delimiter
-    let backLines = translatedText.split(DELIMITER).map(line => line.trim());
-
-    // Ensure arrays have the same length
+    
+    // Process in smaller batches to improve translation accuracy
+    const BATCH_SIZE = 10;
+    let backLines = [];
+    
+    // Process lyrics in batches
+    for (let i = 0; i < frontLines.length; i += BATCH_SIZE) {
+      const batch = frontLines.slice(i, i + BATCH_SIZE);
+      console.log(`🔤 Translating batch ${i/BATCH_SIZE + 1} (${batch.length} lines)`);
+      
+      // Join lines with delimiter
+      const batchText = batch.join(DELIMITER);
+      
+      // Translate the batch
+      const translatedBatch = await translateBatch([batchText], sourceLanguage);
+      const translatedText = translatedBatch[0] || "";
+      
+      // Split translated text back into lines
+      const translatedLines = translatedText
+        .split(DELIMITER)
+        .map(line => line.trim());
+      
+      // Add translated lines to results
+      backLines = [...backLines, ...translatedLines];
+    }
+    
+    // Ensure arrays are the same length
     while (backLines.length < frontLines.length) {
       backLines.push("Translation unavailable");
     }
@@ -191,18 +181,21 @@ const getFlashcardsForSong = async (req, res) => {
       backLines.pop();
     }
 
-    // Create flashcards
+    // Create flashcards with proper alignment
     let flashcards = frontLines.map((line, index) => ({
-      front: line.replace(new RegExp(`^${DELIMITER}|${DELIMITER}$`, 'g'), '').trim(),
-      back: backLines[index].replace(new RegExp(`^${DELIMITER}|${DELIMITER}$`, 'g'), '').trim(),
+      front: line.trim(),
+      back: backLines[index].trim()
     }));
+    
+    // Filter out cards with empty fronts or backs
+    flashcards = flashcards.filter(card => 
+      card.front.length > 0 && 
+      card.back.length > 0 &&
+      card.front !== card.back
+    );
 
-    // Post-process to remove any remaining '|' or '||' characters
-    flashcards = flashcards.map(card => ({
-      front: card.front.replace(/\|+/g, '').trim(),
-      back: card.back.replace(/\|+/g, '').trim(),
-    }));
-
+    console.log(`✅ Created ${flashcards.length} flashcards`);
+    
     // Cache the flashcards
     await redis.setex(cacheKey, 86400, JSON.stringify(flashcards));
 
