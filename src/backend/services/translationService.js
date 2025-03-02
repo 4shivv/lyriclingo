@@ -89,6 +89,29 @@ const SPANISH_CONTRACTIONS = {
 };
 
 /**
+ * Calculates statistics on deduplication efficiency
+ * 
+ * @param {Array<string>} textArray - Array of text lines
+ * @returns {Object} Statistics on deduplication
+ */
+const getDeduplicationStats = (textArray) => {
+    if (!textArray || textArray.length === 0) return { total: 0, unique: 0, saved: 0 };
+    
+    // Count non-empty lines
+    const nonEmptyLines = textArray.filter(text => text && text.trim().length > 0);
+    
+    // Count unique lines
+    const uniqueLines = new Set(nonEmptyLines.map(text => text.trim()));
+    
+    return {
+        total: nonEmptyLines.length,
+        unique: uniqueLines.size,
+        saved: nonEmptyLines.length - uniqueLines.size,
+        percentSaved: Math.round(((nonEmptyLines.length - uniqueLines.size) / nonEmptyLines.length) * 100)
+    };
+};
+
+/**
  * Preprocesses Spanish text to expand contractions while preserving original formatting
  * 
  * @param {string} text - Spanish text to preprocess
@@ -128,8 +151,6 @@ const preprocessSpanishText = (text) => {
         const possibleExpansion = SPANISH_CONTRACTIONS[word.toLowerCase() + "'"];
         return possibleExpansion ? possibleExpansion + ending : match;
     });
-    
-    // NO PERIODS ADDED - preserve original formatting exactly
     
     return processedText;
 };
@@ -176,7 +197,7 @@ const postprocessTranslation = (translatedText) => {
 };
 
 /**
- * Translates an array of text lines using DeepL API with enhanced Spanish preprocessing
+ * Translates an array of text lines using DeepL API with optimized handling of duplicates
  * 
  * @param {Array} textArray - List of lines/texts to translate
  * @param {String} sourceLanguage - Language code (default: "es" for Spanish)
@@ -184,58 +205,75 @@ const postprocessTranslation = (translatedText) => {
  */
 const translateBatch = async (textArray, sourceLanguage = "es") => {
     try {
-        // Preprocess each line with Spanish-specific handling if source is Spanish
-        const preparedArray = sourceLanguage.toLowerCase() === "es" 
-            ? textArray.map(preprocessSpanishText)
-            : textArray.map(text => text && text.trim().length > 0 ? text.trim() : "");
+        // Create index mapping for deduplication while preserving order
+        const uniqueTexts = new Map(); // Map of unique text -> index in uniqueArray
+        const uniqueArray = []; // Array of unique texts
+        const indexMapping = []; // Maps original indices to positions in uniqueArray
         
-        // Filter out empty strings to avoid wasting API calls
-        const filteredArray = preparedArray.filter(text => text && text.trim().length > 0);
+        // Build deduplication structures
+        textArray.forEach((text, index) => {
+            if (!text || text.trim().length === 0) {
+                indexMapping.push(-1); // Marker for empty strings
+                return;
+            }
+            
+            const trimmedText = text.trim();
+            if (!uniqueTexts.has(trimmedText)) {
+                uniqueTexts.set(trimmedText, uniqueArray.length);
+                uniqueArray.push(trimmedText);
+            }
+            
+            indexMapping.push(uniqueTexts.get(trimmedText));
+        });
         
-        // If no valid texts, return empty array
-        if (filteredArray.length === 0) {
-            return [];
+        // Calculate and log deduplication stats
+        const stats = getDeduplicationStats(textArray);
+        console.log(`🔍 Deduplication: ${stats.total} lines → ${stats.unique} unique lines (saved ${stats.percentSaved}% API usage)`);
+        
+        // Skip processing if no valid texts
+        if (uniqueArray.length === 0) {
+            return textArray.map(() => "");
         }
         
-        // Create the params object with enhanced translation parameters
+        // Preprocess each unique line with Spanish-specific handling
+        const preparedArray = sourceLanguage.toLowerCase() === "es" 
+            ? uniqueArray.map(preprocessSpanishText)
+            : uniqueArray.map(text => text.trim());
+            
+        // Create the params object with unique texts only
         const params = new URLSearchParams();
         params.append("auth_key", DEEPL_API_KEY);
-        filteredArray.forEach(text => params.append("text", text));
+        preparedArray.forEach(text => params.append("text", text));
         params.append("source_lang", sourceLanguage.toUpperCase());
         params.append("target_lang", "EN");
-        params.append("preserve_formatting", "1"); // Maintain original formatting
+        params.append("preserve_formatting", "1");
         
+        // Call the translation API with unique texts only
         const response = await axios.post(
             "https://api-free.deepl.com/v2/translate",
             params.toString(),
             { headers: { "Content-Type": "application/x-www-form-urlencoded" } }
         );
-
-        // Process translations
-        const translations = response.data.translations.map(t => {
-            return postprocessTranslation(t.text);
+        
+        // Process unique translations
+        const uniqueTranslations = response.data.translations.map(t => 
+            postprocessTranslation(t.text)
+        );
+        
+        // Map translations back to original structure
+        const result = textArray.map((text, index) => {
+            // Handle empty strings
+            if (indexMapping[index] === -1) return "";
+            
+            // Map back to the corresponding unique translation
+            return uniqueTranslations[indexMapping[index]];
         });
         
-        // Reinsert empty strings to maintain alignment with original array
-        const result = [];
-        let translationIndex = 0;
-        
-        for (let i = 0; i < textArray.length; i++) {
-            const originalText = textArray[i];
-            if (originalText && originalText.trim().length > 0) {
-                result.push(translations[translationIndex++]);
-            } else {
-                result.push("");
-            }
-        }
-        
-        // Log translation diagnostics
-        console.log(`✅ Translated ${translations.length} lines successfully`);
+        console.log(`✅ Translated ${uniqueArray.length} unique lines successfully`);
         
         return result;
     } catch (error) {
         console.error("❌ Translation Error:", error.response?.data || error.message);
-        // Return an array of fallback strings matching the input array length
         return textArray.map(() => "Translation unavailable");
     }
 };
