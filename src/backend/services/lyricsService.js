@@ -96,6 +96,8 @@ const scrapeLyrics = async (lyricsUrl) => {
         // Trim whitespace from each line while preserving line breaks
         lyrics = lyrics.split('\n')
                        .map(line => line.trim())
+                       // Remove any lines that are empty or only have punctuation
+                       .filter(line => /\w+/.test(line))
                        .join('\n')
                        .trim();
         

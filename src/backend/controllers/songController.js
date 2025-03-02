@@ -145,32 +145,22 @@ const getFlashcardsForSong = async (req, res) => {
     // Prepare arrays for translation
     let frontLines = lyricsLines;
     
-    // Use a custom delimiter that won't appear in normal text
-    const DELIMITER = "|||";
-    
-    // Process in smaller batches to improve translation accuracy
-    const BATCH_SIZE = 10;
+    // More efficient approach: translate each line individually in batches
+    // This avoids delimiter issues entirely
     let backLines = [];
+    const BATCH_SIZE = 10; // Number of lines to translate in each API call
     
-    // Process lyrics in batches
+    // Process lyrics in batches of lines
     for (let i = 0; i < frontLines.length; i += BATCH_SIZE) {
       const batch = frontLines.slice(i, i + BATCH_SIZE);
-      console.log(`🔤 Translating batch ${i/BATCH_SIZE + 1} (${batch.length} lines)`);
+      console.log(`🔤 Translating batch ${Math.floor(i/BATCH_SIZE) + 1} (${batch.length} lines)`);
       
-      // Join lines with delimiter
-      const batchText = batch.join(DELIMITER);
+      // Send each line as a separate element in the array
+      // This is more efficient than individual API calls while avoiding delimiter issues
+      const translatedBatch = await translateBatch(batch, sourceLanguage);
       
-      // Translate the batch
-      const translatedBatch = await translateBatch([batchText], sourceLanguage);
-      const translatedText = translatedBatch[0] || "";
-      
-      // Split translated text back into lines
-      const translatedLines = translatedText
-        .split(DELIMITER)
-        .map(line => line.trim());
-      
-      // Add translated lines to results
-      backLines = [...backLines, ...translatedLines];
+      // Add translated lines to results (no need to split or handle delimiters)
+      backLines = [...backLines, ...translatedBatch];
     }
     
     // Ensure arrays are the same length
@@ -181,13 +171,19 @@ const getFlashcardsForSong = async (req, res) => {
       backLines.pop();
     }
 
-    // Create flashcards with proper alignment
-    let flashcards = frontLines.map((line, index) => ({
-      front: line.trim(),
-      back: backLines[index].trim()
-    }));
+    // Create flashcards with proper alignment and cleanup any potential remaining delimiters
+    let flashcards = frontLines.map((line, index) => {
+      // Safety check to ensure we have a translation for this index
+      const translation = index < backLines.length ? backLines[index] : "Translation unavailable";
+      
+      return {
+        front: line.trim(),
+        // Extra cleaning to remove any potential artifact characters from translation
+        back: translation.trim().replace(/\|+/g, '').trim()
+      };
+    });
     
-    // Filter out cards with empty fronts or backs
+    // Filter out cards with empty fronts or backs or where front/back are identical
     flashcards = flashcards.filter(card => 
       card.front.length > 0 && 
       card.back.length > 0 &&
