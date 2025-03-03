@@ -269,20 +269,8 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn }) {
                 
                 <div className="sentiment-score">Confidence: {sentiment.score}</div>
                 
-                {/* Display different source indicators based on analysis method */}
-                {sentiment.localML && (
-                  <div className="sentiment-source local-ml">
-                    Analysis performed using local ML model
-                  </div>
-                )}
-                
-                {sentiment.hybrid && (
-                  <div className="sentiment-source hybrid">
-                    Hybrid analysis (API + Local ML)
-                  </div>
-                )}
-                
-                {!sentiment.localML && !sentiment.hybrid && !sentiment.error && (
+                {/* Display API source indicator */}
+                {!sentiment.fallback && (
                   <div className="sentiment-source api">
                     Analysis performed via API
                   </div>

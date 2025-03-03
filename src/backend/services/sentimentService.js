@@ -1,8 +1,5 @@
 const axios = require("axios");
-const path = require("path");
-const fs = require("fs");
-const { spawn } = require("child_process");
-const os = require("os");
+const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 // Use environment variable for HuggingFace API Token
 const HUGGINGFACE_API_TOKEN = process.env.HUGGINGFACE_API_TOKEN;
@@ -11,379 +8,6 @@ const HUGGINGFACE_API_TOKEN = process.env.HUGGINGFACE_API_TOKEN;
 const MAX_RETRY_ATTEMPTS = 3;
 const RETRY_DELAY_MS = 1000;
 const MAX_TEXT_LENGTH = 1500; // Increased limit for better context
-
-// Local model paths - will be created when models are downloaded
-const MODELS_DIR = path.join(__dirname, "../../models");
-const SENTIMENT_MODEL_DIR = path.join(MODELS_DIR, "sentiment-model");
-const EMOTIONS_MODEL_DIR = path.join(MODELS_DIR, "emotions-model");
-
-// Ensure model directories exist
-if (!fs.existsSync(MODELS_DIR)) {
-  fs.mkdirSync(MODELS_DIR, { recursive: true });
-}
-if (!fs.existsSync(SENTIMENT_MODEL_DIR)) {
-  fs.mkdirSync(SENTIMENT_MODEL_DIR, { recursive: true });
-}
-if (!fs.existsSync(EMOTIONS_MODEL_DIR)) {
-  fs.mkdirSync(EMOTIONS_MODEL_DIR, { recursive: true });
-}
-
-// Python script path for local ML inference
-const PYTHON_SCRIPT_PATH = path.join(__dirname, "sentiment_inference.py");
-
-// Create Python script for local inference if it doesn't exist
-if (!fs.existsSync(PYTHON_SCRIPT_PATH)) {
-  const pythonScript = `
-import sys
-import json
-import os
-from pathlib import Path
-
-# Check if transformers is installed, if not provide instructions
-try:
-    from transformers import pipeline, AutoModelForSequenceClassification, AutoTokenizer
-    import torch
-except ImportError:
-    print(json.dumps({
-        "error": "Required Python packages not installed. Please run: pip install transformers torch"
-    }))
-    sys.exit(1)
-
-def download_models_if_needed():
-    """Download models if they don't exist locally"""
-    models_dir = Path(os.path.dirname(os.path.realpath(__file__)), "..", "..", "models")
-    
-    sentiment_dir = models_dir / "sentiment-model"
-    emotions_dir = models_dir / "emotions-model"
-    
-    # Download sentiment model if needed
-    if not os.path.exists(sentiment_dir / "config.json"):
-        print("Downloading sentiment model...", file=sys.stderr)
-        sentiment_model = AutoModelForSequenceClassification.from_pretrained("distilbert-base-uncased-finetuned-sst-2-english")
-        sentiment_tokenizer = AutoTokenizer.from_pretrained("distilbert-base-uncased-finetuned-sst-2-english")
-        sentiment_model.save_pretrained(sentiment_dir)
-        sentiment_tokenizer.save_pretrained(sentiment_dir)
-        print("Sentiment model downloaded successfully", file=sys.stderr)
-    
-    # Download emotions model if needed
-    if not os.path.exists(emotions_dir / "config.json"):
-        print("Downloading emotions model...", file=sys.stderr) 
-        emotions_model = AutoModelForSequenceClassification.from_pretrained("joeddav/distilbert-base-uncased-go-emotions-student")
-        emotions_tokenizer = AutoTokenizer.from_pretrained("joeddav/distilbert-base-uncased-go-emotions-student")
-        emotions_model.save_pretrained(emotions_dir)
-        emotions_tokenizer.save_pretrained(emotions_dir)
-        print("Emotions model downloaded successfully", file=sys.stderr)
-
-def analyze_sentiment(text):
-    """Analyze sentiment using local model"""
-    models_dir = Path(os.path.dirname(os.path.realpath(__file__)), "..", "..", "models")
-    sentiment_dir = str(models_dir / "sentiment-model")
-    
-    # Load sentiment model locally
-    classifier = pipeline(
-        "sentiment-analysis",
-        model=sentiment_dir,
-        tokenizer=sentiment_dir,
-        device=-1  # Use CPU
-    )
-    
-    result = classifier(text)[0]
-    sentiment_label = result["label"]
-    score = result["score"]
-    
-    # Map sentiment to user-friendly format
-    if sentiment_label == "POSITIVE":
-        if score > 0.9:
-            sentiment = "Very Positive"
-            emoji = "😄"
-        else:
-            sentiment = "Positive"
-            emoji = "🙂"
-    else:  # NEGATIVE
-        if score > 0.9:
-            sentiment = "Very Negative"
-            emoji = "😞"
-        else:
-            sentiment = "Negative"
-            emoji = "😕"
-    
-    return {
-        "sentiment": sentiment,
-        "emoji": emoji,
-        "score": float(score),
-        "label": sentiment_label
-    }
-
-def analyze_emotions(text):
-    """Analyze emotions using a specialized emotions model"""
-    models_dir = Path(os.path.dirname(os.path.realpath(__file__)), "..", "..", "models")
-    emotions_dir = str(models_dir / "emotions-model")
-    
-    # Load emotions model locally
-    emotions_classifier = pipeline(
-        "text-classification",
-        model=emotions_dir,
-        tokenizer=emotions_dir,
-        device=-1,  # Use CPU
-        top_k=5      # Return top 5 emotions
-    )
-    
-    # Analyze emotions in the text
-    results = emotions_classifier(text)
-    
-    # Map Spanish music-relevant emotions
-    emotion_mapping = {
-        "admiration": "Admiración",
-        "amusement": "Diversión",
-        "anger": "Enojo",
-        "annoyance": "Irritación",
-        "approval": "Aprobación",
-        "caring": "Afecto",
-        "confusion": "Confusión",
-        "curiosity": "Curiosidad",
-        "desire": "Deseo",
-        "disappointment": "Decepción",
-        "disapproval": "Desaprobación",
-        "disgust": "Disgusto",
-        "embarrassment": "Vergüenza",
-        "excitement": "Entusiasmo",
-        "fear": "Miedo",
-        "gratitude": "Gratitud",
-        "grief": "Duelo",
-        "joy": "Alegría",
-        "love": "Amor",
-        "nervousness": "Nerviosismo",
-        "optimism": "Optimismo",
-        "pride": "Orgullo",
-        "realization": "Realización",
-        "relief": "Alivio",
-        "remorse": "Remordimiento",
-        "sadness": "Tristeza",
-        "surprise": "Sorpresa"
-    }
-    
-    # Extract and map top emotions
-    emotions = []
-    for item in results[0]:
-        emotion = item["label"]
-        score = item["score"]
-        spanish_emotion = emotion_mapping.get(emotion, emotion)
-        emotions.append({
-            "emotion": spanish_emotion,
-            "english": emotion,
-            "score": float(score)
-        })
-    
-    return emotions
-
-def main():
-    # Get input text from stdin
-    input_data = json.loads(sys.stdin.read())
-    text = input_data.get("text", "")
-    mode = input_data.get("mode", "all")
-    
-    try:
-        # Download models if needed
-        download_models_if_needed()
-        
-        if mode == "sentiment" or mode == "all":
-            sentiment_result = analyze_sentiment(text)
-        else:
-            sentiment_result = None
-            
-        if mode == "emotions" or mode == "all":
-            emotions_result = analyze_emotions(text)
-        else:
-            emotions_result = None
-        
-        # Return results
-        result = {
-            "sentiment": sentiment_result,
-            "emotions": emotions_result
-        }
-        print(json.dumps(result))
-        
-    except Exception as e:
-        print(json.dumps({"error": str(e)}))
-
-if __name__ == "__main__":
-    main()
-  `;
-  
-  fs.writeFileSync(PYTHON_SCRIPT_PATH, pythonScript);
-  console.log(`✅ Created Python inference script at ${PYTHON_SCRIPT_PATH}`);
-}
-
-/**
- * Sleep function for implementing delay between retries
- * @param {number} ms - Milliseconds to sleep
- * @returns {Promise} Promise that resolves after the specified time
- */
-const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
-
-/**
- * Runs local ML for just the emotion analysis part
- * @param {string} text - Text to analyze
- * @returns {Promise<Array>} Array of emotion objects
- */
-const runLocalEmotionsOnly = async (text) => {
-  console.log(`🔍 LOCAL ML: Running emotions-only analysis`);
-  
-  try {
-    // Prepare input for the Python script
-    const input = {
-      text: text,
-      mode: "emotions" // analyze emotions only
-    };
-    
-    // Spawn a Python process
-    const pythonProcess = spawn("python3", [PYTHON_SCRIPT_PATH]);
-    
-    // Write the input to the Python process
-    pythonProcess.stdin.write(JSON.stringify(input));
-    pythonProcess.stdin.end();
-    
-    // Collect stdout data
-    let result = "";
-    pythonProcess.stdout.on("data", (data) => {
-      result += data.toString();
-    });
-    
-    // Collect stderr data (for debugging)
-    let errorOutput = "";
-    pythonProcess.stderr.on("data", (data) => {
-      errorOutput += data.toString();
-      console.log(`🐍 Python: ${data.toString().trim()}`);
-    });
-    
-    // Handle process completion
-    return new Promise((resolve, reject) => {
-      pythonProcess.on("close", (code) => {
-        if (code !== 0) {
-          console.error(`❌ LOCAL ML: Python process exited with code ${code}`);
-          console.error(`Python stderr: ${errorOutput}`);
-          return reject(new Error(`Python process failed with code ${code}`));
-        }
-        
-        try {
-          // Parse the Python script's output
-          const analysis = JSON.parse(result);
-          
-          if (analysis.error) {
-            console.error(`❌ LOCAL ML: Error in Python script: ${analysis.error}`);
-            return reject(new Error(analysis.error));
-          }
-          
-          // Extract emotions
-          const emotions = analysis.emotions;
-          
-          // Get the top emotion
-          const topEmotion = emotions[0];
-          
-          console.log(`✅ LOCAL ML: Emotions analysis complete - Primary: ${topEmotion.emotion}`);
-          
-          return resolve(emotions);
-        } catch (parseError) {
-          console.error(`❌ LOCAL ML: Failed to parse output: ${parseError.message}`);
-          console.error(`Python stdout: ${result}`);
-          return reject(new Error(`Failed to parse Python output: ${parseError.message}`));
-        }
-      });
-    });
-  } catch (error) {
-    console.error(`❌ LOCAL ML: Error running local emotions analysis: ${error.message}`);
-    throw error;
-  }
-};
-
-/**
- * Run local ML-based sentiment analysis using Python and transformers
- * @param {string} text - Text to analyze
- * @returns {Promise<Object>} Complete sentiment and emotion analysis
- */
-const runLocalMLAnalysis = async (text) => {
-  console.log(`🔍 LOCAL ML: Starting full sentiment and emotion analysis`);
-  
-  try {
-    // Prepare input for the Python script
-    const input = {
-      text: text,
-      mode: "all" // analyze both sentiment and emotions
-    };
-    
-    // Spawn a Python process
-    const pythonProcess = spawn("python3", [PYTHON_SCRIPT_PATH]);
-    
-    // Write the input to the Python process
-    pythonProcess.stdin.write(JSON.stringify(input));
-    pythonProcess.stdin.end();
-    
-    // Collect stdout data
-    let result = "";
-    pythonProcess.stdout.on("data", (data) => {
-      result += data.toString();
-    });
-    
-    // Collect stderr data (for debugging)
-    let errorOutput = "";
-    pythonProcess.stderr.on("data", (data) => {
-      errorOutput += data.toString();
-      console.log(`🐍 Python: ${data.toString().trim()}`);
-    });
-    
-    // Handle process completion
-    return new Promise((resolve, reject) => {
-      pythonProcess.on("close", (code) => {
-        if (code !== 0) {
-          console.error(`❌ LOCAL ML: Python process exited with code ${code}`);
-          console.error(`Python stderr: ${errorOutput}`);
-          return reject(new Error(`Python process failed with code ${code}`));
-        }
-        
-        try {
-          // Parse the Python script's output
-          const analysis = JSON.parse(result);
-          
-          if (analysis.error) {
-            console.error(`❌ LOCAL ML: Error in Python script: ${analysis.error}`);
-            return reject(new Error(analysis.error));
-          }
-          
-          // Extract sentiment and emotions
-          const sentimentResult = analysis.sentiment;
-          const emotions = analysis.emotions;
-          
-          // Get the top emotion
-          const topEmotion = emotions[0];
-          
-          console.log(`✅ LOCAL ML: Analysis complete - Sentiment: ${sentimentResult.sentiment}, Emotion: ${topEmotion.emotion}`);
-          
-          // Return a combined result
-          return resolve({
-            sentiment: sentimentResult.sentiment,
-            emoji: sentimentResult.emoji,
-            score: sentimentResult.score.toFixed(2),
-            emotions: emotions.slice(0, 3).map(e => ({
-              emotion: e.emotion,
-              score: e.score.toFixed(2)
-            })),
-            primaryEmotion: topEmotion.emotion,
-            emotionScore: topEmotion.score.toFixed(2),
-            fallback: true,
-            localML: true
-          });
-        } catch (parseError) {
-          console.error(`❌ LOCAL ML: Failed to parse output: ${parseError.message}`);
-          console.error(`Python stdout: ${result}`);
-          return reject(new Error(`Failed to parse Python output: ${parseError.message}`));
-        }
-      });
-    });
-  } catch (error) {
-    console.error(`❌ LOCAL ML: Error running local analysis: ${error.message}`);
-    throw error;
-  }
-};
 
 /**
  * Analyze sentiment using HuggingFace API
@@ -454,7 +78,6 @@ const analyzeApiSentiment = async (text) => {
         };
       }
       
-      
       console.log("⚠️ HUGGINGFACE API: Received empty sentiment response");
       return null;
       
@@ -485,7 +108,7 @@ const analyzeApiSentiment = async (text) => {
 /**
  * Analyze emotions using HuggingFace API
  * @param {string} text - Text to analyze
- * @returns {Promise<Array>} Array of emotion objects or null if failed
+ * @returns {Promise<Object>} Emotions analysis or null if failed
  */
 const analyzeApiEmotions = async (text) => {
   // Truncate text if it's too long
@@ -596,11 +219,7 @@ const analyzeApiEmotions = async (text) => {
 };
 
 /**
- * Analyze sentiment and emotions using a hybrid approach:
- * - Try API first for both sentiment and emotions
- * - If just emotions fails, use local ML for that part
- * - If both fail, use full local ML
- * 
+ * Analyze sentiment and emotions using only the Hugging Face API
  * @param {string} text - Text to analyze
  * @returns {Object} Combined sentiment and emotion analysis
  */
@@ -608,18 +227,27 @@ const analyzeSentiment = async (text) => {
   // Check for API token
   if (!HUGGINGFACE_API_TOKEN) {
     console.error("❌ HUGGINGFACE API: Token is not configured");
-    return runLocalMLAnalysis(text);
+    return {
+      sentiment: "Neutral",
+      emoji: "😐",
+      score: "0.50",
+      emotions: [],
+      primaryEmotion: "Unknown",
+      emotionScore: "0.00",
+      error: "Hugging Face API token not configured",
+      fallback: true
+    };
   }
   
-  // Try API for sentiment analysis first
+  // Try API for sentiment analysis
   const apiSentiment = await analyzeApiSentiment(text);
   
   // Try API for emotions analysis
   const apiEmotions = await analyzeApiEmotions(text);
   
-  // CASE 1: Both API calls succeeded
+  // If both API calls succeeded
   if (apiSentiment && apiEmotions) {
-    console.log(`✅ HYBRID: Both API calls successful, using API results`);
+    console.log(`✅ API: Both sentiment and emotions analysis successful`);
     
     return {
       sentiment: apiSentiment.sentiment,
@@ -628,69 +256,56 @@ const analyzeSentiment = async (text) => {
       emotions: apiEmotions.emotions,
       primaryEmotion: apiEmotions.primaryEmotion,
       emotionScore: apiEmotions.emotionScore,
-      fallback: false,
-      localML: false,
-      hybrid: false
+      fallback: false
     };
   }
   
-  // CASE 2: Sentiment succeeded but emotions failed
+  // If only sentiment succeeded
   if (apiSentiment && !apiEmotions) {
-    console.log(`🔄 HYBRID: Using API sentiment and LOCAL emotions`);
+    console.log(`⚠️ API: Only sentiment analysis successful, emotions failed`);
     
-    try {
-      // Run local ML for emotions only
-      const localEmotions = await runLocalEmotionsOnly(text);
-      
-      // Get the primary emotion
-      const primaryEmotion = localEmotions[0].emotion;
-      const emotionScore = localEmotions[0].score.toFixed(2);
-      
-      const emotions = localEmotions.slice(0, 3).map(e => ({
-        emotion: e.emotion,
-        score: e.score.toFixed(2)
-      }));
-      
-      return {
-        sentiment: apiSentiment.sentiment,
-        emoji: apiSentiment.emoji,
-        score: apiSentiment.score,
-        emotions: emotions,
-        primaryEmotion: primaryEmotion,
-        emotionScore: emotionScore,
-        fallback: false,
-        localML: false,
-        hybrid: true,
-        hybridComponents: {
-          sentimentSource: "api",
-          emotionsSource: "localML"
-        }
-      };
-    } catch (localEmotionsError) {
-      console.error(`❌ HYBRID: Local emotions failed, using API sentiment only: ${localEmotionsError.message}`);
-      
-      return {
-        sentiment: apiSentiment.sentiment,
-        emoji: apiSentiment.emoji,
-        score: apiSentiment.score,
-        emotions: [],
-        primaryEmotion: "Unknown",
-        emotionScore: "0.00",
-        fallback: false,
-        localML: false,
-        emotionsError: true,
-        hybrid: true,
-        hybridComponents: {
-          sentimentSource: "api",
-          emotionsSource: "error"
-        }
-      };
-    }
+    return {
+      sentiment: apiSentiment.sentiment,
+      emoji: apiSentiment.emoji,
+      score: apiSentiment.score,
+      emotions: [],
+      primaryEmotion: "Unknown",
+      emotionScore: "0.00",
+      emotionsError: true,
+      fallback: false,
+      notice: "Emotion analysis unavailable"
+    };
   }
   
-  // CASE 3: Both API calls failed, use full local ML
-  console.log(`🔄 HYBRID: Both API calls failed, using full LOCAL ML`);
-  return runLocalMLAnalysis(text);
+  // If only emotions succeeded
+  if (!apiSentiment && apiEmotions) {
+    console.log(`⚠️ API: Only emotions analysis successful, sentiment failed`);
+    
+    return {
+      sentiment: "Neutral",
+      emoji: "😐",
+      score: "0.50",
+      emotions: apiEmotions.emotions,
+      primaryEmotion: apiEmotions.primaryEmotion,
+      emotionScore: apiEmotions.emotionScore,
+      sentimentError: true,
+      fallback: false,
+      notice: "Sentiment analysis unavailable"
+    };
+  }
+  
+  // If both failed
+  console.log(`❌ API: Both sentiment and emotions analysis failed`);
+  return {
+    sentiment: "Neutral",
+    emoji: "😐",
+    score: "0.50",
+    emotions: [],
+    primaryEmotion: "Unknown",
+    emotionScore: "0.00",
+    error: "Analysis service unavailable",
+    fallback: true
+  };
 };
 
 module.exports = { analyzeSentiment };
