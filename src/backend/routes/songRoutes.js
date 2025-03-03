@@ -11,4 +11,25 @@ router.get("/flashcards", getFlashcardsForSong);
 router.post("/logout", clearHistory);
 router.get("/sentiment", getSongSentiment);
 
+// Add this route to check API configuration
+router.get("/check-sentiment-config", async (req, res) => {
+  try {
+    if (!process.env.HUGGINGFACE_API_TOKEN) {
+      return res.status(500).json({ 
+        error: "Hugging Face API token not configured",
+        configured: false 
+      });
+    }
+    res.json({ 
+      message: "Sentiment analysis configuration OK",
+      configured: true 
+    });
+  } catch (error) {
+    res.status(500).json({ 
+      error: "Error checking sentiment configuration",
+      configured: false 
+    });
+  }
+});
+
 module.exports = router; // ✅ Ensure correct export

@@ -10,6 +10,13 @@ const HUGGINGFACE_API_TOKEN = process.env.HUGGINGFACE_API_TOKEN;
  */
 const analyzeSentiment = async (text) => {
   try {
+    // Add token validation
+    if (!HUGGINGFACE_API_TOKEN) {
+      console.error("Hugging Face API token is not configured");
+      return { error: "API token not configured", sentiment: "Unknown", emoji: "❓" };
+    }
+
+    console.log("Making request to Hugging Face API...");
     const response = await axios.post(
       "https://api-inference.huggingface.co/models/distilbert-base-uncased-finetuned-sst-2-english",
       { inputs: text },
