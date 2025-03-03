@@ -53,12 +53,17 @@
 /* Flashcard Container */
 .flashcard-container {
   perspective: 1000px;
+  width: 400px;
+  height: 250px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 /* Flashcard */
 .flashcard {
-  width: 400px;
-  height: 250px;
+  width: 100%;
+  height: 100%;
   position: relative;
   transform-style: preserve-3d;
   transition: transform 0.6s;
@@ -127,9 +132,15 @@
   padding: 10px; /* Add padding for better touch targets */
 }
 
-.nav-button:hover {
+.nav-button:hover:not([disabled]) {
   transform: scale(1.1); /* Slightly enlarge on hover */
   background: rgba(255, 255, 255, 0.1); /* Add a subtle background on hover */
+}
+
+.nav-button[disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
 }
 
 /* Log Current Song Button */
@@ -168,4 +179,33 @@
 
 .log-button-wrapper {
   margin-bottom: 35px; /* Adjust this value for desired spacing */
+}
+
+/* Loading Ellipsis Animation */
+.loading-ellipsis {
+  font-size: 1.5rem;
+  color: #e0e0e0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  width: 100%;
+}
+
+.animated-dots {
+  display: inline-block;
+  width: 30px;
+  text-align: left;
+  font-weight: bold;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0% { opacity: 0.4; }
+  50% { opacity: 1; }
+  100% { opacity: 0.4; }
 }
