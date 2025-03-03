@@ -277,13 +277,19 @@ const getSongSentiment = async (req, res) => {
     
     console.log(`Processing sentiment for song "${song}" with ${flashcards.length} flashcards`);
     
-    // Analyze sentiment with improved error handling
+    // Analyze sentiment with improved error handling and explicit logging
     let sentimentResult;
     try {
+      console.log(`🔍 Starting sentiment analysis for song: "${song}"`);
       sentimentResult = await analyzeSentiment(englishText);
-      console.log(`✅ Sentiment analysis completed: ${sentimentResult.sentiment}`);
+      
+      if (sentimentResult.fallback) {
+        console.log(`⚠️ LOCAL FALLBACK used for sentiment analysis on "${song}": ${sentimentResult.sentiment}`);
+      } else {
+        console.log(`✅ HUGGINGFACE API success for "${song}": ${sentimentResult.sentiment}`);
+      }
     } catch (sentimentError) {
-      console.error("Failed to analyze sentiment:", sentimentError);
+      console.error(`❌ CRITICAL: Sentiment analysis totally failed for "${song}":`, sentimentError);
       
       // Provide a default sentiment when API fails
       sentimentResult = {
@@ -293,16 +299,17 @@ const getSongSentiment = async (req, res) => {
         error: "Analysis service unavailable",
         fallback: true
       };
+      console.log(`⚠️ Using emergency neutral fallback for "${song}"`);
     }
     
     // Cache the sentiment result for 7 days if Redis is available
     try {
       if (global.redisClient) {
         await global.redisClient.setex(cacheKey, 604800, JSON.stringify(sentimentResult));
-        console.log(`Cached sentiment result for: ${song}`);
+        console.log(`💾 CACHED ${sentimentResult.fallback ? "LOCAL" : "API"} sentiment result for: "${song}"`);
       }
     } catch (cacheError) {
-      console.log("Failed to cache sentiment result:", cacheError.message);
+      console.log(`❌ Failed to cache sentiment result for "${song}":`, cacheError.message);
     }
     
     // Include a notice if fallback was used

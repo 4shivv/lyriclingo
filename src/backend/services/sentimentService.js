@@ -15,6 +15,8 @@ const MAX_TEXT_LENGTH = 1000; // Limit text to prevent large payloads
  * @returns {Object} Sentiment analysis result
  */
 const localSentimentFallback = (text) => {
+  console.log("🔄 USING LOCAL FALLBACK SENTIMENT ANALYSIS");
+  
   // Simple word-based sentiment analysis
   const positiveWords = [
     "good", "great", "excellent", "happy", "love", "joy", "wonderful", "amazing",
@@ -42,13 +44,15 @@ const localSentimentFallback = (text) => {
   
   if (positiveCount > negativeCount) {
     sentiment = positiveCount > negativeCount * 2 ? "Very Positive" : "Positive";
-    emoji = positiveCount > negativeCount * 2 ? "😄" : "🙂";
-    score = 0.5 + (0.5 * (positiveCount / (positiveCount + negativeCount)));
+    emoji = positiveCount > positiveCount * 2 ? "😄" : "🙂";
+    score = 0.5 + (0.5 * (positiveCount / (positiveCount + negativeCount || 1)));
   } else if (negativeCount > positiveCount) {
     sentiment = negativeCount > positiveCount * 2 ? "Very Negative" : "Negative";
     emoji = negativeCount > positiveCount * 2 ? "😞" : "😕";
-    score = 0.5 - (0.5 * (negativeCount / (positiveCount + negativeCount)));
+    score = 0.5 - (0.5 * (negativeCount / (positiveCount + negativeCount || 1)));
   }
+  
+  console.log(`✅ LOCAL SENTIMENT ANALYSIS: ${sentiment} (Score: ${score.toFixed(2)})`);
   
   return {
     sentiment,
@@ -74,7 +78,7 @@ const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 const analyzeSentiment = async (text) => {
   // Add token validation
   if (!HUGGINGFACE_API_TOKEN) {
-    console.error("Hugging Face API token is not configured");
+    console.error("❌ HUGGINGFACE API: Token is not configured");
     return localSentimentFallback(text);
   }
   
@@ -89,7 +93,7 @@ const analyzeSentiment = async (text) => {
   
   while (attempts < MAX_RETRY_ATTEMPTS) {
     try {
-      console.log(`Making request to Hugging Face API (attempt ${attempts + 1})...`);
+      console.log(`🔍 HUGGINGFACE API: Making request (attempt ${attempts + 1})...`);
       
       const response = await axios.post(
         "https://api-inference.huggingface.co/models/distilbert-base-uncased-finetuned-sst-2-english",
@@ -133,6 +137,8 @@ const analyzeSentiment = async (text) => {
           emoji = "😕";
         }
         
+        console.log(`✅ HUGGINGFACE API: Sentiment analysis successful: ${sentiment} (Score: ${dominantSentiment.score.toFixed(2)})`);
+        
         return {
           sentiment,
           emoji,
@@ -142,6 +148,7 @@ const analyzeSentiment = async (text) => {
         };
       }
       
+      console.log("⚠️ HUGGINGFACE API: Received empty response, using neutral fallback");
       return { sentiment: "Neutral", emoji: "😐", score: 0.5, fallback: false };
       
     } catch (error) {
@@ -149,7 +156,7 @@ const analyzeSentiment = async (text) => {
       const statusCode = error.response?.status;
       attempts++;
       
-      console.error(`Attempt ${attempts} failed with status ${statusCode}:`, 
+      console.error(`❌ HUGGINGFACE API: Attempt ${attempts} failed with status ${statusCode}:`, 
         error.response?.data || error.message);
       
       // If we've reached max attempts or it's not a retryable error, break the loop
@@ -160,12 +167,12 @@ const analyzeSentiment = async (text) => {
       
       // Exponential backoff delay
       const delay = RETRY_DELAY_MS * Math.pow(2, attempts - 1);
-      console.log(`Retrying in ${delay}ms...`);
+      console.log(`⏱️ HUGGINGFACE API: Retrying in ${delay}ms...`);
       await sleep(delay);
     }
   }
   
-  console.error("All API attempts failed, using fallback sentiment analysis");
+  console.error("❌ HUGGINGFACE API: All attempts failed, switching to local fallback");
   
   // If all retries fail, use the fallback sentiment analysis
   return localSentimentFallback(text);
