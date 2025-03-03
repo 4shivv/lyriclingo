@@ -43,6 +43,8 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn }) {
   const [error, setError] = useState(null);
   const [logging, setLogging] = useState(false); // Track logging status
   const [isLoadingCards, setIsLoadingCards] = useState(false); // New state for loading flashcards
+  const [sentiment, setSentiment] = useState(null);
+  const [sentimentLoading, setSentimentLoading] = useState(false);
 
   useEffect(() => {
     if (selectedSong) {
@@ -63,6 +65,29 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn }) {
         });
     }
   }, [selectedSong]);
+
+  useEffect(() => {
+    if (selectedSong && flashcards.length > 0) {
+      setSentimentLoading(true);
+      
+      // Construct the URL with song and artist if available
+      let url = `${backendUrl}/api/songs/sentiment?song=${encodeURIComponent(selectedSong.song)}`;
+      if (selectedSong.artist) {
+        url += `&artist=${encodeURIComponent(selectedSong.artist)}`;
+      }
+      
+      fetch(url)
+        .then(res => res.json())
+        .then(data => {
+          setSentiment(data);
+          setSentimentLoading(false);
+        })
+        .catch(error => {
+          console.error("Error fetching sentiment:", error);
+          setSentimentLoading(false);
+        });
+    }
+  }, [selectedSong, flashcards.length, backendUrl]);
 
   // Function to log the current song
   const logCurrentSong = async () => {
@@ -201,6 +226,37 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn }) {
             &#8594; {/* Right Arrow */}
           </button>
         </motion.div>
+
+        {/* Sentiment Analysis Display */}
+        {flashcards.length > 0 && (
+          <motion.div 
+            className="sentiment-container"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+          >
+            <h3 className="sentiment-title">Song Mood Analysis</h3>
+            {sentimentLoading ? (
+              <div className="sentiment-loading">
+                <div className="loading-spinner"></div>
+                <span>Analyzing song mood...</span>
+              </div>
+            ) : sentiment ? (
+              <div className="sentiment-result">
+                <div className="sentiment-emoji">{sentiment.emoji}</div>
+                <div className="sentiment-text">
+                  This song appears to be <span className="sentiment-value">{sentiment.sentiment}</span> 
+                </div>
+                <div className="sentiment-score">Confidence: {sentiment.score}</div>
+                <div className="sentiment-info">
+                  Based on analysis of the English translations of these lyrics
+                </div>
+              </div>
+            ) : (
+              <div className="sentiment-unavailable">Mood analysis unavailable</div>
+            )}
+          </motion.div>
+        )}
 
         <Toast message={toast.message} type={toast.type} onClose={() => setToast({ ...toast, show: false })} />
       </div>

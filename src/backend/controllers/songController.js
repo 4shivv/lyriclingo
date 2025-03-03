@@ -5,6 +5,7 @@ const { translateBatch } = require("../services/translationService"); // ✅ Imp
 const axios = require("axios");
 const Redis = require("ioredis");
 const redis = new Redis(process.env.REDIS_URL || "redis://127.0.0.1:6379");
+const { analyzeSentiment } = require("../services/sentimentService");
 
 // Optionally add an error listener to handle connection issues gracefully:
 redis.on("error", (error) => {
@@ -216,5 +217,84 @@ const deleteSong = async (req, res) => {
   }
 };
 
+const getSongSentiment = async (req, res) => {
+  try {
+    const { song, artist } = req.query;
+    
+    if (!song) {
+      return res.status(400).json({ error: "Song title is required" });
+    }
+    
+    // Check Redis cache first if you have Redis setup
+    const cacheKey = `sentiment:${song}${artist ? ':' + artist : ''}`;
+    let cachedSentiment;
+    
+    try {
+      // Only try to get from cache if Redis is configured
+      if (global.redisClient) {
+        cachedSentiment = await global.redisClient.get(cacheKey);
+      }
+    } catch (cacheError) {
+      console.log("Cache check failed, proceeding without cache");
+    }
+    
+    if (cachedSentiment) {
+      console.log(`⚡ Serving sentiment analysis from cache for: ${song}`);
+      return res.json(JSON.parse(cachedSentiment));
+    }
+    
+    // Find the song's flashcards
+    let flashcards;
+    try {
+      // Reuse your existing getFlashcardsForSong logic or call it directly
+      if (typeof getFlashcardsForSong === 'function') {
+        // If we can call the function directly
+        const flashcardsResult = await getFlashcardsForSong(
+          { query: { song, artist } }, 
+          { json: (data) => { flashcards = data; } }
+        );
+      } else {
+        // Otherwise make an internal request to get flashcards
+        const response = await fetch(
+          `http://localhost:${process.env.PORT || 5001}/api/songs/flashcards?song=${encodeURIComponent(song)}${artist ? '&artist=' + encodeURIComponent(artist) : ''}`
+        );
+        
+        if (!response.ok) {
+          return res.status(500).json({ error: "Failed to fetch flashcards for sentiment analysis" });
+        }
+        
+        flashcards = await response.json();
+      }
+    } catch (flashcardsError) {
+      console.error("Error fetching flashcards:", flashcardsError);
+      return res.status(500).json({ error: "Failed to retrieve flashcards for sentiment analysis" });
+    }
+    
+    if (!flashcards || !Array.isArray(flashcards) || flashcards.length === 0) {
+      return res.status(404).json({ error: "No flashcards found for this song" });
+    }
+    
+    // Combine all English translations for sentiment analysis
+    const englishText = flashcards.map(card => card.back).join(" ");
+    
+    // Analyze sentiment
+    const sentimentResult = await analyzeSentiment(englishText);
+    
+    // Cache the sentiment result for 7 days if Redis is available
+    try {
+      if (global.redisClient) {
+        await global.redisClient.setex(cacheKey, 604800, JSON.stringify(sentimentResult));
+      }
+    } catch (cacheError) {
+      console.log("Failed to cache sentiment result:", cacheError.message);
+    }
+    
+    res.json(sentimentResult);
+  } catch (error) {
+    console.error("Error analyzing song sentiment:", error);
+    res.status(500).json({ error: "Failed to analyze song sentiment" });
+  }
+};
+
 // ✅ Ensure all functions are correctly exported
-module.exports = { logSong, getSongHistory, clearHistory, getFlashcardsForSong, deleteSong };
+module.exports = { logSong, getSongHistory, clearHistory, getFlashcardsForSong, deleteSong, getSongSentiment };

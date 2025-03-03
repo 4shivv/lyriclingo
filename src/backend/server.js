@@ -31,6 +31,12 @@ redis.on("error", (err) => {
   console.error("Redis error:", err);
 });
 
+// Add this near your Redis setup if you have Redis
+// Make Redis client available globally for use in controllers
+if (redis) {
+  global.redisClient = redis;
+}
+
 // ✅ API Routes - Ensure these match correctly
 app.use("/api/spotify", spotifyRoutes);
 app.use("/api/songs", songRoutes);
