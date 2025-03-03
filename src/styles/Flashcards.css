@@ -259,6 +259,12 @@
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+}
+
+.sentiment-container:hover {
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+  transform: translateY(-2px);
 }
 
 .sentiment-title {
@@ -357,4 +363,29 @@
   .sentiment-text {
     font-size: 1rem;
   }
+  
+  .sentiment-notice,
+  .sentiment-error {
+    font-size: 0.7rem;
+    padding: 3px 8px;
+  }
+}
+
+/* Add these styles to your Flashcards.css file */
+
+.sentiment-notice {
+  font-size: 0.8rem;
+  color: #ffa500; /* Orange color for notices */
+  margin-top: 5px;
+  background: rgba(255, 165, 0, 0.1);
+  padding: 4px 10px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 165, 0, 0.3);
+}
+
+.sentiment-error {
+  font-size: 0.8rem;
+  color: #ff6b6b; /* Soft red for errors */
+  margin-top: 5px;
+  font-style: italic;
 }

@@ -248,9 +248,22 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn }) {
                   This song appears to be <span className="sentiment-value">{sentiment.sentiment}</span> 
                 </div>
                 <div className="sentiment-score">Confidence: {sentiment.score}</div>
-                <div className="sentiment-info">
-                  Based on analysis of the English translations of these lyrics
-                </div>
+                
+                {sentiment.notice && (
+                  <div className="sentiment-notice">
+                    {sentiment.notice}
+                  </div>
+                )}
+                
+                {sentiment.error ? (
+                  <div className="sentiment-error">
+                    {sentiment.error}
+                  </div>
+                ) : (
+                  <div className="sentiment-info">
+                    Based on analysis of the English translations of these lyrics
+                  </div>
+                )}
               </div>
             ) : (
               <div className="sentiment-unavailable">Mood analysis unavailable</div>

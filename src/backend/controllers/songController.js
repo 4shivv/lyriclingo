@@ -225,7 +225,7 @@ const getSongSentiment = async (req, res) => {
       return res.status(400).json({ error: "Song title is required" });
     }
     
-    // Check Redis cache first if you have Redis setup
+    // Check Redis cache first if Redis is configured
     const cacheKey = `sentiment:${song}${artist ? ':' + artist : ''}`;
     let cachedSentiment;
     
@@ -246,28 +246,22 @@ const getSongSentiment = async (req, res) => {
     // Find the song's flashcards
     let flashcards;
     try {
-      // Reuse your existing getFlashcardsForSong logic or call it directly
-      if (typeof getFlashcardsForSong === 'function') {
-        // If we can call the function directly
-        const flashcardsResult = await getFlashcardsForSong(
-          { query: { song, artist } }, 
-          { json: (data) => { flashcards = data; } }
-        );
-      } else {
-        // Otherwise make an internal request to get flashcards
-        const response = await fetch(
-          `http://localhost:${process.env.PORT || 5001}/api/songs/flashcards?song=${encodeURIComponent(song)}${artist ? '&artist=' + encodeURIComponent(artist) : ''}`
-        );
-        
-        if (!response.ok) {
-          return res.status(500).json({ error: "Failed to fetch flashcards for sentiment analysis" });
-        }
-        
-        flashcards = await response.json();
+      // Try to get flashcards from the existing endpoint
+      const flashcardsUrl = `${req.protocol}://${req.get('host')}/api/songs/flashcards?song=${encodeURIComponent(song)}${artist ? '&artist=' + encodeURIComponent(artist) : ''}`;
+      const response = await fetch(flashcardsUrl);
+      
+      if (!response.ok) {
+        console.error(`Failed to fetch flashcards: ${response.status} ${response.statusText}`);
+        return res.status(500).json({ error: "Failed to fetch flashcards for sentiment analysis" });
       }
+      
+      flashcards = await response.json();
     } catch (flashcardsError) {
       console.error("Error fetching flashcards:", flashcardsError);
-      return res.status(500).json({ error: "Failed to retrieve flashcards for sentiment analysis" });
+      return res.status(500).json({ 
+        error: "Failed to retrieve flashcards for sentiment analysis",
+        details: flashcardsError.message 
+      });
     }
     
     if (!flashcards || !Array.isArray(flashcards) || flashcards.length === 0) {
@@ -275,24 +269,58 @@ const getSongSentiment = async (req, res) => {
     }
     
     // Combine all English translations for sentiment analysis
-    const englishText = flashcards.map(card => card.back).join(" ");
+    // Limit the amount of text to avoid overloading the API
+    const englishText = flashcards
+      .map(card => card.back)
+      .join(" ")
+      .slice(0, 2000); // Limit to 2000 characters
     
-    // Analyze sentiment
-    const sentimentResult = await analyzeSentiment(englishText);
+    console.log(`Processing sentiment for song "${song}" with ${flashcards.length} flashcards`);
+    
+    // Analyze sentiment with improved error handling
+    let sentimentResult;
+    try {
+      sentimentResult = await analyzeSentiment(englishText);
+      console.log(`✅ Sentiment analysis completed: ${sentimentResult.sentiment}`);
+    } catch (sentimentError) {
+      console.error("Failed to analyze sentiment:", sentimentError);
+      
+      // Provide a default sentiment when API fails
+      sentimentResult = {
+        sentiment: "Neutral",
+        emoji: "😐",
+        score: "0.50",
+        error: "Analysis service unavailable",
+        fallback: true
+      };
+    }
     
     // Cache the sentiment result for 7 days if Redis is available
     try {
       if (global.redisClient) {
         await global.redisClient.setex(cacheKey, 604800, JSON.stringify(sentimentResult));
+        console.log(`Cached sentiment result for: ${song}`);
       }
     } catch (cacheError) {
       console.log("Failed to cache sentiment result:", cacheError.message);
     }
     
+    // Include a notice if fallback was used
+    if (sentimentResult.fallback) {
+      sentimentResult.notice = "Using simplified analysis due to service unavailability";
+    }
+    
     res.json(sentimentResult);
   } catch (error) {
     console.error("Error analyzing song sentiment:", error);
-    res.status(500).json({ error: "Failed to analyze song sentiment" });
+    res.status(500).json({ 
+      error: "Failed to analyze song sentiment",
+      fallback: {
+        sentiment: "Unknown",
+        emoji: "❓",
+        score: "0.00"  
+      }
+    });
   }
 };
 
