@@ -4,6 +4,7 @@ const DEEPL_API_KEY = process.env.DEEPL_API_KEY;
 
 /**
  * Comprehensive mapping of Spanish song contractions to their full forms
+ * Includes verb conjugations, articles, and common expressions
  */
 const SPANISH_CONTRACTIONS = {
     // Common verb contractions
@@ -23,15 +24,34 @@ const SPANISH_CONTRACTIONS = {
     "pue'": "puede", // Can (3rd person)
     "va'": "vas",    // You go
     "vo'": "voy",    // I go
+    
+    // Second-person contractions (critical for song lyrics)
+    "quiere'": "quieres", // You want
+    "tiene'": "tienes",   // You have
+    "puede'": "puedes",   // You can
+    "sabe'": "sabes",     // You know
+    "viene'": "vienes",   // You come
+    "hace'": "haces",     // You do/make
+    "dice'": "dices",     // You say
+    "sale'": "sales",     // You leave
+    "pone'": "pones",     // You put
+    "baila'": "bailas",   // You dance
+    "canta'": "cantas",   // You sing
+    "habla'": "hablas",   // You speak
+    "mira'": "miras",     // You look
+    "escucha'": "escuchas", // You listen
+    "llama'": "llamas",   // You call
+    "busca'": "buscas",   // You search
+    "siente'": "sientes", // You feel
+    "piensa'": "piensas", // You think
+    "entra'": "entras",   // You enter
+    "toca'": "tocas",     // You touch/play
+    
+    // First-person contractions
     "quie'": "quiere", // He/she/it wants
     "sie'": "siente", // He/she/it feels
     "tie'": "tiene", // He/she/it has
     "vie'": "viene", // He/she/it comes
-    "sa'": "sabes",  // You know
-    "se'": "ser",    // To be
-    "do'": "dos",    // Two
-    "ma'": "más",    // More
-    "po'": "por",    // For/by
     "ve'": "ver",    // To see
     "di'": "dice",   // He/she/it says
     "di": "dice",    // He/she/it says
@@ -61,6 +81,11 @@ const SPANISH_CONTRACTIONS = {
     "d'el": "de él",      // Of him
     "m'a": "me ha",       // (He/she) has (done to) me
     "t'a": "te ha",       // (He/she) has (done to) you
+    
+    // Special case verb phrases
+    "dar todo": "darás todo", // You will give everything
+    "dar más": "darás más",   // You will give more
+    "dar menos": "darás menos", // You will give less
     
     // Specific to song lyrics
     "bellaquit'": "bellaquita", // Cute/pretty
@@ -112,7 +137,7 @@ const getDeduplicationStats = (textArray) => {
 };
 
 /**
- * Preprocesses Spanish text to expand contractions while preserving original formatting
+ * Preprocesses Spanish text to expand contractions and handle contextual patterns
  * 
  * @param {string} text - Spanish text to preprocess
  * @returns {string} - Preprocessed text ready for translation
@@ -152,11 +177,36 @@ const preprocessSpanishText = (text) => {
         return possibleExpansion ? possibleExpansion + ending : match;
     });
     
+    // Handle contextual patterns with specific verb forms and reflexive structures
+    const contextualPatterns = [
+        // "si me baila'" → "si bailas para mí" (If you dance for me)
+        [/\bsi me ([a-zá-úñ]+)'\b/gi, "si $1s para mí"],  
+        
+        // "me lo dar" → "me lo darás" (You will give it to me)
+        [/\bme lo dar\b/gi, "me lo darás"],               
+        
+        // "te lo dar" → "te lo daré" (I will give it to you)
+        [/\bte lo dar\b/gi, "te lo daré"],                
+        
+        // "si me das" → "si me das" (If you give me)
+        [/\bsi me das\b/gi, "si me das"],
+        
+        // "dar todo" → "darás todo" (You will give everything)
+        [/\bdar todo\b/gi, "darás todo"],
+        
+        // "lo dar" → "lo darás" (You will give it)
+        [/\blo dar\b/gi, "lo darás"]
+    ];
+
+    contextualPatterns.forEach(([pattern, replacement]) => {
+        processedText = processedText.replace(pattern, replacement);
+    });
+    
     return processedText;
 };
 
 /**
- * Post-processes translated text to fix common issues while maintaining original formatting
+ * Post-processes translated text to fix common issues and artifacts
  * 
  * @param {string} translatedText - Raw translation from DeepL
  * @returns {string} - Cleaned and improved translation
@@ -174,6 +224,19 @@ const postprocessTranslation = (translatedText) => {
         .replace(/exponentе/g, "exponent") // Fix character issues
         .replace(/equi'/g, "equity") // Fix specific case from example
         .trim();
+    
+    // Fix common mistranslations for specific phrases
+    const postProcessingPatterns = [
+        // Fix common mistranslations
+        [/If I dance for me/gi, "If you dance for me"],
+        [/If I dance'/gi, "If you dance"],
+        [/I'll give it all to me/gi, "I'll give you everything"],
+        [/I will give it all to me/gi, "I will give you everything"]
+    ];
+    
+    postProcessingPatterns.forEach(([pattern, replacement]) => {
+        processed = processed.replace(pattern, replacement);
+    });
     
     // Check for untranslated Spanish words that should have been translated
     const commonSpanishWords = [
