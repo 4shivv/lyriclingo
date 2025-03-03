@@ -209,3 +209,39 @@
   50% { opacity: 1; }
   100% { opacity: 0.4; }
 }
+
+/* Add this responsive typography section at the end of your file */
+@media (max-width: 768px) {
+  .flashcards-title {
+    font-size: 2rem; /* Reduced from 3rem to match home-title mobile size */
+  }
+  
+  .flashcards-subtitle {
+    font-size: 1.2rem; /* Reduced from 1.5rem to match home-tagline mobile size */
+  }
+  
+  .flashcards-content {
+    padding: 40px 20px; /* Reduced padding on mobile */
+    transform: translateY(30px) !important; /* Adjusted downward shift for mobile */
+  }
+  
+  .flashcard-container {
+    width: 320px; /* Slightly smaller flashcard width on mobile */
+    height: 200px; /* Slightly smaller flashcard height on mobile */
+  }
+  
+  .flashcard-face {
+    font-size: 1rem; /* Adjusted text size inside flashcards */
+    padding: 15px; /* Reduced padding inside flashcards */
+  }
+  
+  .flashcard-controls {
+    font-size: 0.9rem; /* Smaller controls text */
+    margin-top: 15px; /* Reduced margin */
+  }
+  
+  .nav-button {
+    padding: 8px 12px; /* Smaller buttons */
+    font-size: 0.9rem; /* Smaller button text */
+  }
+}

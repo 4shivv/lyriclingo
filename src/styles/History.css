@@ -141,3 +141,39 @@
   transform: scale(1.05);
   background: rgba(255, 255, 255, 0.1);
 }
+
+/* Add this responsive typography section at the end of your file */
+@media (max-width: 768px) {
+  .history-title {
+    font-size: 2rem; /* Reduced from 3rem to match home-title mobile size */
+  }
+  
+  .history-subtitle {
+    font-size: 1.2rem; /* Reduced from 1.5rem to match home-tagline mobile size */
+  }
+  
+  .history-info {
+    font-size: 1rem; /* Slightly reduced for better mobile display */
+  }
+  
+  .history-date {
+    font-size: 0.9rem; /* Smaller date text on mobile */
+  }
+  
+  .history-empty {
+    font-size: 1rem; /* Adjusted empty state text */
+  }
+  
+  .clear-history-button {
+    font-size: 0.9rem; /* Smaller button text */
+    padding: 10px 16px; /* Slightly reduced padding */
+  }
+  
+  .history-container {
+    padding: 30px 20px; /* Reduced padding on mobile */
+  }
+  
+  .history-content {
+    transform: translateY(50px); /* Adjusted downward shift for mobile */
+  }
+}
