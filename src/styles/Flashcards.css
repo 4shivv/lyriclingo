@@ -389,3 +389,118 @@
   margin-top: 5px;
   font-style: italic;
 }
+
+/* Primary Emotion styling */
+.primary-emotion {
+  font-size: 1.1rem;
+  color: #f0f0f0;
+  margin-top: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.emotion-value {
+  font-weight: 600;
+  color: #fcdc4d; /* Yellow/gold highlight for emotions */
+  margin: 0 5px;
+}
+
+.emotion-score {
+  font-size: 0.8rem;
+  color: #aaaaaa;
+  opacity: 0.8;
+}
+
+/* Additional emotions chips */
+.emotion-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+.emotion-chip {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+  padding: 5px 12px;
+  font-size: 0.85rem;
+  color: #e0e0e0;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.chip-score {
+  font-size: 0.75rem;
+  opacity: 0.8;
+  color: #cccccc;
+}
+
+/* Sentiment source indicator */
+.sentiment-source {
+  font-size: 0.8rem;
+  color: #8a8aff; /* Light blue */
+  margin-top: 5px;
+  background: rgba(138, 138, 255, 0.1);
+  padding: 4px 10px;
+  border-radius: 20px;
+  border: 1px solid rgba(138, 138, 255, 0.3);
+}
+
+.sentiment-notice {
+  font-size: 0.8rem;
+  color: #ffa500; /* Orange color for notices */
+  margin-top: 5px;
+  background: rgba(255, 165, 0, 0.1);
+  padding: 4px 10px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 165, 0, 0.3);
+}
+
+.sentiment-error {
+  font-size: 0.8rem;
+  color: #ff6b6b; /* Soft red for errors */
+  margin-top: 5px;
+  font-style: italic;
+}
+
+/* Enhance the existing sentiment container for better presentation */
+.sentiment-container {
+  transition: all 0.3s ease;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.sentiment-container:hover {
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+  transform: translateY(-2px);
+}
+
+@media (max-width: 768px) {
+  .primary-emotion {
+    font-size: 0.9rem;
+  }
+  
+  .emotion-chips {
+    gap: 6px;
+  }
+  
+  .emotion-chip {
+    font-size: 0.75rem;
+    padding: 3px 8px;
+  }
+  
+  .sentiment-source,
+  .sentiment-notice,
+  .sentiment-error {
+    font-size: 0.7rem;
+    padding: 3px 8px;
+  }
+}

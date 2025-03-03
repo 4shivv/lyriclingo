@@ -227,7 +227,7 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn }) {
           </button>
         </motion.div>
 
-        {/* Sentiment Analysis Display */}
+        {/* Sentiment Analysis Display with Emotions */}
         {flashcards.length > 0 && (
           <motion.div 
             className="sentiment-container"
@@ -245,9 +245,35 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn }) {
               <div className="sentiment-result">
                 <div className="sentiment-emoji">{sentiment.emoji}</div>
                 <div className="sentiment-text">
-                  This song appears to be <span className="sentiment-value">{sentiment.sentiment}</span> 
+                  This song appears to be <span className="sentiment-value">{sentiment.sentiment}</span>
                 </div>
+                
+                {/* Primary Emotion Display */}
+                {sentiment.primaryEmotion && sentiment.primaryEmotion !== "Unknown" && (
+                  <div className="primary-emotion">
+                    Primary emotion: <span className="emotion-value">{sentiment.primaryEmotion}</span>
+                    <span className="emotion-score">({sentiment.emotionScore})</span>
+                  </div>
+                )}
+                
+                {/* Additional Emotions */}
+                {sentiment.emotions && sentiment.emotions.length > 1 && (
+                  <div className="emotion-chips">
+                    {sentiment.emotions.slice(1, 3).map((emotion, index) => (
+                      <div key={index} className="emotion-chip">
+                        {emotion.emotion} <span className="chip-score">{emotion.score}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                
                 <div className="sentiment-score">Confidence: {sentiment.score}</div>
+                
+                {sentiment.localML && (
+                  <div className="sentiment-source">
+                    Analysis performed using local ML model
+                  </div>
+                )}
                 
                 {sentiment.notice && (
                   <div className="sentiment-notice">
