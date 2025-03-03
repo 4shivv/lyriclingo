@@ -441,15 +441,31 @@
   color: #cccccc;
 }
 
-/* Sentiment source indicator */
+/* Source indicator styles with colors for different analysis types */
 .sentiment-source {
   font-size: 0.8rem;
-  color: #8a8aff; /* Light blue */
   margin-top: 5px;
-  background: rgba(138, 138, 255, 0.1);
   padding: 4px 10px;
   border-radius: 20px;
+  display: inline-block;
+}
+
+.sentiment-source.api {
+  color: #8a8aff; /* Blue for API */
+  background: rgba(138, 138, 255, 0.1);
   border: 1px solid rgba(138, 138, 255, 0.3);
+}
+
+.sentiment-source.local-ml {
+  color: #64e764; /* Green for local ML */
+  background: rgba(100, 231, 100, 0.1);
+  border: 1px solid rgba(100, 231, 100, 0.3);
+}
+
+.sentiment-source.hybrid {
+  color: #e764e7; /* Purple for hybrid */
+  background: rgba(231, 100, 231, 0.1);
+  border: 1px solid rgba(231, 100, 231, 0.3);
 }
 
 .sentiment-notice {

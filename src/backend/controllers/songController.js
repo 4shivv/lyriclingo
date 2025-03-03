@@ -217,8 +217,7 @@ const deleteSong = async (req, res) => {
   }
 };
 
-// Updated getSongSentiment function for songController.js
-// This replaces the existing getSongSentiment function
+// Updated getSongSentiment function to handle hybrid results
 
 const getSongSentiment = async (req, res) => {
   try {
@@ -276,21 +275,25 @@ const getSongSentiment = async (req, res) => {
     
     console.log(`🔍 Starting sentiment analysis for song: "${song}" with ${flashcards.length} flashcards`);
     
-    // Analyze sentiment with enhanced ML capabilities
+    // Analyze sentiment with the hybrid approach
     let sentimentResult;
     try {
       sentimentResult = await analyzeSentiment(englishText);
       
-      // Log results with source information
+      // Log results with appropriate source information
       if (sentimentResult.localML) {
-        console.log(`✅ LOCAL ML MODEL used for "${song}": ${sentimentResult.sentiment} / ${sentimentResult.primaryEmotion}`);
+        console.log(`✅ FULL LOCAL ML used for "${song}": ${sentimentResult.sentiment} / ${sentimentResult.primaryEmotion}`);
+      } else if (sentimentResult.hybrid) {
+        const { sentimentSource, emotionsSource } = sentimentResult.hybridComponents;
+        console.log(`✅ HYBRID ANALYSIS for "${song}": ${sentimentResult.sentiment} / ${sentimentResult.primaryEmotion}`);
+        console.log(`   Sentiment: ${sentimentSource.toUpperCase()}, Emotions: ${emotionsSource.toUpperCase()}`);
       } else {
-        console.log(`✅ HUGGINGFACE API success for "${song}": ${sentimentResult.sentiment} / ${sentimentResult.primaryEmotion}`);
+        console.log(`✅ FULL API success for "${song}": ${sentimentResult.sentiment} / ${sentimentResult.primaryEmotion}`);
       }
     } catch (sentimentError) {
       console.error(`❌ CRITICAL: Sentiment analysis totally failed for "${song}":`, sentimentError);
       
-      // Provide a default sentiment when both API and local ML fail
+      // Provide a default sentiment when all methods fail
       sentimentResult = {
         sentiment: "Neutral",
         emoji: "😐",
@@ -300,7 +303,8 @@ const getSongSentiment = async (req, res) => {
         emotionScore: "0.00",
         error: "Analysis service unavailable",
         fallback: true,
-        localML: false
+        localML: false,
+        hybrid: false
       };
       console.log(`⚠️ Using emergency neutral fallback for "${song}"`);
     }
@@ -315,7 +319,15 @@ const getSongSentiment = async (req, res) => {
     try {
       if (global.redisClient) {
         await global.redisClient.setex(cacheKey, 604800, JSON.stringify(sentimentResult));
-        console.log(`💾 CACHED ${sentimentResult.localML ? "LOCAL ML" : "API"} sentiment result for: "${song}"`);
+        
+        // Log with appropriate source information
+        if (sentimentResult.localML) {
+          console.log(`💾 CACHED LOCAL ML sentiment result for: "${song}"`);
+        } else if (sentimentResult.hybrid) {
+          console.log(`💾 CACHED HYBRID sentiment result for: "${song}"`);
+        } else {
+          console.log(`💾 CACHED API sentiment result for: "${song}"`);
+        }
       }
     } catch (cacheError) {
       console.log(`❌ Failed to cache sentiment result for "${song}":`, cacheError.message);
