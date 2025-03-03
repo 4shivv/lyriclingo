@@ -89,6 +89,7 @@ function Navbar({ isLoggedIn, setIsLoggedIn }) {
             onAnimationComplete={() => {
               if (!isMobileMenuOpen) setIsClosing(false);
             }}
+            
           >
             {isLoggedIn ? (
               <motion.button 
