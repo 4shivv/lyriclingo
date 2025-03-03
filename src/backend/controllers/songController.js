@@ -217,6 +217,9 @@ const deleteSong = async (req, res) => {
   }
 };
 
+// Updated getSongSentiment function for songController.js
+// This replaces the existing getSongSentiment function
+
 const getSongSentiment = async (req, res) => {
   try {
     const { song, artist } = req.query;
@@ -269,52 +272,53 @@ const getSongSentiment = async (req, res) => {
     }
     
     // Combine all English translations for sentiment analysis
-    // Limit the amount of text to avoid overloading the API
-    const englishText = flashcards
-      .map(card => card.back)
-      .join(" ")
-      .slice(0, 2000); // Limit to 2000 characters
+    const englishText = flashcards.map(card => card.back).join(" ");
     
-    console.log(`Processing sentiment for song "${song}" with ${flashcards.length} flashcards`);
+    console.log(`🔍 Starting sentiment analysis for song: "${song}" with ${flashcards.length} flashcards`);
     
-    // Analyze sentiment with improved error handling and explicit logging
+    // Analyze sentiment with enhanced ML capabilities
     let sentimentResult;
     try {
-      console.log(`🔍 Starting sentiment analysis for song: "${song}"`);
       sentimentResult = await analyzeSentiment(englishText);
       
-      if (sentimentResult.fallback) {
-        console.log(`⚠️ LOCAL FALLBACK used for sentiment analysis on "${song}": ${sentimentResult.sentiment}`);
+      // Log results with source information
+      if (sentimentResult.localML) {
+        console.log(`✅ LOCAL ML MODEL used for "${song}": ${sentimentResult.sentiment} / ${sentimentResult.primaryEmotion}`);
       } else {
-        console.log(`✅ HUGGINGFACE API success for "${song}": ${sentimentResult.sentiment}`);
+        console.log(`✅ HUGGINGFACE API success for "${song}": ${sentimentResult.sentiment} / ${sentimentResult.primaryEmotion}`);
       }
     } catch (sentimentError) {
       console.error(`❌ CRITICAL: Sentiment analysis totally failed for "${song}":`, sentimentError);
       
-      // Provide a default sentiment when API fails
+      // Provide a default sentiment when both API and local ML fail
       sentimentResult = {
         sentiment: "Neutral",
         emoji: "😐",
         score: "0.50",
+        emotions: [],
+        primaryEmotion: "Unknown",
+        emotionScore: "0.00",
         error: "Analysis service unavailable",
-        fallback: true
+        fallback: true,
+        localML: false
       };
       console.log(`⚠️ Using emergency neutral fallback for "${song}"`);
     }
+    
+    // Add song metadata
+    sentimentResult.songMetadata = {
+      title: song,
+      artist: artist || "Unknown Artist"
+    };
     
     // Cache the sentiment result for 7 days if Redis is available
     try {
       if (global.redisClient) {
         await global.redisClient.setex(cacheKey, 604800, JSON.stringify(sentimentResult));
-        console.log(`💾 CACHED ${sentimentResult.fallback ? "LOCAL" : "API"} sentiment result for: "${song}"`);
+        console.log(`💾 CACHED ${sentimentResult.localML ? "LOCAL ML" : "API"} sentiment result for: "${song}"`);
       }
     } catch (cacheError) {
       console.log(`❌ Failed to cache sentiment result for "${song}":`, cacheError.message);
-    }
-    
-    // Include a notice if fallback was used
-    if (sentimentResult.fallback) {
-      sentimentResult.notice = "Using simplified analysis due to service unavailability";
     }
     
     res.json(sentimentResult);
@@ -325,7 +329,10 @@ const getSongSentiment = async (req, res) => {
       fallback: {
         sentiment: "Unknown",
         emoji: "❓",
-        score: "0.00"  
+        score: "0.00",
+        emotions: [],
+        primaryEmotion: "Unknown",
+        emotionScore: "0.00"
       }
     });
   }
