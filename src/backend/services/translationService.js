@@ -127,6 +127,7 @@ const SPANISH_CONTRACTIONS = {
     "tra'": "tras",      // After
     "dí'": "día",        // Day
     "ta'bien": "también", // Also
+    "pa'cá": "acá", // Converts "pa'cá" to "acá"
 };
 
 /**
