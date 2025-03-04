@@ -60,6 +60,62 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn }) {
   const [sentiment, setSentiment] = useState(null);
   const [sentimentLoading, setSentimentLoading] = useState(false);
 
+  // State to track navigation intervals
+  const [navInterval, setNavInterval] = useState(null);
+
+  // Function to navigate to previous flashcard
+  const navigatePrevious = () => {
+    setCurrentIndex((prev) => (prev === 0 ? flashcards.length - 1 : prev - 1));
+    setFlipped(false); // Reset flip state when navigating
+  };
+
+  // Function to navigate to next flashcard
+  const navigateNext = () => {
+    setCurrentIndex((prev) => (prev + 1) % flashcards.length);
+    setFlipped(false); // Reset flip state when navigating
+  };
+
+  // Function to start continuous navigation
+  const startContinuousNavigation = (direction) => {
+    if (flashcards.length === 0 || isLoadingCards) return;
+    
+    // Clear any existing interval
+    if (navInterval) clearInterval(navInterval);
+    
+    // Perform initial navigation
+    if (direction === 'previous') {
+      navigatePrevious();
+    } else {
+      navigateNext();
+    }
+    
+    // Set up interval for continuous navigation (250ms feels responsive but not too fast)
+    const interval = setInterval(() => {
+      if (direction === 'previous') {
+        navigatePrevious();
+      } else {
+        navigateNext();
+      }
+    }, 250);
+    
+    setNavInterval(interval);
+  };
+
+  // Function to stop continuous navigation
+  const stopContinuousNavigation = () => {
+    if (navInterval) {
+      clearInterval(navInterval);
+      setNavInterval(null);
+    }
+  };
+
+  // Clean up interval on component unmount
+  useEffect(() => {
+    return () => {
+      if (navInterval) clearInterval(navInterval);
+    };
+  }, [navInterval]);
+
   useEffect(() => {
     if (selectedSong) {
       setIsLoadingCards(true); // Set loading to true before fetch
@@ -226,7 +282,12 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn }) {
         >
           <button 
             className="nav-button" 
-            onClick={() => setCurrentIndex((prev) => (prev === 0 ? flashcards.length - 1 : prev - 1))}
+            onClick={navigatePrevious}
+            onMouseDown={() => startContinuousNavigation('previous')}
+            onMouseUp={stopContinuousNavigation}
+            onMouseLeave={stopContinuousNavigation}
+            onTouchStart={() => startContinuousNavigation('previous')}
+            onTouchEnd={stopContinuousNavigation}
             disabled={isLoadingCards || flashcards.length === 0}
           >
             &#8592; {/* Left Arrow */}
@@ -246,7 +307,12 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn }) {
           
           <button 
             className="nav-button" 
-            onClick={() => setCurrentIndex((prev) => (prev + 1) % flashcards.length)}
+            onClick={navigateNext}
+            onMouseDown={() => startContinuousNavigation('next')}
+            onMouseUp={stopContinuousNavigation}
+            onMouseLeave={stopContinuousNavigation}
+            onTouchStart={() => startContinuousNavigation('next')}
+            onTouchEnd={stopContinuousNavigation}
             disabled={isLoadingCards || flashcards.length === 0}
           >
             &#8594; {/* Right Arrow */}
