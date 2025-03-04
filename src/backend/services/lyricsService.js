@@ -234,7 +234,7 @@ const fetchLyricsUrl = async (song, artist) => {
 };
 
 /**
- * Scrape lyrics from a Genius lyrics URL with improved line break handling
+ * Scrape lyrics from a Genius lyrics URL with improved HTML handling
  */
 const scrapeLyrics = async (lyricsUrl) => {
     try {
@@ -243,64 +243,51 @@ const scrapeLyrics = async (lyricsUrl) => {
         
         let lyrics = "";
         
-        // Select the lyrics container
+        // Select the lyrics container with data-lyrics-container attribute
         const lyricsContainer = $('[data-lyrics-container="true"]');
         
         // Process each element in the lyrics container
         lyricsContainer.each((_, container) => {
-            $(container).find('br').replaceWith('\n'); // Replace <br> tags with newlines
+            // First replace all <br> tags with newlines for proper line breaks
+            $(container).find('br').replaceWith('\n');
             
-            // Process each direct child of the lyrics container
-            $(container).contents().each((_, node) => {
-                if (node.type === 'text') {
-                    // Add text nodes directly
-                    lyrics += $(node).text();
-                } else if (node.name === 'a' || node.name === 'span' || node.name === 'i') {
-                    // Handle inline elements that contain lyrics
-                    lyrics += $(node).text();
-                } else if (node.name === 'div') {
-                    // New line for div elements (usually line breaks in Genius)
-                    if (lyrics && !lyrics.endsWith('\n')) {
-                        lyrics += '\n';
-                    }
-                    lyrics += $(node).text() + '\n';
-                }
-            });
+            // Process the HTML content of the container
+            const html = $(container).html();
+            if (!html) return;
             
-            // Add a newline after each container
-            if (!lyrics.endsWith('\n')) {
-                lyrics += '\n';
-            }
+            // Convert HTML to text with proper line breaks
+            // This ensures we capture all text, including text within tags like <i>
+            let processedText = html
+                // Replace closing tags followed by quotes with line breaks
+                .replace(/<\/[^>]+>"([^<])/g, '"\n$1')
+                // Replace opening quotes with line breaks when appropriate
+                .replace(/"([^"]+)"/g, '\n"$1"')
+                // Handle other tag closures with line breaks when needed
+                .replace(/<\/[^>]+>([A-Z])/g, '\n$1')
+                // Get text content while preserving line breaks
+                .replace(/<[^>]+>/g, '');
+            
+            // Clean up multiple consecutive newlines and add to lyrics
+            processedText = processedText
+                .replace(/\n\s*\n\s*\n+/g, '\n\n')
+                .trim();
+                
+            lyrics += processedText + '\n';
         });
         
-        // Remove section markers like [Verse], [Chorus], etc.
-        lyrics = lyrics.replace(/\[.*?\]\n?/g, "");
-        
-        // Clean up multiple consecutive newlines
-        lyrics = lyrics.replace(/\n\s*\n\s*\n+/g, "\n\n");
-        
-        // Process each line for optimal translation
-        lyrics = lyrics.split('\n')
-                       .map(line => {
-                          // Trim whitespace
-                          line = line.trim();
-                          
-                          // Handle lines with apostrophes (common in Spanish lyrics with elisions)
-                          // e.g., "e'" becomes "es", "pa'" becomes "para"
-                          line = line.replace(/ e'(\s|$)/g, " es$1")
-                                     .replace(/ pa'(\s|$)/g, " para$1")
-                                     .replace(/ to'(\s|$)/g, " todo$1")
-                                     .replace(/ na'(\s|$)/g, " nada$1")
-                                     .replace(/ 'ta(\s|$)/g, " esta$1")
-                                     .replace(/ 'toy /g, " estoy ")
-                                     .replace(/ da'(\s|$)/g, " dar$1");
-                                     
-                          return line;
-                       })
-                       // Only filter out truly empty lines
-                       .filter(line => line.length > 0 && /[a-zA-Z0-9áéíóúüñÁÉÍÓÚÜÑ]/.test(line))
-                       .join('\n')
-                       .trim();
+        // Process the lyrics text for optimal song structure
+        lyrics = lyrics
+            // Remove section markers like [Verse], [Chorus], etc. if needed
+            // .replace(/\[.*?\]\n?/g, "")
+            // Keep section markers for now, they'll be filtered later
+            
+            // Clean up multiple consecutive newlines
+            .replace(/\n\s*\n\s*\n+/g, '\n\n')
+            // Ensure each line is properly separated
+            .split('\n')
+            .map(line => line.trim())
+            .join('\n')
+            .trim();
         
         return lyrics;
     } catch (error) {

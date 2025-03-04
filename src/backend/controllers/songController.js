@@ -85,8 +85,6 @@ const clearHistory = async (req, res) => {
 };
 
 
-// This is the updated getFlashcardsForSong function to implement cross-batch deduplication
-
 const getFlashcardsForSong = async (req, res) => {
   try {
     const songTitle = req.query.song;
@@ -138,25 +136,32 @@ const getFlashcardsForSong = async (req, res) => {
     
     console.log("🔍 Raw Lyrics Received");
 
-    // Split lyrics by line breaks to preserve original structure
+    // Split lyrics by line breaks and filter properly
     const lyricsLines = data.lyrics.split('\n')
       .map(line => line.trim())
-      .filter(line => line.length > 0); // Remove empty lines
+      // Keep all non-empty lines but filter out section markers in square brackets
+      .filter(line => {
+        // Remove empty lines
+        if (line.length === 0) return false;
+        
+        // Filter out section markers (lines that are entirely wrapped in square brackets)
+        // This regex checks if the entire line is a section marker: [Something: Something]
+        const sectionMarkerRegex = /^\[.*\]$/;
+        return !sectionMarkerRegex.test(line);
+      });
     
-    console.log(`📝 Found ${lyricsLines.length} lyric lines`);
+    console.log(`📝 Found ${lyricsLines.length} lyric lines after filtering section markers`);
 
-    // Prepare arrays for translation
-    let frontLines = lyricsLines;
+    // ===== OPTIMIZED TRANSLATION APPROACH =====
+    // We'll deduplicate for efficient translation but keep all lines in the final output
     
-    // ===== IMPROVED APPROACH: Global deduplication across all batches =====
-    
-    // Step 1: Create a map of all unique lines before starting translation
+    // Step 1: Create a map of unique lines for translation efficiency
     const uniqueLines = new Map(); // Maps text to index in uniqueArray
     const uniqueArray = []; // Stores unique lyric lines
     const originalToUnique = new Map(); // Maps original position to unique line index
     
-    // Build deduplication structures
-    frontLines.forEach((line, index) => {
+    // Identify unique lines while preserving all original lines
+    lyricsLines.forEach((line, index) => {
       const trimmedLine = line.trim();
       
       if (!uniqueLines.has(trimmedLine)) {
@@ -169,15 +174,15 @@ const getFlashcardsForSong = async (req, res) => {
       originalToUnique.set(index, uniqueLines.get(trimmedLine));
     });
     
-    // Calculate and log global deduplication stats
-    const totalLines = frontLines.length;
+    // Calculate and log translation optimization stats
+    const totalLines = lyricsLines.length;
     const uniqueCount = uniqueArray.length;
     const savedLines = totalLines - uniqueCount;
     const percentSaved = Math.round((savedLines / totalLines) * 100);
     
-    console.log(`🔍 Global Deduplication: ${totalLines} lines → ${uniqueCount} unique lines (saved ${percentSaved}% API usage)`);
+    console.log(`🔍 Translation Optimization: ${totalLines} total lines → ${uniqueCount} unique lines to translate (saved ${percentSaved}% API usage)`);
     
-    // Step 2: Translate unique lines in batches
+    // Step 2: Translate only the unique lines in batches
     const BATCH_SIZE = 10; // Number of lines to translate in each API call
     const uniqueTranslations = [];
     
@@ -193,42 +198,32 @@ const getFlashcardsForSong = async (req, res) => {
       uniqueTranslations.push(...translatedBatch);
     }
     
-    // Step 3: Map translations back to original structure
-    let backLines = frontLines.map((_, index) => {
+    // Step 3: Map translations back to ALL original lines (including duplicates)
+    const backLines = lyricsLines.map((_, index) => {
       // Get the unique line index for this position
       const uniqueIndex = originalToUnique.get(index);
       // Return the translation for this unique line
-      return uniqueTranslations[uniqueIndex];
+      return uniqueTranslations[uniqueIndex] || "Translation unavailable";
     });
     
-    // Ensure arrays are the same length (safety check)
-    while (backLines.length < frontLines.length) {
-      backLines.push("Translation unavailable");
-    }
-    while (backLines.length > frontLines.length) {
-      backLines.pop();
-    }
-
-    // Create flashcards with proper alignment
-    let flashcards = frontLines.map((line, index) => {
-      // Safety check to ensure we have a translation for this index
-      const translation = index < backLines.length ? backLines[index] : "Translation unavailable";
-      
+    // Create flashcards with proper alignment, keeping ALL lines in order
+    let flashcards = lyricsLines.map((line, index) => {
       return {
         front: line.trim(),
         // Extra cleaning to remove any potential artifact characters from translation
-        back: translation.trim().replace(/\|+/g, '').trim()
+        back: backLines[index].trim().replace(/\|+/g, '').trim()
       };
     });
     
     // Filter out cards with empty fronts or backs or where front/back are identical
+    // but keep duplicates intentionally
     flashcards = flashcards.filter(card => 
       card.front.length > 0 && 
       card.back.length > 0 &&
       card.front !== card.back
     );
 
-    console.log(`✅ Created ${flashcards.length} flashcards`);
+    console.log(`✅ Created ${flashcards.length} flashcards (maintaining song flow with duplicates)`);
     
     // Cache the flashcards
     await redis.setex(cacheKey, 86400, JSON.stringify(flashcards));
