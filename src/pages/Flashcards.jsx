@@ -15,7 +15,7 @@ const textVariants = {
   animate: { opacity: 1, y: 0 }
 };
 
-// Enhanced LoadingEllipsis Component
+// Enhanced LoadingEllipsis Component without Emoji
 function LoadingEllipsis() {
   const [dots, setDots] = useState('.');
   
@@ -28,17 +28,15 @@ function LoadingEllipsis() {
   
   return (
     <div className="loading-ellipsis">
-      <div className="loading-icon">🔄</div>
       Fetching flashcards<span className="animated-dots">{dots}</span>
     </div>
   );
 }
 
-// New EmptyFlashcardState Component
+// New EmptyFlashcardState Component without Emoji
 function EmptyFlashcardState({ songName }) {
   return (
     <div className="empty-flashcard-container">
-      <div className="empty-flashcard-icon">📝</div>
       <div className="empty-flashcard-text">
         No flashcards available{songName ? ` for "${songName}"` : ''}
       </div>

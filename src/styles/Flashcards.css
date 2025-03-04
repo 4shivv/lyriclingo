@@ -129,7 +129,9 @@
   justify-content: center;
   align-items: center;
   font-size: 1.5rem;
-  font-weight: bold;
+  font-weight: 500;
+  line-height: 1.6;
+  letter-spacing: 0.3px;
   border-radius: 12px;
   backface-visibility: hidden;
   padding: 20px;
@@ -139,26 +141,25 @@
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  transition: transform 0.3s ease, border 0.3s ease; /* Transition for transform and border */
-  border: none; /* No border by default */
-  color: #e0e0e0; /* Text color */
-  /* Use a CSS variable to store the rotation value */
-  transform: rotateY(var(--rotateY)); /* Apply rotation based on variable */
+  transition: transform 0.3s ease, border 0.3s ease;
+  border: none;
+  color: #e0e0e0;
+  transform: rotateY(var(--rotateY));
 }
 
 /* Set rotation values for front and back using CSS variables */
 .flashcard-front {
-  --rotateY: 0deg; /* Front side rotation */
+  --rotateY: 0deg;
 }
 
 .flashcard-back {
-  --rotateY: 180deg; /* Back side rotation */
+  --rotateY: 180deg;
 }
 
 /* Hover effect: combine the rotation with a scale and add a subtle border */
 .flashcard-face:hover {
-  transform: rotateY(var(--rotateY)) scale(1.05); /* Scale and rotate on hover */
-  border: 2px solid rgba(255, 255, 255, 0.2); /* Subtle border on hover */
+  transform: rotateY(var(--rotateY)) scale(1.05);
+  border: 2px solid rgba(255, 255, 255, 0.2);
 }
 
 /* Navigation Buttons - modified for consistent spacing */
@@ -227,7 +228,6 @@
   font-size: 1.5rem;
   color: #e0e0e0;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
   height: 100%;
@@ -531,7 +531,7 @@
   }
 }
 
-/* New Empty State Component */
+/* Empty State Styling */
 .empty-flashcard-container {
   width: 100%;
   height: 100%;
@@ -554,36 +554,20 @@
   box-shadow: 0 6px 25px rgba(0, 0, 0, 0.25);
 }
 
-.empty-flashcard-icon {
-  font-size: 3rem;
-  margin-bottom: 20px;
-  opacity: 0.8;
-  color: #aaaaaa;
-}
-
 .empty-flashcard-text {
   font-size: 1.4rem;
   font-weight: 500;
   text-align: center;
   line-height: 1.4;
   letter-spacing: 0.5px;
+  margin-bottom: 10px;
 }
 
 .empty-flashcard-subtext {
   font-size: 1rem;
-  margin-top: 10px;
   color: #aaaaaa;
   text-align: center;
   max-width: 80%;
-}
-
-/* Improved Flashcard Text Styling */
-.flashcard-face {
-  font-family: 'Inter', sans-serif;
-  font-size: 1.5rem;
-  font-weight: 500;
-  line-height: 1.6;
-  letter-spacing: 0.3px;
 }
 
 /* Mobile Responsive Adjustments */
@@ -599,10 +583,6 @@
   .loading-ellipsis {
     font-size: 1.2rem;
     padding: 20px;
-  }
-  
-  .loading-icon {
-    font-size: 2rem;
   }
   
   .flashcard-face {
