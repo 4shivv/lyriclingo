@@ -444,6 +444,38 @@ const postprocessTranslation = (translatedText) => {
 };
 
 /**
+ * Basic English detection for phrases within foreign songs
+ * @param {string} text - Text to analyze
+ * @return {boolean} - True if text appears to be primarily English
+ */
+const isEnglishPhrase = (text) => {
+  // Skip short text
+  if (!text || text.length < 3) return false;
+  
+  // Common English words that strongly indicate English content
+  const englishMarkers = [
+    /\b(the|and|are|you|for|this|that|with|have|from|what|when|where|will|would|could|should)\b/i,
+    /\b(love|baby|heart|tonight|forever|never|always|because|without|everything|something)\b/i,
+    // Common English pronouns
+    /\b(i|me|my|mine|you|your|yours|we|our|ours|they|their|theirs|he|his|him|she|her|hers|it|its)\b/i
+  ];
+  
+  // Count how many English markers are found
+  const englishMarkerCount = englishMarkers.filter(pattern => pattern.test(text)).length;
+  
+  // Get word count
+  const wordCount = text.split(/\s+/).length;
+  
+  // Text is likely English if:
+  // 1. For short phrases (1-3 words): at least 1 English marker
+  // 2. For medium phrases (4-6 words): at least 2 English markers
+  // 3. For longer phrases: at least 30% of patterns match
+  if (wordCount <= 3) return englishMarkerCount >= 1;
+  if (wordCount <= 6) return englishMarkerCount >= 2;
+  return (englishMarkerCount / englishMarkers.length) > 0.3;
+};
+
+/**
  * Translates an array of text lines using DeepL API with language auto-detection
  * 
  * @param {Array} textArray - List of lines/texts to translate
@@ -490,14 +522,37 @@ const translateBatch = async (textArray, forceLanguage = null) => {
         console.log(`🔤 Source language detected/set: ${sourceLanguage}`);
         
         // Preprocess each unique line with language-specific handling
-        const preparedArray = uniqueArray.map(text => 
-            preprocessSourceText(text, sourceLanguage)
-        );
+        const preparedArray = uniqueArray.map(text => {
+            const trimmedText = text.trim();
             
-        // Create the params object with unique texts only
+            // Check if the line appears to be English already
+            if (isEnglishPhrase(trimmedText)) {
+                console.log(`🇬🇧 Preserving English phrase: "${trimmedText}"`);
+                // Mark this text for skipping translation
+                return { text: trimmedText, skipTranslation: true };
+            }
+            
+            // Process normally for translation
+            return { 
+                text: preprocessSourceText(trimmedText, sourceLanguage),
+                skipTranslation: false 
+            };
+        });
+            
+        // Separate texts for translation and those to preserve as-is
+        const textsToTranslate = preparedArray.filter(item => !item.skipTranslation).map(item => item.text);
+        const preservedTexts = new Map(); // Map original text position to preserved text
+
+        preparedArray.forEach((item, index) => {
+            if (item.skipTranslation) {
+                preservedTexts.set(index, item.text);
+            }
+        });
+        
+        // Modify the params creation to only include texts that need translation
         const params = new URLSearchParams();
         params.append("auth_key", DEEPL_API_KEY);
-        preparedArray.forEach(text => params.append("text", text));
+        textsToTranslate.forEach(text => params.append("text", text));
         params.append("source_lang", sourceLanguage);
         params.append("target_lang", "EN");
         params.append("preserve_formatting", "1");
@@ -509,10 +564,22 @@ const translateBatch = async (textArray, forceLanguage = null) => {
             { headers: { "Content-Type": "application/x-www-form-urlencoded" } }
         );
         
-        // Process unique translations
-        const uniqueTranslations = response.data.translations.map(t => 
-            postprocessTranslation(t.text)
-        );
+        // After receiving API response, merge with preserved English phrases
+
+        // Create full translations array in original order
+        const uniqueTranslations = [];
+        let translationIndex = 0;
+
+        preparedArray.forEach((item, index) => {
+            if (item.skipTranslation) {
+                // Use the preserved English text
+                uniqueTranslations[index] = preservedTexts.get(index);
+            } else {
+                // Use the API translation
+                uniqueTranslations[index] = postprocessTranslation(response.data.translations[translationIndex].text);
+                translationIndex++;
+            }
+        });
         
         // Map translations back to original structure
         const result = textArray.map((text, index) => {
