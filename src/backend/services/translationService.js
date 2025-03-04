@@ -328,6 +328,7 @@ const translateBatch = async (textArray, sourceLanguage = "es") => {
             return textArray.map(() => "");
         }
         
+        
         // Preprocess each unique line with Spanish-specific handling
         const preparedArray = sourceLanguage.toLowerCase() === "es" 
             ? uniqueArray.map(preprocessSpanishText)
