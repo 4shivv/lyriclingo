@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import "../styles/Flashcards.css";
 import Toast from "../components/Toast";
 import LoadingSpinner from "../components/LoadingSpinner";
@@ -62,40 +62,71 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn }) {
 
   // State to track navigation intervals
   const [navInterval, setNavInterval] = useState(null);
+  
+  // Add these state variables to track long press
+  const [isLongPress, setIsLongPress] = useState(false);
+  const longPressTimer = useRef(null);
+  const LONG_PRESS_THRESHOLD = 300; // milliseconds
 
-  // Function to navigate to previous flashcard
+  // Modified navigation functions
+  const handleMouseDown = (direction) => {
+    if (flashcards.length === 0 || isLoadingCards) return;
+    
+    // Clear any existing timers
+    if (longPressTimer.current) clearTimeout(longPressTimer.current);
+    
+    // Set a timer to detect long press
+    longPressTimer.current = setTimeout(() => {
+      setIsLongPress(true);
+      startContinuousNavigation(direction);
+    }, LONG_PRESS_THRESHOLD);
+  };
+
+  const handleMouseUp = () => {
+    // Clear the long press timer
+    if (longPressTimer.current) {
+      clearTimeout(longPressTimer.current);
+      longPressTimer.current = null;
+    }
+    
+    // Stop navigation if it was a long press
+    if (isLongPress) {
+      stopContinuousNavigation();
+      setIsLongPress(false);
+    }
+    // Single tap is handled by onClick, not here
+  };
+
+  // The onClick handlers remain unchanged
   const navigatePrevious = () => {
-    setCurrentIndex((prev) => (prev === 0 ? flashcards.length - 1 : prev - 1));
-    setFlipped(false); // Reset flip state when navigating
+    if (!isLongPress && flashcards.length > 0) {
+      setCurrentIndex((prev) => (prev === 0 ? flashcards.length - 1 : prev - 1));
+      setFlipped(false);
+    }
   };
 
-  // Function to navigate to next flashcard
   const navigateNext = () => {
-    setCurrentIndex((prev) => (prev + 1) % flashcards.length);
-    setFlipped(false); // Reset flip state when navigating
+    if (!isLongPress && flashcards.length > 0) {
+      setCurrentIndex((prev) => (prev + 1) % flashcards.length);
+      setFlipped(false);
+    }
   };
 
-  // Function to start continuous navigation
+  // Modified startContinuousNavigation to not perform initial navigation
   const startContinuousNavigation = (direction) => {
     if (flashcards.length === 0 || isLoadingCards) return;
     
     // Clear any existing interval
     if (navInterval) clearInterval(navInterval);
     
-    // Perform initial navigation
-    if (direction === 'previous') {
-      navigatePrevious();
-    } else {
-      navigateNext();
-    }
-    
-    // Set up interval for continuous navigation (250ms feels responsive but not too fast)
+    // Set up interval for continuous navigation
     const interval = setInterval(() => {
       if (direction === 'previous') {
-        navigatePrevious();
+        setCurrentIndex((prev) => (prev === 0 ? flashcards.length - 1 : prev - 1));
       } else {
-        navigateNext();
+        setCurrentIndex((prev) => (prev + 1) % flashcards.length);
       }
+      setFlipped(false);
     }, 250);
     
     setNavInterval(interval);
@@ -283,11 +314,11 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn }) {
           <button 
             className="nav-button" 
             onClick={navigatePrevious}
-            onMouseDown={() => startContinuousNavigation('previous')}
-            onMouseUp={stopContinuousNavigation}
-            onMouseLeave={stopContinuousNavigation}
-            onTouchStart={() => startContinuousNavigation('previous')}
-            onTouchEnd={stopContinuousNavigation}
+            onMouseDown={() => handleMouseDown('previous')}
+            onMouseUp={handleMouseUp}
+            onMouseLeave={handleMouseUp}
+            onTouchStart={() => handleMouseDown('previous')}
+            onTouchEnd={handleMouseUp}
             disabled={isLoadingCards || flashcards.length === 0}
           >
             &#8592; {/* Left Arrow */}
@@ -308,11 +339,11 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn }) {
           <button 
             className="nav-button" 
             onClick={navigateNext}
-            onMouseDown={() => startContinuousNavigation('next')}
-            onMouseUp={stopContinuousNavigation}
-            onMouseLeave={stopContinuousNavigation}
-            onTouchStart={() => startContinuousNavigation('next')}
-            onTouchEnd={stopContinuousNavigation}
+            onMouseDown={() => handleMouseDown('next')}
+            onMouseUp={handleMouseUp}
+            onMouseLeave={handleMouseUp}
+            onTouchStart={() => handleMouseDown('next')}
+            onTouchEnd={handleMouseUp}
             disabled={isLoadingCards || flashcards.length === 0}
           >
             &#8594; {/* Right Arrow */}
