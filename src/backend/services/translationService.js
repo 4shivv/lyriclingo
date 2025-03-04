@@ -1,5 +1,120 @@
 const axios = require("axios");
 
+/**
+ * Language detection module for automatic source language identification
+ * Uses common language patterns and character frequency analysis
+ */
+const languageDetector = {
+  // ISO-639-1 language codes supported by DeepL API
+  supportedLanguages: {
+    "BG": { name: "Bulgarian", patterns: /[а-яА-Я]/ },
+    "CS": { name: "Czech", patterns: /[ěščřžýáíéóúůďťňĎŇŤŠČŘŽÝÁÍÉÚŮ]/ },
+    "DA": { name: "Danish", patterns: /[æøåÆØÅ]/ },
+    "DE": { name: "German", patterns: /[äöüÄÖÜß]/ },
+    "EL": { name: "Greek", patterns: /[\u0370-\u03FF\u1F00-\u1FFF]/ },
+    "ES": { name: "Spanish", patterns: /[áéíóúüñ¿¡]/ },
+    "ET": { name: "Estonian", patterns: /[äõöüÄÕÖÜ]/ },
+    "FI": { name: "Finnish", patterns: /[äöÄÖ]/ },
+    "FR": { name: "French", patterns: /[àâäæçéèêëîïôœùûüÿÀÂÄÆÇÉÈÊËÎÏÔŒÙÛÜŸ]/ },
+    "HU": { name: "Hungarian", patterns: /[áéíóöőúüűÁÉÍÓÖŐÚÜŰ]/ },
+    "ID": { name: "Indonesian", patterns: null }, // Using frequency analysis
+    "IT": { name: "Italian", patterns: /[àèéìíîòóùúÀÈÉÌÍÎÒÓÙÚ]/ },
+    "JA": { name: "Japanese", patterns: /[\u3040-\u30FF\u3400-\u4DBF\u4E00-\u9FFF]/ },
+    "KO": { name: "Korean", patterns: /[\uAC00-\uD7AF\u1100-\u11FF]/ },
+    "LT": { name: "Lithuanian", patterns: /[ąčęėįšųūžĄČĘĖĮŠŲŪŽ]/ },
+    "LV": { name: "Latvian", patterns: /[āčēģīķļņšūžĀČĒĢĪĶĻŅŠŪŽ]/ },
+    "NB": { name: "Norwegian", patterns: /[æøåÆØÅ]/ },
+    "NL": { name: "Dutch", patterns: /[áéíóúëïöüÁÉÍÓÚËÏÖÜ]/ },
+    "PL": { name: "Polish", patterns: /[ąćęłńóśźżĄĆĘŁŃÓŚŹŻ]/ },
+    "PT": { name: "Portuguese", patterns: /[áàâãéêíóôõúçÁÀÂÃÉÊÍÓÔÕÚÇ]/ },
+    "RO": { name: "Romanian", patterns: /[ăâîșțĂÂÎȘȚ]/ },
+    "RU": { name: "Russian", patterns: /[а-яА-Я]/ },
+    "SK": { name: "Slovak", patterns: /[áäčďéíĺľňóôŕšťúýžÁÄČĎÉÍĹĽŇÓÔŔŠŤÚÝŽ]/ },
+    "SL": { name: "Slovenian", patterns: /[čšžĆŠŽ]/ },
+    "SV": { name: "Swedish", patterns: /[åäöÅÄÖ]/ },
+    "TR": { name: "Turkish", patterns: /[çğıİöşüÇĞÖŞÜ]/ },
+    "UK": { name: "Ukrainian", patterns: /[а-яА-ЯіїґєІЇҐЄ]/ },
+    "ZH": { name: "Chinese", patterns: /[\u3400-\u9FFF\uF900-\uFAFF]/ }
+  },
+
+  // Frequent words by language to help with languages that use Latin script without distinctive diacritics
+  frequentWords: {
+    "ES": ["el", "la", "de", "que", "y", "en", "un", "ser", "se", "no", "por", "con", "para", "como", "pero", "más", "yo", "si", "bien", "esto", "todo", "esta", "cuando", "hay", "así", "muy", "sin", "sobre", "también", "me", "hasta", "desde", "nos", "durante", "ni", "contra", "ese", "este"],
+    "PT": ["o", "a", "de", "que", "e", "é", "do", "da", "em", "um", "para", "com", "não", "uma", "os", "no", "se", "na", "por", "mais", "as", "dos", "como", "mas", "ao", "ele", "das", "à", "seu", "sua", "ou", "quando", "muito", "nos", "já", "eu", "também", "só", "pelo", "pela", "até", "isso", "ela", "entre", "depois", "sem", "mesmo", "aos", "seus", "quem", "nas", "me", "esse", "esses", "está", "você", "te"],
+    "FR": ["le", "la", "de", "et", "un", "à", "être", "ce", "il", "que", "en", "du", "elle", "au", "qui", "ne", "sur", "se", "par", "pas", "pour", "avec", "plus", "mais", "ou", "si", "mon", "ton", "son", "nous", "vous", "dans", "leur", "me", "te", "je", "tu", "ils", "cette", "ces", "des", "tout"],
+    "IT": ["il", "la", "di", "e", "un", "a", "è", "che", "in", "per", "non", "sono", "mi", "si", "ho", "ma", "lo", "ha", "con", "ti", "se", "da", "tu", "ci", "al", "così", "bene", "come", "uno", "io", "lei", "lui", "suo", "sua", "mio", "mia", "del", "della", "tutto", "qui", "perché", "quando", "sei", "anche", "più", "solo", "fatto", "ancora", "tempo"],
+    "ID": ["yang", "dan", "akan", "dengan", "untuk", "pada", "tidak", "dari", "saya", "ini", "mereka", "itu", "ada", "anda", "dalam", "bisa", "kami", "dia", "kita", "juga", "sudah", "satu", "atau", "hanya", "oleh", "tapi", "ke", "kamu", "jika", "aku", "ya", "tersebut", "adalah", "di", "tahun", "belum", "lagi", "saja", "telah", "dapat"]
+  },
+
+  // Language ID confidence thresholds
+  confidenceThresholds: {
+    patternMatch: 0.3,  // Minimum percentage of text that should match patterns
+    wordMatch: 0.2      // Minimum percentage of words that should match frequent word lists
+  },
+
+  /**
+   * Detects language based on text characteristics
+   * 
+   * @param {string} text - Text to analyze
+   * @return {string} - ISO 639-1 language code (e.g., "ES", "FR", "JA")
+   */
+  detectLanguage(text) {
+    if (!text || typeof text !== 'string' || text.trim().length === 0) {
+      return "ES"; // Default to Spanish if no text or invalid input
+    }
+
+    const normalizedText = text.trim().toLowerCase();
+    
+    // Step 1: Fast pattern-based detection for languages with unique scripts or diacritics
+    for (const [langCode, langData] of Object.entries(this.supportedLanguages)) {
+      if (langData.patterns && langData.patterns.test(normalizedText)) {
+        // Calculate the match percentage for characters with this pattern
+        const matchCount = normalizedText.split('')
+          .filter(char => langData.patterns.test(char)).length;
+        
+        const matchPercentage = matchCount / normalizedText.length;
+        
+        // If enough of the text matches the pattern, we have a high confidence
+        if (matchPercentage > this.confidenceThresholds.patternMatch) {
+          console.log(`🔍 Language detected as ${langData.name} (${langCode}) based on character patterns`);
+          return langCode;
+        }
+      }
+    }
+    
+    // Step 2: Word frequency analysis for similar script languages (Spanish, Portuguese, etc.)
+    const words = normalizedText.split(/\s+/);
+    
+    const langScores = {};
+    
+    for (const [langCode, wordList] of Object.entries(this.frequentWords)) {
+      // Count how many words from this text appear in the frequent words list
+      const matchCount = words.filter(word => 
+        wordList.includes(word.replace(/[.,!?;:]/g, ''))
+      ).length;
+      
+      // Calculate match percentage
+      const matchPercentage = matchCount / words.length;
+      langScores[langCode] = matchPercentage;
+    }
+    
+    // Find the language with the highest word match score
+    const bestMatch = Object.entries(langScores)
+      .filter(([_, score]) => score > this.confidenceThresholds.wordMatch)
+      .sort(([_, scoreA], [__, scoreB]) => scoreB - scoreA)[0];
+    
+    if (bestMatch) {
+      const [langCode, score] = bestMatch;
+      console.log(`🔍 Language detected as ${this.supportedLanguages[langCode].name} (${langCode}) based on word frequency (${Math.round(score * 100)}% confidence)`);
+      return langCode;
+    }
+    
+    // Step 3: Fallback to Spanish if no clear language is detected
+    console.log(`⚠️ Language detection inconclusive, using default: Spanish (ES)`);
+    return "ES";
+  }
+};
+
 const DEEPL_API_KEY = process.env.DEEPL_API_KEY;
 
 /**
@@ -131,36 +246,11 @@ const SPANISH_CONTRACTIONS = {
 };
 
 /**
- * Calculates statistics on deduplication efficiency
- * 
- * @param {Array<string>} textArray - Array of text lines
- * @returns {Object} Statistics on deduplication
+ * Language-specific preprocessing handlers for cleaning up text before translation
  */
-const getDeduplicationStats = (textArray) => {
-    if (!textArray || textArray.length === 0) return { total: 0, unique: 0, saved: 0 };
-    
-    // Count non-empty lines
-    const nonEmptyLines = textArray.filter(text => text && text.trim().length > 0);
-    
-    // Count unique lines
-    const uniqueLines = new Set(nonEmptyLines.map(text => text.trim()));
-    
-    return {
-        total: nonEmptyLines.length,
-        unique: uniqueLines.size,
-        saved: nonEmptyLines.length - uniqueLines.size,
-        percentSaved: Math.round(((nonEmptyLines.length - uniqueLines.size) / nonEmptyLines.length) * 100)
-    };
-};
-
-/**
- * Preprocesses Spanish text to expand contractions and handle contextual patterns
- * Enhanced with better handling of estar contractions like "tar" and "'tar"
- * 
- * @param {string} text - Spanish text to preprocess
- * @returns {string} - Preprocessed text ready for translation
- */
-const preprocessSpanishText = (text) => {
+const languagePreprocessors = {
+  // Spanish preprocessor - handles contractions and linguistic artifacts
+  "ES": (text) => {
     if (!text || text.trim().length === 0) return "";
     
     // Normalize text to handle special characters and ensure consistent handling
@@ -229,6 +319,72 @@ const preprocessSpanishText = (text) => {
     });
     
     return processedText;
+  },
+
+  // French preprocessor - handles common contractions
+  "FR": (text) => {
+    if (!text || text.trim().length === 0) return "";
+    
+    // Normalize text
+    const normalizedText = text.trim();
+    
+    // Handle French contractions
+    return normalizedText
+      // Common apostrophe contractions: j'ai -> je ai, l'amour -> le amour
+      .replace(/([cdjlmnst])'([a-zéèêëàâäôöùûüÿçœæ])/gi, "$1e $2")
+      // Handle "qu'" -> "que "
+      .replace(/qu'([a-zéèêëàâäôöùûüÿçœæ])/gi, "que $1");
+  },
+
+  // Portuguese preprocessor
+  "PT": (text) => {
+    if (!text || text.trim().length === 0) return "";
+    
+    // Handle Portuguese contractions
+    return text
+      // Common contractions: "d'água" -> "de água", "n'água" -> "na água"
+      .replace(/d'([áàâãéêíóôõú])/gi, "de $1")
+      .replace(/n'([áàâãéêíóôõú])/gi, "na $1");
+  },
+  
+  // Default preprocessor for languages without specific handlers
+  "default": (text) => text?.trim() || ""
+};
+
+/**
+ * Calculates statistics on deduplication efficiency
+ * 
+ * @param {Array<string>} textArray - Array of text lines
+ * @returns {Object} Statistics on deduplication
+ */
+const getDeduplicationStats = (textArray) => {
+    if (!textArray || textArray.length === 0) return { total: 0, unique: 0, saved: 0 };
+    
+    // Count non-empty lines
+    const nonEmptyLines = textArray.filter(text => text && text.trim().length > 0);
+    
+    // Count unique lines
+    const uniqueLines = new Set(nonEmptyLines.map(text => text.trim()));
+    
+    return {
+        total: nonEmptyLines.length,
+        unique: uniqueLines.size,
+        saved: nonEmptyLines.length - uniqueLines.size,
+        percentSaved: Math.round(((nonEmptyLines.length - uniqueLines.size) / nonEmptyLines.length) * 100)
+    };
+};
+
+/**
+ * Preprocesses text based on detected language before translation
+ * 
+ * @param {string} text - Source text to preprocess
+ * @param {string} languageCode - ISO 639-1 language code (e.g., "ES", "FR")
+ * @returns {string} - Preprocessed text ready for translation
+ */
+const preprocessSourceText = (text, languageCode) => {
+    // Use the language-specific preprocessor if available, otherwise use default
+    const preprocessor = languagePreprocessors[languageCode] || languagePreprocessors.default;
+    return preprocessor(text);
 };
 
 /**
@@ -270,9 +426,7 @@ const postprocessTranslation = (translatedText) => {
     
     // Check for untranslated Spanish words that should have been translated
     const commonSpanishWords = [
-        "la", "el", "los", "las", "un", "una", "es", "está", "estoy", 
-        "eres", "soy", "tiene", "tengo", "quiere", "quiero", "hace",
-        "hago", "va", "voy", "dice", "digo", "ve", "veo", "da", "doy"
+        "la", "el", "de", "que", "y", "en", "un", "ser", "se", "no", "por", "con", "para", "como", "pero", "más", "yo", "si", "bien", "esto", "todo", "esta", "cuando", "hay", "así", "muy", "sin", "sobre", "también", "me", "hasta", "desde", "nos", "durante", "ni", "contra", "ese", "este"
     ];
     
     // If common Spanish words remain in the translation, log it for review
@@ -290,13 +444,13 @@ const postprocessTranslation = (translatedText) => {
 };
 
 /**
- * Translates an array of text lines using DeepL API with optimized handling of duplicates
+ * Translates an array of text lines using DeepL API with language auto-detection
  * 
  * @param {Array} textArray - List of lines/texts to translate
- * @param {String} sourceLanguage - Language code (default: "es" for Spanish)
+ * @param {String} forceLanguage - Force specific language code (skip detection)
  * @returns {Array} Translated text lines (English)
  */
-const translateBatch = async (textArray, sourceLanguage = "es") => {
+const translateBatch = async (textArray, forceLanguage = null) => {
     try {
         // Create index mapping for deduplication while preserving order
         const uniqueTexts = new Map(); // Map of unique text -> index in uniqueArray
@@ -327,18 +481,24 @@ const translateBatch = async (textArray, sourceLanguage = "es") => {
         if (uniqueArray.length === 0) {
             return textArray.map(() => "");
         }
+
+        // Detect language from the combined text for consistent results
+        // unless forceLanguage is provided
+        const sourceLanguage = forceLanguage || 
+            languageDetector.detectLanguage(uniqueArray.join(" "));
         
+        console.log(`🔤 Source language detected/set: ${sourceLanguage}`);
         
-        // Preprocess each unique line with Spanish-specific handling
-        const preparedArray = sourceLanguage.toLowerCase() === "es" 
-            ? uniqueArray.map(preprocessSpanishText)
-            : uniqueArray.map(text => text.trim());
+        // Preprocess each unique line with language-specific handling
+        const preparedArray = uniqueArray.map(text => 
+            preprocessSourceText(text, sourceLanguage)
+        );
             
         // Create the params object with unique texts only
         const params = new URLSearchParams();
         params.append("auth_key", DEEPL_API_KEY);
         preparedArray.forEach(text => params.append("text", text));
-        params.append("source_lang", sourceLanguage.toUpperCase());
+        params.append("source_lang", sourceLanguage);
         params.append("target_lang", "EN");
         params.append("preserve_formatting", "1");
         
@@ -363,7 +523,7 @@ const translateBatch = async (textArray, sourceLanguage = "es") => {
             return uniqueTranslations[indexMapping[index]];
         });
         
-        console.log(`✅ Translated ${uniqueArray.length} unique lines successfully`);
+        console.log(`✅ Translated ${uniqueArray.length} unique lines from ${languageDetector.supportedLanguages[sourceLanguage]?.name || sourceLanguage} to English successfully`);
         
         return result;
     } catch (error) {
@@ -372,4 +532,4 @@ const translateBatch = async (textArray, sourceLanguage = "es") => {
     }
 };
 
-module.exports = { translateBatch };
+module.exports = { translateBatch, languageDetector };

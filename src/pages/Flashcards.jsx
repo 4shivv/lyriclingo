@@ -9,6 +9,20 @@ import { motion } from "framer-motion";
 // Use Vite's env variable for backend URL; fallback to localhost for development.
 const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:5001";
 
+// Language options for the dropdown
+const LANGUAGE_OPTIONS = [
+  { code: "auto", name: "Auto-detect" },
+  { code: "ES", name: "Spanish" },
+  { code: "FR", name: "French" },
+  { code: "PT", name: "Portuguese" },
+  { code: "IT", name: "Italian" },
+  { code: "DE", name: "German" },
+  { code: "JA", name: "Japanese" },
+  { code: "ZH", name: "Chinese" },
+  { code: "RU", name: "Russian" },
+  { code: "KO", name: "Korean" }
+];
+
 // Variants for text and button animations
 const textVariants = {
   initial: { opacity: 0, y: 20 },
@@ -59,6 +73,8 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn }) {
   const [isLoadingCards, setIsLoadingCards] = useState(false); // New state for loading flashcards
   const [sentiment, setSentiment] = useState(null);
   const [sentimentLoading, setSentimentLoading] = useState(false);
+  const [selectedLanguage, setSelectedLanguage] = useState("auto");
+  const [detectedLanguage, setDetectedLanguage] = useState(null);
 
   // State to track navigation intervals
   const [navInterval, setNavInterval] = useState(null);
@@ -140,6 +156,49 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn }) {
     }
   };
 
+  // Fetch flashcards based on selected language
+  const fetchFlashcards = () => {
+    if (!selectedSong) return;
+    
+    setIsLoadingCards(true);
+    
+    // Construct URL with language parameter if not auto-detect
+    let url = `${backendUrl}/api/songs/flashcards?song=${encodeURIComponent(selectedSong.song)}`;
+    if (selectedLanguage !== "auto") {
+      url += `&lang=${selectedLanguage}`;
+    }
+    
+    fetch(url)
+      .then(res => res.json())
+      .then(data => {
+        if (data.error) {
+          console.error("Error fetching flashcards:", data.error);
+          setToast({
+            show: true,
+            message: `Error: ${data.error}`,
+            type: "error"
+          });
+        } else {
+          setFlashcards(data);
+          
+          // If response includes detected language info, update state
+          if (data.length > 0 && data[0].detectedLanguage) {
+            setDetectedLanguage(data[0].detectedLanguage);
+          }
+        }
+        setIsLoadingCards(false);
+      })
+      .catch(error => {
+        console.error("Error fetching flashcards:", error);
+        setToast({
+          show: true,
+          message: "Failed to load flashcards. Please try again.",
+          type: "error"
+        });
+        setIsLoadingCards(false);
+      });
+  };
+
   // Clean up interval on component unmount
   useEffect(() => {
     return () => {
@@ -147,25 +206,21 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn }) {
     };
   }, [navInterval]);
 
+  // Effect for fetching flashcards when song or language changes
   useEffect(() => {
     if (selectedSong) {
-      setIsLoadingCards(true); // Set loading to true before fetch
-      fetch(`${backendUrl}/api/songs/flashcards?song=${encodeURIComponent(selectedSong.song)}`)
-        .then(res => res.json())
-        .then(data => {
-          if (data.error) {
-            console.error("Error fetching flashcards:", data.error);
-          } else {
-            setFlashcards(data);
-          }
-          setIsLoadingCards(false); // Set loading to false after fetch completes
-        })
-        .catch(error => {
-          console.error("Error fetching flashcards:", error);
-          setIsLoadingCards(false); // Set loading to false on error
-        });
+      fetchFlashcards();
     }
-  }, [selectedSong]);
+  }, [selectedSong, selectedLanguage]);
+
+  // Handle language change
+  const handleLanguageChange = (e) => {
+    const newLanguage = e.target.value;
+    setSelectedLanguage(newLanguage);
+    setIsLoadingCards(true);
+    setCurrentIndex(0);
+    setFlipped(false);
+  };
 
   useEffect(() => {
     if (selectedSong && flashcards.length > 0) {
@@ -221,6 +276,9 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn }) {
         if (logData.error) {
           setToast({ show: true, message: logData.error, type: "error" });
         } else {
+          // Reset language to auto-detect for new song
+          setSelectedLanguage("auto");
+          
           // Set loading state to true as we're about to update selectedSong
           setIsLoadingCards(true);
           
@@ -268,6 +326,38 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn }) {
         >
           Flashcards for {selectedSong ? selectedSong.song : "Unknown Song"}
         </motion.h1>
+
+        {/* Language Selection Dropdown */}
+        <motion.div
+          className="language-selection-container"
+          variants={textVariants}
+          initial="initial"
+          animate="animate"
+          transition={{ duration: 0.3, delay: 0.05 }}
+        >
+          <label htmlFor="language-select">Source Language: </label>
+          <div className="select-wrapper">
+            <select 
+              id="language-select" 
+              value={selectedLanguage}
+              onChange={handleLanguageChange}
+              disabled={isLoadingCards || !selectedSong}
+              className="language-select"
+            >
+              {LANGUAGE_OPTIONS.map(lang => (
+                <option key={lang.code} value={lang.code}>
+                  {lang.name}
+                </option>
+              ))}
+            </select>
+          </div>
+          
+          {detectedLanguage && selectedLanguage === "auto" && (
+            <div className="detected-language-label">
+              Detected: {LANGUAGE_OPTIONS.find(l => l.code === detectedLanguage)?.name || detectedLanguage}
+            </div>
+          )}
+        </motion.div>
 
         {/* Animated Log Current Song Button Wrapper */}
         {isLoggedIn && (

@@ -1,7 +1,7 @@
 const Song = require("../models/Song"); // ✅ Import once
 const { getLyricsFromGenius } = require("../services/geniusService");
 const { fetchLyricsUrl } = require("../services/lyricsService"); // Import Genius search function
-const { translateBatch } = require("../services/translationService"); // ✅ Import batch translation
+const { translateBatch, languageDetector } = require("../services/translationService"); // ✅ Import translation service with language detector
 const axios = require("axios");
 const Redis = require("ioredis");
 const redis = new Redis(process.env.REDIS_URL || "redis://127.0.0.1:6379");
@@ -88,8 +88,8 @@ const clearHistory = async (req, res) => {
 const getFlashcardsForSong = async (req, res) => {
   try {
     const songTitle = req.query.song;
-    const sourceLanguage = req.query.lang || "es";
-    const cacheKey = `flashcards:${songTitle}`;
+    const forceLanguage = req.query.lang; // Optional override parameter
+    const cacheKey = `flashcards:${songTitle}${forceLanguage ? ':' + forceLanguage : ''}`;
 
     // Check Redis cache first
     const cachedFlashcards = await redis.get(cacheKey);
@@ -182,7 +182,20 @@ const getFlashcardsForSong = async (req, res) => {
     
     console.log(`🔍 Translation Optimization: ${totalLines} total lines → ${uniqueCount} unique lines to translate (saved ${percentSaved}% API usage)`);
     
-    // Step 2: Translate only the unique lines in batches
+    // Step 2: Automatically detect language from the combined lyrics
+    // Use forceLanguage if explicitly provided in the request
+    // A small sample of lyrics is enough for detection
+    let detectedOrForcedLanguage = forceLanguage;
+    if (!detectedOrForcedLanguage) {
+      // Create a sample text for language detection (first 10 unique lines or fewer)
+      const sampleText = uniqueArray.slice(0, Math.min(10, uniqueArray.length)).join(" ");
+      detectedOrForcedLanguage = languageDetector.detectLanguage(sampleText);
+      console.log(`🔤 Auto-detected language: ${detectedOrForcedLanguage}`);
+    } else {
+      console.log(`🔤 Using forced language: ${detectedOrForcedLanguage}`);
+    }
+    
+    // Step 3: Translate only the unique lines in batches
     const BATCH_SIZE = 10; // Number of lines to translate in each API call
     const uniqueTranslations = [];
     
@@ -191,14 +204,14 @@ const getFlashcardsForSong = async (req, res) => {
       const batch = uniqueArray.slice(i, i + BATCH_SIZE);
       console.log(`🔤 Translating unique batch ${Math.floor(i/BATCH_SIZE) + 1} (${batch.length} lines)`);
       
-      // Send the batch for translation
-      const translatedBatch = await translateBatch(batch, sourceLanguage);
+      // Send the batch for translation with the detected/forced language
+      const translatedBatch = await translateBatch(batch, detectedOrForcedLanguage);
       
       // Add translated lines to unique translations array
       uniqueTranslations.push(...translatedBatch);
     }
     
-    // Step 3: Map translations back to ALL original lines (including duplicates)
+    // Step 4: Map translations back to ALL original lines (including duplicates)
     const backLines = frontLines.map((_, index) => {
       // Get the unique line index for this position
       const uniqueIndex = originalToUnique.get(index);
