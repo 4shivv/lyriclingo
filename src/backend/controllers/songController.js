@@ -85,6 +85,8 @@ const clearHistory = async (req, res) => {
 };
 
 
+// This is the updated getFlashcardsForSong function to implement cross-batch deduplication
+
 const getFlashcardsForSong = async (req, res) => {
   try {
     const songTitle = req.query.song;
@@ -146,25 +148,60 @@ const getFlashcardsForSong = async (req, res) => {
     // Prepare arrays for translation
     let frontLines = lyricsLines;
     
-    // More efficient approach: translate each line individually in batches
-    // This avoids delimiter issues entirely
-    let backLines = [];
-    const BATCH_SIZE = 10; // Number of lines to translate in each API call
+    // ===== IMPROVED APPROACH: Global deduplication across all batches =====
     
-    // Process lyrics in batches of lines
-    for (let i = 0; i < frontLines.length; i += BATCH_SIZE) {
-      const batch = frontLines.slice(i, i + BATCH_SIZE);
-      console.log(`🔤 Translating batch ${Math.floor(i/BATCH_SIZE) + 1} (${batch.length} lines)`);
+    // Step 1: Create a map of all unique lines before starting translation
+    const uniqueLines = new Map(); // Maps text to index in uniqueArray
+    const uniqueArray = []; // Stores unique lyric lines
+    const originalToUnique = new Map(); // Maps original position to unique line index
+    
+    // Build deduplication structures
+    frontLines.forEach((line, index) => {
+      const trimmedLine = line.trim();
       
-      // Send each line as a separate element in the array
-      // This is more efficient than individual API calls while avoiding delimiter issues
+      if (!uniqueLines.has(trimmedLine)) {
+        // New unique line found
+        uniqueLines.set(trimmedLine, uniqueArray.length);
+        uniqueArray.push(trimmedLine);
+      }
+      
+      // Map this position to its corresponding unique line
+      originalToUnique.set(index, uniqueLines.get(trimmedLine));
+    });
+    
+    // Calculate and log global deduplication stats
+    const totalLines = frontLines.length;
+    const uniqueCount = uniqueArray.length;
+    const savedLines = totalLines - uniqueCount;
+    const percentSaved = Math.round((savedLines / totalLines) * 100);
+    
+    console.log(`🔍 Global Deduplication: ${totalLines} lines → ${uniqueCount} unique lines (saved ${percentSaved}% API usage)`);
+    
+    // Step 2: Translate unique lines in batches
+    const BATCH_SIZE = 10; // Number of lines to translate in each API call
+    const uniqueTranslations = [];
+    
+    // Process unique lines in batches
+    for (let i = 0; i < uniqueArray.length; i += BATCH_SIZE) {
+      const batch = uniqueArray.slice(i, i + BATCH_SIZE);
+      console.log(`🔤 Translating unique batch ${Math.floor(i/BATCH_SIZE) + 1} (${batch.length} lines)`);
+      
+      // Send the batch for translation
       const translatedBatch = await translateBatch(batch, sourceLanguage);
       
-      // Add translated lines to results (no need to split or handle delimiters)
-      backLines = [...backLines, ...translatedBatch];
+      // Add translated lines to unique translations array
+      uniqueTranslations.push(...translatedBatch);
     }
     
-    // Ensure arrays are the same length
+    // Step 3: Map translations back to original structure
+    let backLines = frontLines.map((_, index) => {
+      // Get the unique line index for this position
+      const uniqueIndex = originalToUnique.get(index);
+      // Return the translation for this unique line
+      return uniqueTranslations[uniqueIndex];
+    });
+    
+    // Ensure arrays are the same length (safety check)
     while (backLines.length < frontLines.length) {
       backLines.push("Translation unavailable");
     }
@@ -172,7 +209,7 @@ const getFlashcardsForSong = async (req, res) => {
       backLines.pop();
     }
 
-    // Create flashcards with proper alignment and cleanup any potential remaining delimiters
+    // Create flashcards with proper alignment
     let flashcards = frontLines.map((line, index) => {
       // Safety check to ensure we have a translation for this index
       const translation = index < backLines.length ? backLines[index] : "Translation unavailable";
