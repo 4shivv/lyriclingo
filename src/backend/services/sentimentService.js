@@ -134,6 +134,13 @@ const performSentimentAnalysis = async (text) => {
         }
       );
 
+      // Check if the response contains HTML (error page) instead of JSON
+      if (typeof response.data === 'string' && response.data.includes('<!DOCTYPE html>') || 
+          response.data.includes('<html')) {
+        console.error('⚠️ HUGGINGFACE API: Received HTML error page instead of JSON response');
+        throw new Error('Received HTML error page from Hugging Face API');
+      }
+
       console.log("HUGGINGFACE API RESPONSE:", response.data);
 
       let predictions = [];
@@ -155,10 +162,26 @@ const performSentimentAnalysis = async (text) => {
     } catch (error) {
       attempts++;
       const statusCode = error.response ? error.response.status : "undefined";
-      console.error(
-        `❌ HUGGINGFACE API: Attempt ${attempts} failed with status ${statusCode}:`,
-        error.response ? error.response.data : error.message
-      );
+      const isHtmlError = error.response && 
+        typeof error.response.data === 'string' && 
+        (error.response.data.includes('<html') || error.response.data.includes('<!DOCTYPE html>'));
+        
+      if (isHtmlError) {
+        console.error(`❌ HUGGINGFACE API: Received HTML error page with status ${statusCode}`);
+      } else {
+        console.error(
+          `❌ HUGGINGFACE API: Attempt ${attempts} failed with status ${statusCode}:`,
+          error.response ? error.response.data : error.message
+        );
+      }
+
+      // Always retry when we get 503 Service Unavailable
+      if (error.response && error.response.status === 503) {
+        const delay = RETRY_DELAY_MS * Math.pow(2, attempts - 1);
+        console.log(`⏱️ HUGGINGFACE API: Service Unavailable (503). Retrying in ${delay}ms...`);
+        await sleep(delay);
+        continue;
+      }
 
       if (
         attempts >= MAX_RETRY_ATTEMPTS ||
@@ -172,7 +195,19 @@ const performSentimentAnalysis = async (text) => {
       await sleep(delay);
     }
   }
-  return null;
+  
+  // If we reached max attempts or failed with non-retriable error, return fallback sentiment
+  console.log("⚠️ HUGGINGFACE API: All attempts failed, using fallback sentiment analysis");
+  return {
+    sentiment: "Neutral",
+    emoji: "😐",
+    score: "0.50",
+    emotions: [],
+    primaryEmotion: "Unknown",
+    emotionScore: "0.00",
+    error: "Sentiment analysis service unavailable",
+    fallback: true
+  };
 };
 
 const createFallbackResponse = (errorMessage) => {
