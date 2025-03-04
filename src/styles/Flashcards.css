@@ -155,6 +155,12 @@
   color: #e0e0e0;
 }
 
+/* If you want a subtle border similar to the sentiment container, you could try a very low opacity value */
+.flashcard-front:hover,
+.flashcard-back:hover {
+  border-color: rgba(255, 255, 255, 0.1); /* Subtle border on hover */
+}
+
 /* Navigation Buttons - modified for consistent spacing */
 .flashcard-controls {
   display: flex;
