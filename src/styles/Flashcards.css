@@ -134,22 +134,25 @@
   padding: 20px;
   text-align: center;
   overflow: auto;
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
 }
 
 /* Front Side */
 .flashcard-front {
-  background: rgba(255, 255, 255, 0.1);
+  transform: rotateY(0deg);
   border: 2px solid rgba(255, 255, 255, 0.2);
   color: #e0e0e0;
-  transform: rotateY(0deg);
 }
 
 /* Back Side */
 .flashcard-back {
-  background: rgba(255, 255, 255, 0.1);
+  transform: rotateY(180deg);
   border: 2px solid rgba(255, 255, 255, 0.2);
   color: #e0e0e0;
-  transform: rotateY(180deg);
 }
 
 /* Navigation Buttons - modified for consistent spacing */
