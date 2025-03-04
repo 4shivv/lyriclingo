@@ -234,17 +234,20 @@ const getFlashcardsForSong = async (req, res) => {
     let identicalCount = 0;
     let sectionMarkerCount = 0;
     
+    // Track identical translations but keep them in the results
+    flashcards.forEach(card => {
+      if (card.front === card.back) {
+        identicalCount++;
+        // Optionally add a marker to the card
+        card.isIdentical = true;
+      }
+    });
+
     // Final filter to ensure quality flashcards with detailed tracking
     flashcards = flashcards.filter(card => {
       // Check for empty front or back
       if (card.front.length === 0 || card.back.length === 0) {
         emptyCount++;
-        return false;
-      }
-      
-      // Check for identical front and back (likely untranslated)
-      if (card.front === card.back) {
-        identicalCount++;
         return false;
       }
       
@@ -257,12 +260,15 @@ const getFlashcardsForSong = async (req, res) => {
       return true;
     });
 
+    // Log the count of identical translations (kept in the results)
+    console.log(`📊 Found ${identicalCount} identical translations (kept in flashcards)`);
+    
     // Log detailed filtering statistics
     const filteredCount = initialCount - flashcards.length;
     console.log(`✅ Created ${flashcards.length} clean flashcards from ${initialCount} lines (filtered ${filteredCount} problematic lines)`);
     
     if (filteredCount > 0) {
-      console.log(`📊 Filtering breakdown: ${emptyCount} empty lines, ${identicalCount} identical translations, ${sectionMarkerCount} section markers`);
+      console.log(`📊 Filtering breakdown: ${emptyCount} empty lines, ${identicalCount} identical translations (kept), ${sectionMarkerCount} section markers`);
     }
     
     // Cache the flashcards
