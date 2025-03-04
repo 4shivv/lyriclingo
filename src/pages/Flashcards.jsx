@@ -217,7 +217,19 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn }) {
           >
             &#8592; {/* Left Arrow */}
           </button>
-          <span>{flashcards.length > 0 ? `${currentIndex + 1} / ${flashcards.length}` : "0 / 0"}</span>
+          
+          <div className="progress-container">
+            <div 
+              className="progress-bar" 
+              style={{ 
+                width: `${flashcards.length > 0 ? ((currentIndex + 1) / flashcards.length) * 100 : 0}%` 
+              }}
+            ></div>
+            <div className="progress-text">
+              {flashcards.length > 0 ? `${currentIndex + 1} / ${flashcards.length}` : "0 / 0"}
+            </div>
+          </div>
+          
           <button 
             className="nav-button" 
             onClick={() => setCurrentIndex((prev) => (prev + 1) % flashcards.length)}

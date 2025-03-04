@@ -1,4 +1,3 @@
-/* Base container styles - unchanged */
 .flashcards-container {
   position: relative;
   min-height: 100vh;
@@ -23,7 +22,7 @@
   position: relative;
   z-index: 2;
   text-align: center;
-  padding: 80px 20px; /* Adjusted horizontal padding for consistency */
+  padding: 80px 20px;
   max-width: 800px;
   margin: auto;
   transform: translateY(50px) !important;
@@ -32,18 +31,18 @@
   align-items: center;
 }
 
-/* Title and Subtitle - unchanged */
+/* Title and Subtitle */
 .flashcards-title {
   font-size: 3rem;
   font-weight: bold;
   color: white;
-  margin-bottom: 40px; /* Added for consistent spacing */
+  margin-bottom: 40px;
 }
 
 /* Log button wrapper - adjusted for consistent spacing */
 .log-button-wrapper {
   width: 100%;
-  margin-bottom: 50px; /* Increased for better spacing */
+  margin-bottom: 50px;
   display: flex;
   justify-content: center;
 }
@@ -61,6 +60,9 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
+  margin-bottom: 0;
+  margin-left: auto;
+  margin-right: auto;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
@@ -71,47 +73,53 @@
   border: 2px solid white;
 }
 
-/* Flashcard Wrapper - modified for consistent sizing */
+/* Loading State */
+.log-song-button:disabled {
+  background: #888888;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Flashcard Wrapper */
 .flashcard-wrapper {
   display: flex;
   justify-content: center;
   align-items: center;
   width: 100%;
-  margin-bottom: 50px; /* Added for consistent spacing */
+  margin-bottom: 50px;
 }
 
-/* Flashcard Container - modified for consistent sizing */
+/* Flashcard Container */
 .flashcard-container {
-  perspective: 1200px; /* Increased for better 3D effect */
+  perspective: 1200px;
   width: 100%;
-  max-width: 500px; /* Match sentiment container max-width */
+  max-width: 500px;
   height: 250px;
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
-/* Flashcard - enhanced with improved 3D effects */
+/* Flashcard - enhanced with improved 3D effects, removed darker border */
 .flashcard {
   width: 100%;
   height: 100%;
   position: relative;
   transform-style: preserve-3d;
-  transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Enhanced easing for realistic motion */
+  transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   cursor: pointer;
   background: none;
   border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 15px 25px rgba(0, 0, 0, 0.2); /* Added subtle shadow for depth */
 }
 
 .flashcard.flipped {
   transform: rotateY(180deg);
 }
 
-/* Front and Back of Flashcard - enhanced with depth and sizing */
+/* Front and Back of Flashcard - removed box shadow */
 .flashcard-face {
   position: absolute;
   width: 100%;
@@ -125,9 +133,7 @@
   backface-visibility: hidden;
   padding: 20px;
   text-align: center;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow for each face */
-  transition: box-shadow 0.3s ease; /* Smooth shadow transition */
-  overflow: auto; /* Allow scrolling for longer content */
+  overflow: auto;
 }
 
 /* Front Side */
@@ -135,7 +141,7 @@
   background: rgba(255, 255, 255, 0.1);
   border: 2px solid rgba(255, 255, 255, 0.2);
   color: #e0e0e0;
-  transform: rotateY(0deg); /* Explicitly set for better browser compatibility */
+  transform: rotateY(0deg);
 }
 
 /* Back Side */
@@ -146,19 +152,14 @@
   transform: rotateY(180deg);
 }
 
-/* Add hover effect to flashcard for interactive feedback */
-.flashcard:hover {
-  box-shadow: 0 20px 35px rgba(0, 0, 0, 0.3);
-}
-
 /* Navigation Buttons - modified for consistent spacing */
 .flashcard-controls {
   display: flex;
   justify-content: center;
   align-items: center;
   width: 100%;
-  margin: 0 auto 50px auto; /* Adjusted for consistent spacing */
-  gap: 25px; /* Increased for better spacing */
+  margin: 0 auto 50px auto;
+  gap: 25px;
 }
 
 .nav-button {
@@ -169,8 +170,8 @@
   font-size: 1.5rem;
   cursor: pointer;
   transition: transform 0.2s ease, background 0.3s ease;
-  padding: 10px 20px; /* Increased horizontal padding */
-  min-width: 50px; /* Ensure minimum width */
+  padding: 10px 20px;
+  min-width: 50px;
 }
 
 .nav-button:hover:not([disabled]) {
@@ -184,24 +185,35 @@
   transform: none;
 }
 
-/* Sentiment Container - set as reference for width consistency */
-.sentiment-container {
-  margin-top: 0; /* Removed extra top margin */
-  background: rgba(255, 255, 255, 0.08);
-  border-radius: 12px;
-  padding: 20px;
-  max-width: 500px; /* Consistent width reference */
-  width: 100%; /* Full width up to max-width */
-  margin-left: auto;
-  margin-right: auto;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  transition: all 0.3s ease;
+/* New Progress Bar - replaces the span */
+.progress-container {
+  height: 12px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  width: 200px;
+  overflow: hidden;
+  position: relative;
 }
 
-/* Loading text styles - maintain consistent styling */
+.progress-bar {
+  height: 100%;
+  background: linear-gradient(to right, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.4));
+  transition: width 0.3s ease;
+  position: relative;
+}
+
+.progress-text {
+  position: absolute;
+  top: -20px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.8rem;
+}
+
+/* Loading Ellipsis Animation */
 .loading-ellipsis {
   font-size: 1.5rem;
   color: #e0e0e0;
@@ -230,11 +242,204 @@
   100% { opacity: 0.4; }
 }
 
-/* Responsive styles - adjusted for consistency */
+/* Sentiment Analysis Container - preserved all original styling */
+.sentiment-container {
+  margin-top: 40px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 20px;
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+}
+
+.sentiment-container:hover {
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+  transform: translateY(-2px);
+}
+
+.sentiment-title {
+  font-size: 1.4rem;
+  color: #e0e0e0;
+  margin-bottom: 15px;
+  font-weight: 600;
+}
+
+.sentiment-result {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.sentiment-emoji {
+  font-size: 3rem;
+  margin-bottom: 10px;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+}
+
+.sentiment-text {
+  font-size: 1.2rem;
+  color: #cccccc;
+  text-align: center;
+  line-height: 1.4;
+}
+
+.sentiment-value {
+  font-weight: 600;
+  color: white;
+  margin: 0 5px;
+}
+
+.sentiment-score {
+  display: block;
+  font-size: 0.9rem;
+  color: #aaaaaa;
+  margin-top: 5px;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 4px 10px;
+  border-radius: 20px;
+}
+
+.sentiment-info {
+  font-size: 0.8rem;
+  color: #888888;
+  margin-top: 10px;
+  font-style: italic;
+}
+
+.sentiment-loading, 
+.sentiment-unavailable {
+  color: #aaaaaa;
+  font-style: italic;
+  padding: 15px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.loading-spinner {
+  width: 30px;
+  height: 30px;
+  border: 3px solid rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  border-top-color: #ffffff;
+  animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Primary Emotion styling */
+.primary-emotion {
+  font-size: 1.1rem;
+  color: #f0f0f0;
+  margin-top: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.emotion-value {
+  font-weight: 600;
+  color: #fcdc4d;
+  margin: 0 5px;
+}
+
+.emotion-score {
+  font-size: 0.8rem;
+  color: #aaaaaa;
+  opacity: 0.8;
+}
+
+/* Additional emotions chips */
+.emotion-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+.emotion-chip {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+  padding: 5px 12px;
+  font-size: 0.85rem;
+  color: #e0e0e0;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.chip-score {
+  font-size: 0.75rem;
+  opacity: 0.8;
+  color: #cccccc;
+}
+
+/* Source indicator styles with colors for different analysis types */
+.sentiment-source {
+  font-size: 0.8rem;
+  margin-top: 5px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  display: inline-block;
+}
+
+.sentiment-source.api {
+  color: #8a8aff;
+  background: rgba(138, 138, 255, 0.1);
+  border: 1px solid rgba(138, 138, 255, 0.3);
+}
+
+.sentiment-source.local-ml {
+  color: #64e764;
+  background: rgba(100, 231, 100, 0.1);
+  border: 1px solid rgba(100, 231, 100, 0.3);
+}
+
+.sentiment-source.hybrid {
+  color: #e764e7;
+  background: rgba(231, 100, 231, 0.1);
+  border: 1px solid rgba(231, 100, 231, 0.3);
+}
+
+.sentiment-notice {
+  font-size: 0.8rem;
+  color: #ffa500;
+  margin-top: 5px;
+  background: rgba(255, 165, 0, 0.1);
+  padding: 4px 10px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 165, 0, 0.3);
+}
+
+.sentiment-error {
+  font-size: 0.8rem;
+  color: #ff6b6b;
+  margin-top: 5px;
+  font-style: italic;
+}
+
+/* Mobile responsiveness */
 @media (max-width: 768px) {
   .flashcards-title {
     font-size: 2rem;
-    margin-bottom: 30px; /* Adjusted for mobile */
+    margin-bottom: 30px;
   }
   
   .flashcards-content {
@@ -243,7 +448,7 @@
   }
   
   .flashcard-container {
-    height: 200px; /* Slightly reduced height on mobile */
+    height: 200px;
   }
   
   .flashcard-face {
@@ -252,11 +457,15 @@
   }
   
   .flashcard-controls {
-    margin-bottom: 30px; /* Reduced spacing on mobile */
+    margin-bottom: 30px;
+  }
+  
+  .progress-container {
+    width: 150px;
   }
   
   .log-button-wrapper {
-    margin-bottom: 30px; /* Reduced spacing on mobile */
+    margin-bottom: 30px;
   }
   
   .nav-button {
@@ -266,36 +475,39 @@
   
   .sentiment-container {
     padding: 15px;
+    margin-top: 30px;
+    width: 90%;
+  }
+  
+  .sentiment-title {
+    font-size: 1.2rem;
+  }
+  
+  .sentiment-emoji {
+    font-size: 2.5rem;
+  }
+  
+  .sentiment-text {
+    font-size: 1rem;
+  }
+  
+  .primary-emotion {
+    font-size: 0.9rem;
+  }
+  
+  .emotion-chips {
+    gap: 6px;
+  }
+  
+  .emotion-chip {
+    font-size: 0.75rem;
+    padding: 3px 8px;
+  }
+  
+  .sentiment-source,
+  .sentiment-notice,
+  .sentiment-error {
+    font-size: 0.7rem;
+    padding: 3px 8px;
   }
 }
-
-/* Enhanced 3D flipping effect */
-@keyframes cardFlipIn {
-  0% {
-    transform: rotateY(0deg);
-    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
-  }
-  50% {
-    box-shadow: 0 15px 25px rgba(0, 0, 0, 0.3);
-  }
-  100% {
-    transform: rotateY(180deg);
-    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
-  }
-}
-
-@keyframes cardFlipOut {
-  0% {
-    transform: rotateY(180deg);
-    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
-  }
-  50% {
-    box-shadow: 0 15px 25px rgba(0, 0, 0, 0.3);
-  }
-  100% {
-    transform: rotateY(0deg);
-    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
-  }
-}
-
-/* All sentiment-related CSS remains unchanged */
