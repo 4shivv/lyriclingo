@@ -444,7 +444,7 @@ const postprocessTranslation = (translatedText) => {
 };
 
 /**
- * Basic English detection for phrases within foreign songs
+ * Improved English detection for phrases within foreign songs
  * @param {string} text - Text to analyze
  * @return {boolean} - True if text appears to be primarily English
  */
@@ -452,27 +452,69 @@ const isEnglishPhrase = (text) => {
   // Skip short text
   if (!text || text.length < 3) return false;
   
-  // Common English words that strongly indicate English content
-  const englishMarkers = [
-    /\b(the|and|are|you|for|this|that|with|have|from|what|when|where|will|would|could|should)\b/i,
-    /\b(love|baby|heart|tonight|forever|never|always|because|without|everything|something)\b/i,
-    // Common English pronouns
-    /\b(i|me|my|mine|you|your|yours|we|our|ours|they|their|theirs|he|his|him|she|her|hers|it|its)\b/i
+  // Normalize and prepare text for analysis
+  const normalizedText = text.toLowerCase().trim();
+  const words = normalizedText.split(/\s+/);
+  
+  // Skip very short phrases
+  if (words.length < 2) return false;
+  
+  // Common Spanish words that would indicate it's not primarily English
+  const spanishMarkers = [
+    /\b(el|la|los|las|un|una|unos|unas|de|del|con|por|para|en|ese|esa|esos|esas)\b/i,
+    /\b(que|quien|quienes|como|cuando|donde|este|esta|estos|estas|mi|tu|su|nuestro|vuestra)\b/i,
+    /\b(yo|tu|el|ella|nosotros|vosotros|ellos|ellas|esto|eso|aquello|mio|tuyo|suyo)\b/i,
+    /\b(salgo|ando|tengo|quiero|puedo|digo|hago|veo|siento|pienso|vengo|sé|estoy|voy)\b/i
   ];
   
-  // Count how many English markers are found
-  const englishMarkerCount = englishMarkers.filter(pattern => pattern.test(text)).length;
+  // Exclusive English words/patterns (words very likely to be English-only)
+  const exclusiveEnglishMarkers = [
+    /\b(the|and|are|with|from|what|when|where|would|could|should|there)\b/i,
+    /\b(because|without|everything|something|through|though|although|enough)\b/i
+  ];
   
-  // Get word count
-  const wordCount = text.split(/\s+/).length;
+  // Count exclusive English markers
+  const exclusiveEnglishCount = exclusiveEnglishMarkers.filter(pattern => 
+    pattern.test(normalizedText)
+  ).length;
   
-  // Text is likely English if:
-  // 1. For short phrases (1-3 words): at least 1 English marker
-  // 2. For medium phrases (4-6 words): at least 2 English markers
-  // 3. For longer phrases: at least 30% of patterns match
-  if (wordCount <= 3) return englishMarkerCount >= 1;
-  if (wordCount <= 6) return englishMarkerCount >= 2;
-  return (englishMarkerCount / englishMarkers.length) > 0.3;
+  // If we have any exclusive English markers, check further
+  if (exclusiveEnglishCount > 0) {
+    // Count Spanish markers
+    const spanishCount = spanishMarkers.filter(pattern => 
+      pattern.test(normalizedText)
+    ).length;
+    
+    // If more exclusive English markers than Spanish markers, likely English
+    if (exclusiveEnglishCount > spanishCount) {
+      return true;
+    }
+    
+    // If phrase is short and has exclusive English markers
+    if (words.length <= 5 && exclusiveEnglishCount >= 2) {
+      return true;
+    }
+  }
+  
+  // Additional check for phrases that are explicitly marked in parentheses
+  // Like: "blah blah blah (Something in English)"
+  const parenthesesMatch = normalizedText.match(/\(([^)]+)\)/);
+  if (parenthesesMatch) {
+    const inParentheses = parenthesesMatch[1];
+    // Check if content in parentheses is English
+    const parenthesesExclusiveEnglishCount = exclusiveEnglishMarkers.filter(pattern => 
+      pattern.test(inParentheses)
+    ).length;
+    
+    if (parenthesesExclusiveEnglishCount > 0) {
+      // If text in parentheses contains exclusive English markers, 
+      // it's likely an English phrase/translation
+      return true;
+    }
+  }
+  
+  // Default to false - not primarily English
+  return false;
 };
 
 /**
