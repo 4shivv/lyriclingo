@@ -119,7 +119,7 @@
   transform: rotateY(180deg);
 }
 
-/* Base styling for flashcard faces (front and back) */
+/* Base styling for flashcard faces */
 .flashcard-face {
   position: absolute;
   width: 100%;
@@ -138,32 +138,26 @@
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  transition: all 0.3s ease;
+  transition: transform 0.3s ease, border 0.3s ease; /* Transition for transform and border */
   border: none; /* No border by default */
   color: #e0e0e0; /* Text color */
+  /* Use a CSS variable to store the rotation value */
+  transform: rotateY(var(--rotateY)); /* Apply rotation based on variable */
 }
 
-/* Hover effect for flashcards */
-.flashcard-face:hover {
-  /* Option 1: Scale the card slightly on hover */
-  transform: scale(1.05);
-  /* Option 2: Optionally add a subtle border on hover */
-  border: 2px solid rgba(255, 255, 255, 0.2); /* Subtle border on hover */
-}
-
-/* Specific transformations for flip effect */
+/* Set rotation values for front and back using CSS variables */
 .flashcard-front {
-  transform: rotateY(0deg); /* Front side transformation */
+  --rotateY: 0deg; /* Front side rotation */
 }
 
 .flashcard-back {
-  transform: rotateY(180deg); /* Back side transformation */
+  --rotateY: 180deg; /* Back side rotation */
 }
 
-/* If you want a subtle border similar to the sentiment container, you could try a very low opacity value */
-.flashcard-front:hover,
-.flashcard-back:hover {
-  border-color: rgba(255, 255, 255, 0.1); /* Subtle border on hover */
+/* Hover effect: combine the rotation with a scale and add a subtle border */
+.flashcard-face:hover {
+  transform: rotateY(var(--rotateY)) scale(1.05); /* Scale and rotate on hover */
+  border: 2px solid rgba(255, 255, 255, 0.2); /* Subtle border on hover */
 }
 
 /* Navigation Buttons - modified for consistent spacing */
