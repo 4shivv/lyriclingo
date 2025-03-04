@@ -228,16 +228,42 @@ const getFlashcardsForSong = async (req, res) => {
       };
     });
     
-    // Final filter to ensure quality flashcards
-    flashcards = flashcards.filter(card => 
-      card.front.length > 0 && 
-      card.back.length > 0 &&
-      card.front !== card.back &&
-      // Additional check to ensure no section markers made it through
-      !(/^\[.*\]$/.test(card.front) || /^\[.*\]$/.test(card.back))
-    );
+    // Track filtering statistics for debugging
+    const initialCount = flashcards.length;
+    let emptyCount = 0;
+    let identicalCount = 0;
+    let sectionMarkerCount = 0;
+    
+    // Final filter to ensure quality flashcards with detailed tracking
+    flashcards = flashcards.filter(card => {
+      // Check for empty front or back
+      if (card.front.length === 0 || card.back.length === 0) {
+        emptyCount++;
+        return false;
+      }
+      
+      // Check for identical front and back (likely untranslated)
+      if (card.front === card.back) {
+        identicalCount++;
+        return false;
+      }
+      
+      // Check for section markers that might have slipped through
+      if (/^\[.*\]$/.test(card.front) || /^\[.*\]$/.test(card.back)) {
+        sectionMarkerCount++;
+        return false;
+      }
+      
+      return true;
+    });
 
-    console.log(`✅ Created ${flashcards.length} clean flashcards (all section markers removed)`);
+    // Log detailed filtering statistics
+    const filteredCount = initialCount - flashcards.length;
+    console.log(`✅ Created ${flashcards.length} clean flashcards from ${initialCount} lines (filtered ${filteredCount} problematic lines)`);
+    
+    if (filteredCount > 0) {
+      console.log(`📊 Filtering breakdown: ${emptyCount} empty lines, ${identicalCount} identical translations, ${sectionMarkerCount} section markers`);
+    }
     
     // Cache the flashcards
     await redis.setex(cacheKey, 86400, JSON.stringify(flashcards));
