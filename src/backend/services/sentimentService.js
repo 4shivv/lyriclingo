@@ -137,10 +137,10 @@ const performSentimentAnalysis = async (text) => {
       console.log("HUGGINGFACE API RESPONSE:", response.data);
 
       let predictions = [];
-      if (Array.isArray(response.data)) {
-        predictions = response.data;
-      } else if (response.data && Array.isArray(response.data[0])) {
+      if (response.data && Array.isArray(response.data[0])) {
         predictions = response.data[0];
+      } else if (Array.isArray(response.data)) {
+        predictions = response.data;
       } else {
         throw new Error("Unexpected response format from Hugging Face API.");
       }
@@ -173,6 +173,7 @@ const performSentimentAnalysis = async (text) => {
   }
   return null;
 };
+
 
 const createFallbackResponse = (errorMessage) => {
   return {
