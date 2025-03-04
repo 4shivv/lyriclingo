@@ -6,7 +6,7 @@ const MAX_RETRY_ATTEMPTS = 3;
 const RETRY_DELAY_MS = 1000;
 const MAX_TEXT_LENGTH = 1500;
 
-// Map raw emotions to sentiment categories
+// Mapping of raw emotion labels to sentiment information.
 const EMOTION_TO_SENTIMENT_MAP = {
   admiration: { sentiment: "Positive", score: 0.7 },
   amusement: { sentiment: "Positive", score: 0.8 },
@@ -46,47 +46,47 @@ const SENTIMENT_TO_EMOJI = {
   "Very Negative": "😞"
 };
 
+// Update mapping to English labels (this will be used to display emotion labels in the result).
 const EMOTION_TRANSLATIONS = {
-  admiration: "Admiración",
-  amusement: "Diversión",
-  anger: "Enojo",
-  annoyance: "Irritación",
-  approval: "Aprobación",
-  caring: "Afecto",
-  confusion: "Confusión",
-  curiosity: "Curiosidad",
-  desire: "Deseo",
-  disappointment: "Decepción",
-  disapproval: "Desaprobación",
-  disgust: "Disgusto",
-  embarrassment: "Vergüenza",
-  excitement: "Entusiasmo",
-  fear: "Miedo",
-  gratitude: "Gratitud",
-  grief: "Duelo",
-  joy: "Alegría",
-  love: "Amor",
-  nervousness: "Nerviosismo",
-  optimism: "Optimismo",
-  pride: "Orgullo",
-  realization: "Realización",
-  relief: "Alivio",
-  remorse: "Remordimiento",
-  sadness: "Tristeza",
-  surprise: "Sorpresa",
+  admiration: "Admiration",
+  amusement: "Amusement",
+  anger: "Anger",
+  annoyance: "Annoyance",
+  approval: "Approval",
+  caring: "Caring",
+  confusion: "Confusion",
+  curiosity: "Curiosity",
+  desire: "Desire",
+  disappointment: "Disappointment",
+  disapproval: "Disapproval",
+  disgust: "Disgust",
+  embarrassment: "Embarrassment",
+  excitement: "Excitement",
+  fear: "Fear",
+  gratitude: "Gratitude",
+  grief: "Grief",
+  joy: "Joy",
+  love: "Love",
+  nervousness: "Nervousness",
+  optimism: "Optimism",
+  pride: "Pride",
+  realization: "Realization",
+  relief: "Relief",
+  remorse: "Remorse",
+  sadness: "Sadness",
+  surprise: "Surprise",
   neutral: "Neutral"
 };
 
-// Process model output and map to our sentiment response
 const processEmotionResults = (results) => {
-  // Ensure each result has a defined score (defaulting to 0 if missing)
+  // Map the results to an array of { emotion, score } objects.
   const emotions = results
     .map(result => ({
       emotion: result.label,
       score: result.score !== undefined ? result.score : 0
     }))
     .filter((emotion, index, array) => {
-      // Include 'neutral' only if it's the only emotion or if its confidence is high enough
+      // For 'neutral', only include it if it's the only label or if its confidence is very high.
       if (emotion.emotion === "neutral") {
         const otherEmotions = array.filter(e => e.emotion !== "neutral");
         return otherEmotions.length === 0 || emotion.score > 0.7;
@@ -98,7 +98,7 @@ const processEmotionResults = (results) => {
   const primaryEmotion = emotions.length > 0 ? emotions[0] : { emotion: "neutral", score: 1.0 };
   const sentimentInfo = EMOTION_TO_SENTIMENT_MAP[primaryEmotion.emotion] || { sentiment: "Neutral", score: 0.5 };
 
-  const translatedEmotions = emotions.slice(0, 3).map(item => ({
+  const displayedEmotions = emotions.slice(0, 3).map(item => ({
     emotion: EMOTION_TRANSLATIONS[item.emotion] || item.emotion,
     score: item.score ? item.score.toFixed(2) : "0.00"
   }));
@@ -107,7 +107,7 @@ const processEmotionResults = (results) => {
     sentiment: sentimentInfo.sentiment,
     emoji: SENTIMENT_TO_EMOJI[sentimentInfo.sentiment] || "😐",
     score: sentimentInfo.score.toFixed(2),
-    emotions: translatedEmotions,
+    emotions: displayedEmotions,
     primaryEmotion: EMOTION_TRANSLATIONS[primaryEmotion.emotion] || primaryEmotion.emotion,
     emotionScore: primaryEmotion.score ? primaryEmotion.score.toFixed(2) : "0.00",
     fallback: false
@@ -130,13 +130,14 @@ const performSentimentAnalysis = async (text) => {
             Authorization: `Bearer ${HUGGINGFACE_API_TOKEN}`,
             "Content-Type": "application/json",
           },
-          timeout: 10000, // 10 second timeout
+          timeout: 10000,
         }
       );
 
       console.log("HUGGINGFACE API RESPONSE:", response.data);
 
       let predictions = [];
+      // First check if the first element is an array.
       if (response.data && Array.isArray(response.data[0])) {
         predictions = response.data[0];
       } else if (Array.isArray(response.data)) {
@@ -173,7 +174,6 @@ const performSentimentAnalysis = async (text) => {
   }
   return null;
 };
-
 
 const createFallbackResponse = (errorMessage) => {
   return {
