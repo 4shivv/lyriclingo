@@ -227,14 +227,23 @@
   font-size: 1.5rem;
   color: #e0e0e0;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   height: 100%;
-  padding: 20px;
+  padding: 30px;
   background: rgba(255, 255, 255, 0.1);
   border: 2px solid rgba(255, 255, 255, 0.2);
   border-radius: 12px;
   width: 100%;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+}
+
+.loading-icon {
+  font-size: 2.5rem;
+  margin-bottom: 15px;
+  animation: pulse 2s infinite;
 }
 
 .animated-dots {
@@ -243,6 +252,7 @@
   text-align: left;
   font-weight: bold;
   animation: pulse 1.5s infinite;
+  margin-left: 5px;
 }
 
 @keyframes pulse {
@@ -518,5 +528,84 @@
   .sentiment-error {
     font-size: 0.7rem;
     padding: 3px 8px;
+  }
+}
+
+/* New Empty State Component */
+.empty-flashcard-container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: 12px;
+  padding: 30px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  color: #e0e0e0;
+}
+
+.empty-flashcard-container:hover {
+  transform: scale(1.02);
+  box-shadow: 0 6px 25px rgba(0, 0, 0, 0.25);
+}
+
+.empty-flashcard-icon {
+  font-size: 3rem;
+  margin-bottom: 20px;
+  opacity: 0.8;
+  color: #aaaaaa;
+}
+
+.empty-flashcard-text {
+  font-size: 1.4rem;
+  font-weight: 500;
+  text-align: center;
+  line-height: 1.4;
+  letter-spacing: 0.5px;
+}
+
+.empty-flashcard-subtext {
+  font-size: 1rem;
+  margin-top: 10px;
+  color: #aaaaaa;
+  text-align: center;
+  max-width: 80%;
+}
+
+/* Improved Flashcard Text Styling */
+.flashcard-face {
+  font-family: 'Inter', sans-serif;
+  font-size: 1.5rem;
+  font-weight: 500;
+  line-height: 1.6;
+  letter-spacing: 0.3px;
+}
+
+/* Mobile Responsive Adjustments */
+@media (max-width: 768px) {
+  .empty-flashcard-text {
+    font-size: 1.2rem;
+  }
+  
+  .empty-flashcard-subtext {
+    font-size: 0.9rem;
+  }
+  
+  .loading-ellipsis {
+    font-size: 1.2rem;
+    padding: 20px;
+  }
+  
+  .loading-icon {
+    font-size: 2rem;
+  }
+  
+  .flashcard-face {
+    font-size: 1.3rem;
   }
 }
