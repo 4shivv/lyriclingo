@@ -8,6 +8,7 @@ const toastVariants = {
   exit: { opacity: 0, y: 40 },
 };
 
+
 function Toast({ message, type = "error", onClose, duration = 3000 }) {
   const [isVisible, setIsVisible] = useState(true);
 
