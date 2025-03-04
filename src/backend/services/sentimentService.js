@@ -130,14 +130,14 @@ const analyzeSentiment = async (text) => {
  */
 const performSentimentAnalysis = async (text) => {
   let attempts = 0;
-  
+
   while (attempts < MAX_RETRY_ATTEMPTS) {
     try {
       console.log(`🔍 HUGGINGFACE API: Making sentiment request (attempt ${attempts + 1})...`);
-      
-      // Call the RoBERTa-base-go-emotions model
+
+      // Call the updated model endpoint
       const response = await axios.post(
-        "https://api-inference.huggingface.co/models/SamLowe/roberta-base-go-emotion-analysis",
+        "https://api-inference.huggingface.co/models/SamLowe/roberta-base-go_emotions",
         { inputs: text },
         {
           headers: {
@@ -147,37 +147,44 @@ const performSentimentAnalysis = async (text) => {
           timeout: 10000, // 10 second timeout
         }
       );
-      
-      // Process results if successful
-      if (response.data && response.data[0] && response.data[0].length > 0) {
-        return processEmotionResults(response.data[0]);
+
+      // Extract predictions: either response.data is an array or nested in response.data[0]
+      const predictions = Array.isArray(response.data)
+        ? response.data
+        : (Array.isArray(response.data[0]) ? response.data[0] : []);
+
+      if (predictions.length > 0) {
+        return processEmotionResults(predictions);
       }
-      
+
       console.log("⚠️ HUGGINGFACE API: Received empty response");
       return null;
-      
     } catch (error) {
       const statusCode = error.response?.status;
       attempts++;
-      
-      console.error(`❌ HUGGINGFACE API: Attempt ${attempts} failed with status ${statusCode}:`, 
-        error.response?.data || error.message);
-      
-      // If we've reached max attempts or it's not a retryable error, break the loop
-      if (attempts >= MAX_RETRY_ATTEMPTS || 
-          (statusCode && ![429, 500, 502, 503, 504].includes(statusCode))) {
+
+      console.error(
+        `❌ HUGGINGFACE API: Attempt ${attempts} failed with status ${statusCode}:`,
+        error.response?.data || error.message
+      );
+
+      // Break if we've reached max attempts or if the error is non-retryable
+      if (
+        attempts >= MAX_RETRY_ATTEMPTS ||
+        (statusCode && ![429, 500, 502, 503, 504].includes(statusCode))
+      ) {
         break;
       }
-      
-      // Exponential backoff delay
+
       const delay = RETRY_DELAY_MS * Math.pow(2, attempts - 1);
       console.log(`⏱️ HUGGINGFACE API: Retrying in ${delay}ms...`);
       await sleep(delay);
     }
   }
-  
+
   return null;
 };
+
 
 /**
  * Process emotion results from the model and map to sentiment categories
