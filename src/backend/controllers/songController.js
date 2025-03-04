@@ -136,19 +136,24 @@ const getFlashcardsForSong = async (req, res) => {
     
     console.log("🔍 Raw Lyrics Received");
 
-    // Step 1: Remove any content between square brackets (section markers)
+    // Process lyrics to remove section markers and handle special cases
     const lyricsLines = data.lyrics.split('\n')
       .map(line => {
-        const lineWithoutMarkers = line.replace(/\[.*?\]/g, '').trim();
-        return lineWithoutMarkers;
+        // Remove any section markers with or without quotes
+        // This handles both "[Intro]" and ""[Intro]""
+        const cleanLine = line.replace(/"?\[.*?\]"?/g, '').trim();
+        return cleanLine;
       })
-      // Step 2: Filter out any empty lines after marker removal
+      // Only keep non-empty lines after section marker removal
       .filter(line => line.length > 0);
     
     console.log(`📝 Found ${lyricsLines.length} lyric lines after removing section markers`);
 
+    // Prepare arrays for translation
+    let frontLines = lyricsLines;
+    
     // ===== OPTIMIZED TRANSLATION APPROACH =====
-    // We'll deduplicate for efficient translation but keep all lines in the final output
+    // Deduplicate for efficient translation but keep all lines in final output
     
     // Step 1: Create a map of unique lines for translation efficiency
     const uniqueLines = new Map(); // Maps text to index in uniqueArray
@@ -156,7 +161,7 @@ const getFlashcardsForSong = async (req, res) => {
     const originalToUnique = new Map(); // Maps original position to unique line index
     
     // Identify unique lines while preserving all original lines
-    lyricsLines.forEach((line, index) => {
+    frontLines.forEach((line, index) => {
       const trimmedLine = line.trim();
       
       if (!uniqueLines.has(trimmedLine)) {
@@ -170,7 +175,7 @@ const getFlashcardsForSong = async (req, res) => {
     });
     
     // Calculate and log translation optimization stats
-    const totalLines = lyricsLines.length;
+    const totalLines = frontLines.length;
     const uniqueCount = uniqueArray.length;
     const savedLines = totalLines - uniqueCount;
     const percentSaved = Math.round((savedLines / totalLines) * 100);
@@ -194,7 +199,7 @@ const getFlashcardsForSong = async (req, res) => {
     }
     
     // Step 3: Map translations back to ALL original lines (including duplicates)
-    const backLines = lyricsLines.map((_, index) => {
+    const backLines = frontLines.map((_, index) => {
       // Get the unique line index for this position
       const uniqueIndex = originalToUnique.get(index);
       // Return the translation for this unique line
@@ -202,7 +207,7 @@ const getFlashcardsForSong = async (req, res) => {
     });
     
     // Create flashcards with proper alignment, keeping ALL lines in order
-    let flashcards = lyricsLines.map((line, index) => {
+    let flashcards = frontLines.map((line, index) => {
       return {
         front: line.trim(),
         // Extra cleaning to remove any potential artifact characters from translation
@@ -210,15 +215,16 @@ const getFlashcardsForSong = async (req, res) => {
       };
     });
     
-    // Filter out cards with empty fronts or backs or where front/back are identical
-    // but keep duplicates intentionally
+    // Final filter to ensure quality flashcards
     flashcards = flashcards.filter(card => 
       card.front.length > 0 && 
       card.back.length > 0 &&
-      card.front !== card.back
+      card.front !== card.back &&
+      // Additional check to ensure no section markers made it through
+      !(/^\[.*\]$/.test(card.front) || /^\[.*\]$/.test(card.back))
     );
 
-    console.log(`✅ Created ${flashcards.length} flashcards (maintaining song flow with duplicates)`);
+    console.log(`✅ Created ${flashcards.length} clean flashcards (all section markers removed)`);
     
     // Cache the flashcards
     await redis.setex(cacheKey, 86400, JSON.stringify(flashcards));

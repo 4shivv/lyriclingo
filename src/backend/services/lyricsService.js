@@ -236,6 +236,9 @@ const fetchLyricsUrl = async (song, artist) => {
 /**
  * Scrape lyrics from a Genius lyrics URL with improved HTML handling
  */
+/**
+ * Scrape lyrics from a Genius lyrics URL with improved section marker handling
+ */
 const scrapeLyrics = async (lyricsUrl) => {
     try {
         const { data } = await axios.get(lyricsUrl);
@@ -243,52 +246,56 @@ const scrapeLyrics = async (lyricsUrl) => {
         
         let lyrics = "";
         
-        // Select the lyrics container with data-lyrics-container attribute
+        // Select the lyrics container
         const lyricsContainer = $('[data-lyrics-container="true"]');
         
         // Process each element in the lyrics container
         lyricsContainer.each((_, container) => {
-            // First replace all <br> tags with newlines for proper line breaks
+            // Replace <br> tags with newlines
             $(container).find('br').replaceWith('\n');
             
-            // Process the HTML content of the container
-            const html = $(container).html();
+            // Get the HTML content and convert to text while preserving structure
+            let html = $(container).html();
             if (!html) return;
             
-            // Convert HTML to text with proper line breaks
-            // This ensures we capture all text, including text within tags like <i>
-            let processedText = html
-                // Replace closing tags followed by quotes with line breaks
-                .replace(/<\/[^>]+>"([^<])/g, '"\n$1')
-                // Replace opening quotes with line breaks when appropriate
-                .replace(/"([^"]+)"/g, '\n"$1"')
-                // Handle other tag closures with line breaks when needed
-                .replace(/<\/[^>]+>([A-Z])/g, '\n$1')
-                // Get text content while preserving line breaks
-                .replace(/<[^>]+>/g, '');
+            // Process the content line by line
+            const lines = html.split('\n');
+            let processedLines = [];
             
-            // Clean up multiple consecutive newlines and add to lyrics
-            processedText = processedText
-                .replace(/\n\s*\n\s*\n+/g, '\n\n')
-                .trim();
+            for (let line of lines) {
+                // Skip empty lines
+                if (!line.trim()) continue;
                 
-            lyrics += processedText + '\n';
+                // Remove HTML tags while preserving text content
+                let textLine = line.replace(/<[^>]+>/g, '');
+                textLine = textLine.trim();
+                
+                // Skip section markers - quoted or unquoted
+                // This handles patterns like: "[Verse]", ""[Verse]"", "[Verse: Artist]"
+                if (/^"?\[.*?\]"?$/.test(textLine)) continue;
+                
+                // Remove any section markers within a line
+                // This handles mixed content like "Some lyrics [Bridge] more lyrics"
+                textLine = textLine.replace(/"?\[.*?\]"?/g, '').trim();
+                
+                // Skip if line became empty after removing section markers
+                if (textLine.length === 0) continue;
+                
+                processedLines.push(textLine);
+            }
+            
+            // Join processed lines with newlines
+            lyrics += processedLines.join('\n') + '\n';
         });
         
-        // Process the lyrics text for optimal song structure
+        // Final cleanup of the lyrics
         lyrics = lyrics
-            // Remove section markers like [Verse], [Chorus], etc. if needed
-            // .replace(/\[.*?\]\n?/g, "")
-            // Keep section markers for now, they'll be filtered later
-            
             // Clean up multiple consecutive newlines
             .replace(/\n\s*\n\s*\n+/g, '\n\n')
-            // Ensure each line is properly separated
-            .split('\n')
-            .map(line => line.trim())
-            .join('\n')
+            // Trim whitespace at start and end
             .trim();
         
+        console.log(`✅ Successfully scraped and processed lyrics (removed section markers)`);
         return lyrics;
     } catch (error) {
         console.error("❌ Error scraping lyrics:", error.message);
