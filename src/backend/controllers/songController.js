@@ -136,21 +136,16 @@ const getFlashcardsForSong = async (req, res) => {
     
     console.log("🔍 Raw Lyrics Received");
 
-    // Split lyrics by line breaks and filter properly
+    // Step 1: Remove any content between square brackets (section markers)
     const lyricsLines = data.lyrics.split('\n')
-      .map(line => line.trim())
-      // Keep all non-empty lines but filter out section markers in square brackets
-      .filter(line => {
-        // Remove empty lines
-        if (line.length === 0) return false;
-        
-        // Filter out section markers (lines that are entirely wrapped in square brackets)
-        // This regex checks if the entire line is a section marker: [Something: Something]
-        const sectionMarkerRegex = /^\[.*\]$/;
-        return !sectionMarkerRegex.test(line);
-      });
+      .map(line => {
+        const lineWithoutMarkers = line.replace(/\[.*?\]/g, '').trim();
+        return lineWithoutMarkers;
+      })
+      // Step 2: Filter out any empty lines after marker removal
+      .filter(line => line.length > 0);
     
-    console.log(`📝 Found ${lyricsLines.length} lyric lines after filtering section markers`);
+    console.log(`📝 Found ${lyricsLines.length} lyric lines after removing section markers`);
 
     // ===== OPTIMIZED TRANSLATION APPROACH =====
     // We'll deduplicate for efficient translation but keep all lines in the final output
