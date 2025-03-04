@@ -25,6 +25,22 @@ const SPANISH_CONTRACTIONS = {
     "va'": "vas",    // You go
     "vo'": "voy",    // I go
     
+    // Estar (to be) contractions - Comprehensive list with variations
+    "tar": "estar",   // To be
+    "'tar": "estar",  // To be with apostrophe
+    "tamo": "estamos", // We are
+    "'tamo": "estamos", // We are with apostrophe
+    "tamos": "estamos", // We are
+    "'tamos": "estamos", // We are with apostrophe
+    "taba": "estaba",  // He/she/I was
+    "'taba": "estaba", // He/she/I was with apostrophe
+    "taban": "estaban", // They were
+    "'taban": "estaban", // They were with apostrophe
+    "tao": "estado",   // Been (past participle)
+    "'tao": "estado",  // Been with apostrophe
+    "tando": "estando", // Being
+    "'tando": "estando", // Being with apostrophe
+    
     // Second-person contractions (critical for song lyrics)
     "quiere'": "quieres", // You want
     "tiene'": "tienes",   // You have
@@ -138,6 +154,7 @@ const getDeduplicationStats = (textArray) => {
 
 /**
  * Preprocesses Spanish text to expand contractions and handle contextual patterns
+ * Enhanced with better handling of estar contractions like "tar" and "'tar"
  * 
  * @param {string} text - Spanish text to preprocess
  * @returns {string} - Preprocessed text ready for translation
@@ -151,10 +168,18 @@ const preprocessSpanishText = (text) => {
         .replace(/[\u0300-\u036f]/g, c => c) // Keep accents but normalize them
         .trim();
     
-    // Replace all contractions with their full forms
-    let processedText = normalizedText;
+    // Pre-process special estar contractions with more specific patterns
+    // Handle the 'tar' pattern at word boundaries with potential apostrophes
+    normalizedText = normalizedText
+        // Handle start of line or after space
+        .replace(/(^|\s)('?)tar\b/gi, "$1estar")
+        // Handle 'Tar' at beginning of sentences (capitalized)
+        .replace(/(^|\s)('?)Tar\b/g, "$1Estar");
     
     // Apply contractions mapping
+    let processedText = normalizedText;
+    
+    // Apply each contraction in the mapping
     Object.entries(SPANISH_CONTRACTIONS).forEach(([contraction, fullForm]) => {
         // Word boundary pattern to prevent partial word matches
         const pattern = new RegExp(`\\b${contraction}\\b`, 'gi');
@@ -231,7 +256,11 @@ const postprocessTranslation = (translatedText) => {
         [/If I dance for me/gi, "If you dance for me"],
         [/If I dance'/gi, "If you dance"],
         [/I'll give it all to me/gi, "I'll give you everything"],
-        [/I will give it all to me/gi, "I will give you everything"]
+        [/I will give it all to me/gi, "I will give you everything"],
+        // Fix tar/estar mistranslations
+        [/\btar\b/gi, "being"],
+        [/\btar\s/gi, "being "],
+        [/\bTar\b/gi, "Being"]
     ];
     
     postProcessingPatterns.forEach(([pattern, replacement]) => {
