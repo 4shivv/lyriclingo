@@ -1,9 +1,24 @@
-import React from "react";
-import { motion } from "framer-motion";
+import React, { useRef } from "react";
+import { motion, useInView } from "framer-motion";
 import { Link } from "react-router-dom";
 import "../styles/Home.css";
 
 function Home() {
+  // Create refs for scroll-triggered animations
+  const featuresRef = useRef(null);
+  const languagesRef = useRef(null);
+  
+  // Use inView hook to detect when elements are in viewport
+  const featuresInView = useInView(featuresRef, { 
+    once: true, 
+    amount: 0.2 // Trigger when 20% visible
+  });
+  
+  const languagesInView = useInView(languagesRef, { 
+    once: true, 
+    amount: 0.2 
+  });
+
   // Read the backend URL from Vite's environment variables
   const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:5001";
 
@@ -54,7 +69,7 @@ function Home() {
 
   return (
     <div className="home-container">
-      {/* Hero Section */}
+      {/* Hero Section - No changes to initial animations */}
       <div className="home-hero">
         <motion.div 
           className="hero-content"
@@ -70,7 +85,7 @@ function Home() {
           >
             <motion.h1 
               className="hero-title"
-              /* variants={itemVariants} */
+              variants={itemVariants}
             >
               Learn Languages <span className="highlight">Through Music</span>
             </motion.h1>
@@ -106,7 +121,7 @@ function Home() {
               </Link>
             </motion.div>
             
-            {/* Social Links - Moved from footer to hero */}
+            {/* Social Links in hero section */}
             <motion.div 
               className="social-links-container"
               variants={itemVariants}
@@ -158,12 +173,13 @@ function Home() {
         </motion.div>
       </div>
 
-      {/* Features Section */}
+      {/* Features Section - Now with scroll-triggered animations */}
       <motion.div 
+        ref={featuresRef}
         className="features-section"
         initial={{ opacity: 0, y: 40 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.8, duration: 0.6 }}
+        animate={featuresInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 40 }}
+        transition={{ duration: 0.6 }}
       >
         <h2 className="features-title">How LyricLingo Works</h2>
         
@@ -177,8 +193,10 @@ function Home() {
                 boxShadow: "0 10px 25px rgba(0, 0, 0, 0.2)" 
               }}
               initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.9 + (index * 0.2) }}
+              animate={featuresInView ? 
+                { opacity: 1, y: 0, transition: { delay: 0.1 + (index * 0.2) } } : 
+                { opacity: 0, y: 20 }
+              }
             >
               <div className="feature-icon">{feature.icon}</div>
               <h3 className="feature-title">{feature.title}</h3>
@@ -188,24 +206,29 @@ function Home() {
         </div>
       </motion.div>
 
-      {/* Language Section */}
+      {/* Language Section - Now with scroll-triggered animations */}
       <motion.div 
+        ref={languagesRef}
         className="language-section"
         initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 1.4, duration: 0.8 }}
+        animate={languagesInView ? { opacity: 1 } : { opacity: 0 }}
+        transition={{ duration: 0.8 }}
       >
         <h2 className="languages-title">Supported Languages</h2>
         <div className="languages-container">
-          <div className="language-badge">Spanish</div>
-          <div className="language-badge">French</div>
-          <div className="language-badge">Portuguese</div>
-          <div className="language-badge">Italian</div>
-          <div className="language-badge">German</div>
-          <div className="language-badge">Japanese</div>
-          <div className="language-badge">Chinese</div>
-          <div className="language-badge">Russian</div>
-          <div className="language-badge">Korean</div>
+          {["Spanish", "French", "Portuguese", "Italian", "German", "Japanese", "Chinese", "Russian", "Korean"].map((language, index) => (
+            <motion.div 
+              key={language}
+              className="language-badge"
+              initial={{ opacity: 0, y: 20 }}
+              animate={languagesInView ? 
+                { opacity: 1, y: 0, transition: { delay: 0.1 + (index * 0.05) } } : 
+                { opacity: 0, y: 20 }
+              }
+            >
+              {language}
+            </motion.div>
+          ))}
         </div>
       </motion.div>
     </div>
