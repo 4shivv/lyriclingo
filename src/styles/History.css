@@ -1,16 +1,22 @@
+/* Enhanced History.css - Improved UI with consistent styling */
+
 .history-container {
   position: relative;
   min-height: 100vh;
   text-align: center;
   padding: 50px;
-  background: linear-gradient(to bottom right, #334E47, #1a1b24); /* Updated gradient background */
+  background: linear-gradient(135deg, #334E47, #1a1b24, #2a1f36);
+  background-size: 100% 100%; /* Fixed background, no animation */
+  overflow: hidden;
 }
 
 .history-content {
-  transform: translateY(75px); /* Shift content downward; adjust as needed */
+  transform: translateY(75px);
+  position: relative;
+  z-index: 2;
 }
 
-/* Overlay to improve text contrast on the history page */
+/* Overlay to improve text contrast */
 .history-container::after {
   content: "";
   position: absolute;
@@ -18,97 +24,142 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.4); /* Keep overlay opacity */
-  z-index: 0;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 1;
   pointer-events: none;
 }
 
-/* Ensure history content layers above the overlay */
-.history-container > * {
-  position: relative;
-  z-index: 1;
-}
-
-/* Title and Subtitle */
+/* Title with gradient text - matches flashcards page */
 .history-title {
-  font-size: 3rem; /* Increased to match flashcards-title */
+  font-size: 3rem;
   font-weight: bold;
-  color: white;
+  margin-bottom: 10px;
+  background: linear-gradient(45deg, #fff 40%, #fcdc4d 60%, #fff 80%);
+  background-size: 200% auto;
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0px 2px 5px rgba(0, 0, 0, 0.3);
 }
 
 .history-subtitle {
-  font-size: 1.5rem; /* Increased to match flashcards-subtitle */
-  color: #cccccc;
-  margin-bottom: 20px;
+  font-size: 1.5rem;
+  color: #e0e0e0;
+  margin-bottom: 25px;
+  font-weight: 500;
+  letter-spacing: 0.3px;
 }
 
-/* History List */
+/* History List Container */
 .history-list {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
+  gap: 15px;
   max-width: 600px;
   margin: 0 auto;
 }
 
-/* Updated History Item styling to mimic the log-song button */
+/* History Item - styled consistently with flashcards elements */
 .history-item {
   width: 100%;
-  padding: 12px;
-  background: transparent; /* Transparent background */
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.05);
   color: white;
-  border: 2px solid white; /* White border */
-  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  transition: transform 0.2s ease, background 0.3s ease, box-shadow 0.3s ease;
+  transition: all 0.3s ease;
   cursor: pointer;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+  position: relative;
+  overflow: hidden;
+  box-sizing: border-box;
 }
 
 .history-item:hover {
-  background: rgba(255, 255, 255, 0.1) !important;
-  transform: scale(1.02);
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+  background: rgba(255, 255, 255, 0.08);
+  transform: translateX(10px) scale(1.02);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+  border-color: rgba(255, 255, 255, 0.2);
 }
 
 /* Song and Artist Info */
 .history-info {
   font-size: 1.2rem;
+  text-align: left;
+  transition: transform 0.3s ease;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
 }
 
 .history-song {
-  font-weight: bold;
+  font-weight: 600;
+  color: #ffffff;
+  margin-right: 5px;
+  letter-spacing: 0.3px;
 }
 
 .history-artist {
-  color: #bbbbbb;
+  color: #cccccc;
+  font-weight: 400;
+  letter-spacing: 0.2px;
 }
 
-/* Date */
+/* Date styling */
 .history-date {
-  font-size: 1rem;
-  color: #cccccc;
+  font-size: 0.9rem;
+  color: #aaaaaa;
+  background: rgba(255, 255, 255, 0.08);
+  padding: 4px 10px;
+  border-radius: 15px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+}
+
+.history-item:hover .history-date {
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.2);
 }
 
 /* Empty State */
 .history-empty {
   font-size: 1.2rem;
-  color: #888888;
+  color: #bbbbbb;
+  margin-top: 30px;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 20px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+  max-width: 450px;
+  margin-left: auto;
+  margin-right: auto;
+  transition: all 0.3s ease;
 }
 
-/* Clear History Button updated to match log-song button style */
+.history-empty:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+/* Clear History Button - matches styling of flashcards page buttons */
 .clear-history-button {
-  background: transparent;
+  background: rgba(255, 255, 255, 0.08);
   color: white;
-  border: 2px solid white;
-  padding: 12px 20px;
-  font-size: 1rem;
-  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  padding: 12px 24px;
+  font-size: 1.1rem;
+  font-weight: 500;
+  border-radius: 30px;
   cursor: pointer;
-  transition: transform 0.2s ease, background 0.3s ease, box-shadow 0.3s ease;
+  transition: all 0.3s ease;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -116,64 +167,90 @@
   margin-bottom: 35px;
   margin-left: auto;
   margin-right: auto;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+  min-width: 180px;
+  letter-spacing: 0.3px;
 }
 
 .clear-history-button:hover {
-  transform: scale(1.1);
-  background: rgba(255, 255, 255, 0.1) !important;
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+  transform: translateY(-5px);
+  background: rgba(231, 76, 60, 0.15);
+  border-color: rgba(231, 76, 60, 0.3);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
 }
 
-/* Delete History Button updated styling */
+.clear-history-button:active {
+  transform: translateY(0) scale(0.98);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+}
+
+/* Delete History Button (if present) */
 .delete-history-button {
-  background: transparent;
+  background: rgba(255, 255, 255, 0.05);
   color: white;
-  border: 2px solid white;
-  padding: 6px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 6px 12px;
   font-size: 0.9rem;
-  border-radius: 8px;
+  border-radius: 15px;
   cursor: pointer;
-  transition: transform 0.2s ease, background 0.3s ease;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .delete-history-button:hover {
-  transform: scale(1.05);
-  background: rgba(255, 255, 255, 0.1);
+  transform: translateY(-2px) scale(1.05);
+  background: rgba(231, 76, 60, 0.15);
+  border-color: rgba(231, 76, 60, 0.3);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-/* Add this responsive typography section at the end of your file */
+.delete-history-button:active {
+  transform: translateY(0) scale(0.98);
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* Responsive adjustments */
 @media (max-width: 768px) {
   .history-title {
-    font-size: 2rem; /* Reduced from 3rem to match home-title mobile size */
+    font-size: 2rem;
   }
   
   .history-subtitle {
-    font-size: 1.2rem; /* Reduced from 1.5rem to match home-tagline mobile size */
+    font-size: 1.2rem;
   }
   
   .history-info {
-    font-size: 1rem; /* Slightly reduced for better mobile display */
+    font-size: 1rem;
   }
   
   .history-date {
-    font-size: 0.9rem; /* Smaller date text on mobile */
+    font-size: 0.8rem;
+    padding: 3px 8px;
   }
   
   .history-empty {
-    font-size: 1rem; /* Adjusted empty state text */
+    font-size: 1rem;
+    padding: 15px;
   }
   
   .clear-history-button {
-    font-size: 0.9rem; /* Smaller button text */
-    padding: 10px 16px; /* Slightly reduced padding */
+    font-size: 0.9rem;
+    padding: 10px 16px;
   }
   
   .history-container {
-    padding: 30px 20px; /* Reduced padding on mobile */
+    padding: 30px 20px;
   }
   
   .history-content {
-    transform: translateY(50px); /* Adjusted downward shift for mobile */
+    transform: translateY(50px);
+  }
+  
+  .history-item {
+    padding: 12px;
+    border-radius: 12px;
   }
 }
