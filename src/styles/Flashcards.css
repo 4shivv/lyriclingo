@@ -1,19 +1,12 @@
-/* Enhanced Flashcards.css - Improved UI with glass morphism and smooth animations */
+/* Enhanced Flashcards.css - Improved UI with consistent dimensions and proper text alignment */
 
 .flashcards-container {
   position: relative;
   min-height: 100vh;
   width: 100%;
   background: linear-gradient(135deg, #334E47, #1a1b24, #2a1f36);
-  background-size: 200% 200%;
-  animation: gradientBackground 15s ease infinite;
+  background-size: 100% 100%; /* Fixed background, no animation */
   overflow: hidden;
-}
-
-@keyframes gradientBackground {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
 }
 
 .flashcards-container::after {
@@ -28,7 +21,7 @@
   pointer-events: none;
 }
 
-/* Content wrapper - enhanced with glass morphism */
+/* Content wrapper */
 .flashcards-content {
   position: relative;
   z-index: 2;
@@ -62,13 +55,12 @@
   100% { background-position: 0% 50%; }
 }
 
-/* Log button wrapper - enhanced with smoother transition */
+/* Log button wrapper */
 .log-button-wrapper {
   width: 100%;
   margin-bottom: 25px;
   display: flex;
   justify-content: center;
-  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .log-song-button {
@@ -80,7 +72,7 @@
   font-weight: 500;
   border-radius: 30px;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+  transition: all 0.3s ease;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -89,9 +81,6 @@
   margin-left: auto;
   margin-right: auto;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
-  letter-spacing: 0.3px;
 }
 
 .log-song-button:hover {
@@ -114,19 +103,19 @@
   opacity: 0.7;
 }
 
-/* Flashcard Wrapper - enhanced with smoother transition */
+/* Flashcard Wrapper - dimensions standardized */
 .flashcard-wrapper {
   display: flex;
   justify-content: center;
   align-items: center;
   width: 100%;
   margin-bottom: 50px;
-  perspective: 2000px;
+  perspective: 1200px;
 }
 
-/* Flashcard Container - updated for better 3D perspective */
+/* Flashcard Container - standardized dimensions */
 .flashcard-container {
-  perspective: 1600px;
+  perspective: 1200px;
   width: 100%;
   max-width: 500px;
   height: 250px;
@@ -135,7 +124,7 @@
   align-items: center;
 }
 
-/* Flashcard - enhanced with improved 3D effects and glass morphism */
+/* Flashcard - kept original flip animation */
 .flashcard {
   width: 100%;
   height: 100%;
@@ -154,7 +143,7 @@
   transform: rotateY(180deg);
 }
 
-/* Base styling for flashcard faces - enhanced with glass morphism */
+/* Base styling for flashcard faces - ensuring centered text */
 .flashcard-face {
   position: absolute;
   width: 100%;
@@ -172,38 +161,10 @@
   text-align: center;
   overflow: auto;
   background: rgba(255, 255, 255, 0.05);
-  box-shadow: 
-    0 10px 30px rgba(0, 0, 0, 0.25),
-    0 0 0 1px rgba(255, 255, 255, 0.1) inset;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
   border: 1px solid rgba(255, 255, 255, 0.1);
   color: #e0e0e0;
   transform: rotateY(var(--rotateY));
-}
-
-.flashcard-face::before {
-  content: "";
-  position: absolute;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: linear-gradient(
-    45deg,
-    transparent 0%,
-    rgba(255, 255, 255, 0.03) 50%,
-    transparent 100%
-  );
-  transform: rotate(45deg);
-  z-index: -1;
-  pointer-events: none;
-  transition: transform 0.6s ease;
-}
-
-.flashcard-face:hover::before {
-  transform: rotate(45deg) translate(10%, 10%);
 }
 
 /* Set rotation values for front and back using CSS variables */
@@ -213,15 +174,6 @@
 
 .flashcard-back {
   --rotateY: 180deg;
-}
-
-/* Hover effect with smooth transitions */
-.flashcard-face:hover {
-  transform: rotateY(var(--rotateY)) scale(1.02);
-  border-color: rgba(255, 255, 255, 0.2);
-  box-shadow: 
-    0 15px 35px rgba(0, 0, 0, 0.3),
-    0 0 0 1px rgba(255, 255, 255, 0.15) inset;
 }
 
 /* Navigation Buttons - enhanced with modern styling */
@@ -243,13 +195,11 @@
   height: 50px;
   font-size: 1.5rem;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+  transition: all 0.3s ease;
   display: flex;
   align-items: center;
   justify-content: center;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
 }
 
 .nav-button:hover:not([disabled]) {
@@ -271,7 +221,7 @@
   background: rgba(255, 255, 255, 0.05);
 }
 
-/* New Progress Bar - enhanced with animations and glass morphism */
+/* New Progress Bar - enhanced with animations */
 .progress-container {
   height: 10px;
   background: rgba(255, 255, 255, 0.05);
@@ -286,7 +236,7 @@
 .progress-bar {
   height: 100%;
   background: linear-gradient(to right, rgba(252, 220, 77, 0.5), rgba(255, 255, 255, 0.7));
-  transition: width 0.4s cubic-bezier(0.44, 0.05, 0.55, 0.95);
+  transition: width 0.4s ease;
   position: relative;
   box-shadow: 0 0 10px rgba(252, 220, 77, 0.5);
 }
@@ -303,26 +253,23 @@
   letter-spacing: 0.5px;
 }
 
-/* Loading Ellipsis Animation - enhanced with glass morphism */
+/* Loading Ellipsis Animation - standardized dimensions */
 .loading-ellipsis {
+  width: 100%;
+  height: 100%;
   font-size: 1.5rem;
   color: #e0e0e0;
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 100%;
   padding: 30px;
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 18px;
-  width: 100%;
   font-weight: 500;
   letter-spacing: 0.5px;
-  box-shadow: 
-    0 10px 30px rgba(0, 0, 0, 0.2),
-    0 0 0 1px rgba(255, 255, 255, 0.05) inset;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  text-align: center;
 }
 
 .animated-dots {
@@ -341,7 +288,7 @@
   100% { opacity: 0.3; }
 }
 
-/* Sentiment Analysis Container - enhanced with glass morphism */
+/* Sentiment Analysis Container - enhanced styling */
 .sentiment-container {
   margin-top: 40px;
   background: rgba(255, 255, 255, 0.05);
@@ -351,39 +298,15 @@
   width: 100%;
   margin-left: auto;
   margin-right: auto;
-  box-shadow: 
-    0 10px 30px rgba(0, 0, 0, 0.2),
-    0 0 0 1px rgba(255, 255, 255, 0.1) inset;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
   border: 1px solid rgba(255, 255, 255, 0.08);
   overflow: hidden;
   position: relative;
 }
 
-.sentiment-container::before {
-  content: "";
-  position: absolute;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: linear-gradient(
-    45deg,
-    transparent 0%,
-    rgba(255, 255, 255, 0.02) 50%,
-    transparent 100%
-  );
-  transform: rotate(45deg);
-  z-index: 0;
-  pointer-events: none;
-}
-
 .sentiment-container:hover {
-  box-shadow: 
-    0 15px 35px rgba(0, 0, 0, 0.25),
-    0 0 0 1px rgba(255, 255, 255, 0.15) inset;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25);
   transform: translateY(-5px);
   border-color: rgba(255, 255, 255, 0.15);
 }
@@ -486,7 +409,7 @@
   border: 3px solid rgba(255, 255, 255, 0.1);
   border-radius: 50%;
   border-top-color: rgba(252, 220, 77, 0.7);
-  animation: spin 1s cubic-bezier(0.6, 0.2, 0.4, 0.8) infinite;
+  animation: spin 1s ease-in-out infinite;
   box-shadow: 0 0 10px rgba(252, 220, 77, 0.2);
 }
 
@@ -496,7 +419,7 @@
   }
 }
 
-/* Primary Emotion styling - enhanced with animations */
+/* Primary Emotion styling - enhanced */
 .primary-emotion {
   font-size: 1.1rem;
   color: #f0f0f0;
@@ -532,7 +455,7 @@
   opacity: 0.9;
 }
 
-/* Additional emotions chips - enhanced with glass morphism */
+/* Additional emotions chips - enhanced */
 .emotion-chips {
   display: flex;
   flex-wrap: wrap;
@@ -553,8 +476,6 @@
   align-items: center;
   gap: 5px;
   transition: all 0.3s ease;
-  backdrop-filter: blur(5px);
-  -webkit-backdrop-filter: blur(5px);
 }
 
 .emotion-chip:hover {
@@ -570,7 +491,7 @@
   color: #dddddd;
 }
 
-/* Source indicator styles with enhanced glass morphism */
+/* Source indicator styles */
 .sentiment-source {
   font-size: 0.8rem;
   margin-top: 5px;
@@ -610,8 +531,6 @@
   border-radius: 20px;
   border: 1px solid rgba(255, 165, 0, 0.2);
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  backdrop-filter: blur(5px);
-  -webkit-backdrop-filter: blur(5px);
 }
 
 .sentiment-error {
@@ -704,7 +623,7 @@
   }
 }
 
-/* Empty State Styling - enhanced with glass morphism */
+/* Empty State Styling - standardized dimensions to match other states */
 .empty-flashcard-container {
   width: 100%;
   height: 100%;
@@ -713,49 +632,18 @@
   justify-content: center;
   align-items: center;
   background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
   border-radius: 18px;
-  padding: 35px;
-  box-shadow: 
-    0 10px 30px rgba(0, 0, 0, 0.2),
-    0 0 0 1px rgba(255, 255, 255, 0.08) inset;
-  transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+  padding: 30px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
   color: #e0e0e0;
   border: 1px solid rgba(255, 255, 255, 0.08);
-  position: relative;
-  overflow: hidden;
-}
-
-.empty-flashcard-container::before {
-  content: "";
-  position: absolute;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: linear-gradient(
-    45deg,
-    transparent 0%,
-    rgba(255, 255, 255, 0.03) 50%,
-    transparent 100%
-  );
-  transform: rotate(45deg);
-  z-index: -1;
-  pointer-events: none;
-  animation: shimmer 5s infinite linear;
-}
-
-@keyframes shimmer {
-  0% { transform: rotate(45deg) translateY(0%); }
-  100% { transform: rotate(45deg) translateY(100%); }
+  text-align: center;
 }
 
 .empty-flashcard-container:hover {
   transform: scale(1.02);
-  box-shadow: 
-    0 15px 35px rgba(0, 0, 0, 0.25),
-    0 0 0 1px rgba(255, 255, 255, 0.12) inset;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25);
   border-color: rgba(255, 255, 255, 0.15);
 }
 
@@ -794,7 +682,7 @@
   line-height: 1.5;
 }
 
-/* Language selection styles - enhanced glass morphism */
+/* Language selection styles */
 .language-selection-container {
   display: flex;
   align-items: center;
@@ -805,24 +693,18 @@
   background: rgba(255, 255, 255, 0.05);
   padding: 12px 18px;
   border-radius: 30px;
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  box-shadow: 
-    0 5px 15px rgba(0, 0, 0, 0.15),
-    0 0 0 1px rgba(255, 255, 255, 0.1) inset;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
   width: 90%;
   max-width: 450px;
   margin-left: auto;
   margin-right: auto;
-  transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+  transition: all 0.3s ease;
   border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .language-selection-container:hover {
   transform: translateY(-3px);
-  box-shadow: 
-    0 8px 20px rgba(0, 0, 0, 0.2),
-    0 0 0 1px rgba(255, 255, 255, 0.15) inset;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
   background: rgba(255, 255, 255, 0.08);
   border-color: rgba(255, 255, 255, 0.12);
 }
@@ -866,7 +748,7 @@
   appearance: none;
   cursor: pointer;
   min-width: 160px;
-  transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+  transition: all 0.3s ease;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
   letter-spacing: 0.3px;
 }
@@ -914,12 +796,6 @@
 .detected-language-label::before {
   content: "🔍";
   font-size: 0.9em;
-}
-
-.detected-language-label:hover {
-  transform: translateY(-2px);
-  background: rgba(255, 255, 255, 0.12);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
 /* Mobile adjustments - preserved functionality */
