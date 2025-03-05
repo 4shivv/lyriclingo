@@ -595,7 +595,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 30px;
+  margin-bottom: 50px;
   gap: 10px;
   color: white;
   background: rgba(255, 255, 255, 0.08);
@@ -614,7 +614,7 @@
 /* Special spacing for when user is not logged in */
 .language-selection-container.not-logged-in {
   margin-top: 20px;
-  margin-bottom: 40px;
+  margin-bottom: 60px;
 }
 
 .select-wrapper {
@@ -683,12 +683,12 @@
     flex-direction: column;
     padding: 8px 12px;
     width: 85%;
-    margin-bottom: 25px;
+    margin-bottom: 40px;
   }
   
   .language-selection-container.not-logged-in {
     margin-top: 15px;
-    margin-bottom: 30px;
+    margin-bottom: 45px;
   }
   
   .log-button-wrapper {
