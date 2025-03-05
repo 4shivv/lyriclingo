@@ -45,14 +45,7 @@
   background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  animation: textGradient 8s ease infinite;
   text-shadow: 0px 2px 5px rgba(0, 0, 0, 0.3);
-}
-
-@keyframes textGradient {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
 }
 
 /* Log button wrapper */
@@ -632,7 +625,7 @@
   justify-content: center;
   align-items: center;
   background: rgba(255, 255, 255, 0.05);
-  border-radius: 18px;
+  border-radius: 18px; /* Match the border radius of flashcards */
   padding: 30px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
   transition: all 0.3s ease;
