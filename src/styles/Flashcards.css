@@ -626,7 +626,7 @@
   align-items: center;
   background: rgba(255, 255, 255, 0.05);
   border-radius: 18px; /* Match the border radius of flashcards */
-  padding: 30px;
+  padding: 20px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
   transition: all 0.3s ease;
   color: #e0e0e0;
@@ -832,4 +832,18 @@
   .empty-flashcard-subtext {
     font-size: 0.9rem;
   }
+}
+
+/* Standardize dimensions across all flashcard states */
+.flashcard-face,
+.empty-flashcard-container,
+.loading-ellipsis {
+  width: 100%;
+  height: 100%;
+  padding: 20px;
+  box-sizing: border-box;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
 }
