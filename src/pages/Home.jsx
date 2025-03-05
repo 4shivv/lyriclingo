@@ -70,7 +70,7 @@ function Home() {
           >
             <motion.h1 
               className="hero-title"
-              variants={itemVariants}
+              /* variants={itemVariants} */
             >
               Learn Languages <span className="highlight">Through Music</span>
             </motion.h1>

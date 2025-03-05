@@ -55,7 +55,8 @@
   background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  animation: gradient 8s ease infinite;
+  /* animation: gradient 8s ease infinite;*/
+  transition: none;
 }
 
 @keyframes gradient {
