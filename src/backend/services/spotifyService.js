@@ -5,6 +5,7 @@ const CLIENT_ID = process.env.SPOTIFY_CLIENT_ID;
 const CLIENT_SECRET = process.env.SPOTIFY_CLIENT_SECRET;
 const REDIRECT_URI = process.env.SPOTIFY_REDIRECT_URI;
 
+// Global constant for max refresh attempts
 const MAX_REFRESH_ATTEMPTS = 2;
 
 /**
@@ -38,20 +39,11 @@ const exchangeCodeForToken = async (code) => {
  * Refresh Spotify Access Token
  */
 const refreshAccessToken = async (refreshToken) => {
-    let refreshAttempts = 0;
-    
     try {
         if (!refreshToken) {
             console.error("❌ No refresh token provided");
             return null;
         }
-
-        if (refreshAttempts >= MAX_REFRESH_ATTEMPTS) {
-            console.error("❌ Max refresh token attempts reached");
-            return null;
-        }
-        
-        refreshAttempts++;
         
         console.log("🔄 Attempting to refresh access token...");
         
@@ -102,49 +94,76 @@ const refreshAccessToken = async (refreshToken) => {
 
 /**
  * Fetch Currently Playing Song
+ * Non-recursive implementation with proper attempt tracking
  */
 const fetchCurrentSong = async (userAccessToken, refreshToken) => {
-    let refreshAttempts = 0;
-    const MAX_REFRESH_ATTEMPTS = 2;
+    // Use a counter outside the recursive call
+    let attemptsMade = 0;
+    let currentToken = userAccessToken;
     
-    try {
-        let response = await axios.get(
-            "https://api.spotify.com/v1/me/player/currently-playing",
-            {
-                headers: { Authorization: `Bearer ${userAccessToken}` },
-            }
-        );
+    while (attemptsMade < MAX_REFRESH_ATTEMPTS) {
+        try {
+            const response = await axios.get(
+                "https://api.spotify.com/v1/me/player/currently-playing",
+                {
+                    headers: { Authorization: `Bearer ${currentToken}` },
+                }
+            );
 
-        if (response.data && response.data.item) {
-            return {
-                song: response.data.item.name,
-                artist: response.data.item.artists.map(artist => artist.name).join(", "),
-                album: response.data.item.album.name
-            };
-        } else {
-            console.log("⚠️ No song currently playing.");
-            return { error: "No song currently playing." };
-        }
-    } catch (error) {
-        if (error.response && error.response.status === 401 && refreshAttempts < MAX_REFRESH_ATTEMPTS) {
-            console.log("🔄 Access token expired, refreshing...");
-            refreshAttempts++;
-            const newAccessToken = await refreshAccessToken(refreshToken);
-            
-            if (newAccessToken) {
-                return fetchCurrentSong(newAccessToken, refreshToken); // Retry with new token
-            } else {
-                console.error("❌ Failed to refresh access token, authentication required");
-                return { 
-                    error: "Authentication expired. Please log in again.",
-                    authExpired: true 
+            if (response.data && response.data.item) {
+                return {
+                    song: response.data.item.name,
+                    artist: response.data.item.artists.map(artist => artist.name).join(", "),
+                    album: response.data.item.album.name
                 };
+            } else {
+                console.log("⚠️ No song currently playing.");
+                return { error: "No song currently playing." };
             }
-        }
+        } catch (error) {
+            // Handle 401 Unauthorized error (expired token)
+            if (error.response && error.response.status === 401) {
+                console.log("🔄 Access token expired, refreshing...");
+                attemptsMade++;
+                
+                // Check if we've hit the maximum attempts
+                if (attemptsMade >= MAX_REFRESH_ATTEMPTS) {
+                    console.error(`❌ Maximum refresh attempts (${MAX_REFRESH_ATTEMPTS}) reached. Authentication required.`);
+                    return { 
+                        error: "Authentication expired. Please log in again.",
+                        authExpired: true 
+                    };
+                }
+                
+                // Try to refresh the token
+                const newAccessToken = await refreshAccessToken(refreshToken);
+                
+                if (!newAccessToken) {
+                    console.error("❌ Failed to refresh access token, authentication required");
+                    return { 
+                        error: "Authentication expired. Please log in again.",
+                        authExpired: true 
+                    };
+                }
+                
+                // Update the token for the next iteration
+                currentToken = newAccessToken;
+                
+                // Continue to the next iteration (will retry with new token)
+                continue;
+            }
 
-        console.error("❌ Spotify API Error:", error.response ? error.response.data : error.message);
-        return { error: "Failed to fetch song." };
+            // Handle other types of errors
+            console.error("❌ Spotify API Error:", error.response ? error.response.data : error.message);
+            return { error: "Failed to fetch song." };
+        }
     }
+    
+    // This should only be reached if all attempts fail
+    return { 
+        error: "Unable to communicate with Spotify after multiple attempts.",
+        authExpired: true 
+    };
 };
 
 module.exports = { exchangeCodeForToken, refreshAccessToken, fetchCurrentSong };
