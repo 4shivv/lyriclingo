@@ -246,72 +246,148 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn }) {
   }, [selectedSong, flashcards.length, backendUrl]);
 
   // Function to log the current song
-  const logCurrentSong = async () => {
-    setLogging(true); // Begin logging spinner
-    const accessToken = localStorage.getItem("spotify_access_token");
-    const refreshToken = localStorage.getItem("spotify_refresh_token");
+// Updated logCurrentSong function for Flashcards.jsx
+const logCurrentSong = async () => {
+  setLogging(true);
+  const accessToken = localStorage.getItem("spotify_access_token");
+  const refreshToken = localStorage.getItem("spotify_refresh_token");
 
-    if (!accessToken || !refreshToken) {
-      alert("You need to log in with Spotify first!");
-      setLogging(false);
-      return;
-    }
+  if (!accessToken || !refreshToken) {
+    setToast({
+      show: true,
+      message: "You need to log in with Spotify first!",
+      type: "error"
+    });
+    setLogging(false);
+    return;
+  }
 
-    try {
-      // Fetch the currently playing song from Spotify
-      const currentResponse = await fetch(
-        `${backendUrl}/api/spotify/current-song?accessToken=${accessToken}&refreshToken=${refreshToken}`
-      );
-      const currentData = await currentResponse.json();
-
-      if (currentData.song) {
-        // Log the song in your history by posting it to your API.
-        const logResponse = await fetch(`${backendUrl}/api/songs/log`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(currentData)
+  try {
+    // Fetch the currently playing song from Spotify
+    const currentResponse = await fetch(
+      `${backendUrl}/api/spotify/current-song?accessToken=${accessToken}&refreshToken=${refreshToken}`
+    );
+    
+    // Handle potential errors with better user feedback
+    if (!currentResponse.ok) {
+      const errorData = await currentResponse.json();
+      
+      // Handle specific error cases
+      if (currentResponse.status === 401 || (errorData && errorData.authExpired)) {
+        setToast({
+          show: true,
+          message: "Your Spotify session has expired. Please log in again.",
+          type: "error"
         });
-        const logData = await logResponse.json();
-
-        if (logData.error) {
-          setToast({ show: true, message: logData.error, type: "error" });
-        } else {
-          // Reset language to auto-detect for new song
-          setSelectedLanguage("auto");
-          
-          // Set loading state to true as we're about to update selectedSong
-          setIsLoadingCards(true);
-          
-          // Show success toast
-          setToast({
-            show: true,
-            message: `🎵 Logged: ${logData.song.song} by ${logData.song.artist}`,
-            type: "success"
-          });
-          
-          // Update selected song which will trigger the useEffect to fetch flashcards
-          setSelectedSong(logData.song);
-          setCurrentSong(logData.song);
-        }
+        
+        // Force logout on auth expiration
+        localStorage.removeItem("spotify_access_token");
+        localStorage.removeItem("spotify_refresh_token");
+        setIsLoggedIn(false);
+        
+      } else if (errorData && errorData.scopeIssue) {
+        setToast({
+          show: true,
+          message: "Your Spotify account needs additional permissions. Please log in again.",
+          type: "error"
+        });
+        
+        // Force logout on scope issues
+        localStorage.removeItem("spotify_access_token");
+        localStorage.removeItem("spotify_refresh_token");
+        setIsLoggedIn(false);
+        
+      } else if (currentResponse.status === 429) {
+        setToast({
+          show: true,
+          message: "Too many requests to Spotify. Please try again in a moment.",
+          type: "warning"
+        });
+        
+      } else if (currentResponse.status === 412 || (errorData && errorData.noActiveDevice)) {
+        setToast({
+          show: true,
+          message: "No active Spotify playback found. Please start playing music in your Spotify app.",
+          type: "warning"
+        });
+        
+      } else if (currentResponse.status === 404) {
+        setToast({
+          show: true,
+          message: "No song currently playing on Spotify.",
+          type: "info"
+        });
+        
       } else {
         setToast({
           show: true,
-          message: "No song currently playing!",
+          message: errorData?.error || "Error connecting to Spotify. Please try again.",
           type: "error"
         });
       }
-    } catch (err) {
-      console.error("Error logging song:", err);
-      setError(err.message);
+      
+      setLogging(false);
+      return;
+    }
+    
+    // Process successful response
+    const currentData = await currentResponse.json();
+
+    if (currentData.song) {
+      // Log the song in your history by posting it to your API
+      const logResponse = await fetch(`${backendUrl}/api/songs/log`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(currentData)
+      });
+      
+      if (!logResponse.ok) {
+        const logError = await logResponse.json();
+        setToast({ 
+          show: true, 
+          message: logError.error || "Failed to log song", 
+          type: "error" 
+        });
+        setLogging(false);
+        return;
+      }
+      
+      const logData = await logResponse.json();
+
+      // Reset language to auto-detect for new song
+      setSelectedLanguage("auto");
+      
+      // Set loading state to true as we're about to update selectedSong
+      setIsLoadingCards(true);
+      
+      // Show success toast
       setToast({
         show: true,
-        message: "Error fetching current song.",
-        type: "error"
+        message: `🎵 Logged: ${logData.song.song} by ${logData.song.artist}`,
+        type: "success"
       });
-    } finally {
-      setLogging(false); // End logging spinner regardless of success or error
+      
+      // Update selected song which will trigger the useEffect to fetch flashcards
+      setSelectedSong(logData.song);
+      setCurrentSong(logData.song);
+    } else {
+      setToast({
+        show: true,
+        message: "No song currently playing!",
+        type: "info"
+      });
     }
-  };
+  } catch (err) {
+    console.error("Error logging song:", err);
+    setToast({
+      show: true,
+      message: "Network error while fetching current song.",
+      type: "error"
+    });
+  } finally {
+    setLogging(false);
+  }
+};
 
   return (
     <div className="flashcards-container">

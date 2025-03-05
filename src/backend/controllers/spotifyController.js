@@ -1,14 +1,10 @@
 const spotifyService = require("../services/spotifyService");
 const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173";
 
-// The desired Spotify scopes – adjust as needed
-const scope = "user-read-email user-read-private";
-
-// Redirect to Spotify's authorization page
+// Use the enhanced scope definition from the service
+// The redirect to Spotify's authorization page
 const login = (req, res) => {
-  const authUrl = `https://accounts.spotify.com/authorize?client_id=${process.env.SPOTIFY_CLIENT_ID}` +
-                  `&response_type=code&redirect_uri=${encodeURIComponent(process.env.SPOTIFY_REDIRECT_URI)}` +
-                  `&scope=${encodeURIComponent(scope)}`;
+  const authUrl = spotifyService.getAuthorizationUrl();
   res.redirect(authUrl);
 };
 
@@ -31,17 +27,33 @@ const handleSpotifyCallback = async (req, res) => {
   }
 };
 
-// New function to fetch the currently playing song
+// Fetch the currently playing song with enhanced error handling
 const getCurrentSong = async (req, res) => {
   const { accessToken, refreshToken } = req.query;
+  
   if (!accessToken || !refreshToken) {
     return res.status(400).json({ error: "Missing access token or refresh token" });
   }
+  
   try {
     const songData = await spotifyService.fetchCurrentSong(accessToken, refreshToken);
+    
+    // Enhanced user-friendly error handling
     if (songData.error) {
-      return res.status(404).json({ error: songData.error });
+      let statusCode = 404;
+      
+      // Determine appropriate status code based on error type
+      if (songData.authExpired) statusCode = 401;
+      if (songData.rateLimited) statusCode = 429;
+      if (songData.noActiveDevice) statusCode = 412; // Precondition Failed
+      
+      return res.status(statusCode).json({ 
+        error: songData.error,
+        authExpired: songData.authExpired || false,
+        scopeIssue: songData.scopeIssue || false
+      });
     }
+    
     res.json(songData);
   } catch (error) {
     console.error("Error fetching current song:", error);
