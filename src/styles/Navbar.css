@@ -387,7 +387,7 @@
 .logout-button:hover {
   background-color: rgba(231, 76, 60, 0.15);
   border-color: rgba(231, 76, 60, 0.3);
-  color: rgba(231, 76, 60, 0.9);
+  color: white; /* Keep text white for visibility */
   transform: translateY(-1px);
   box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
 }
@@ -395,6 +395,18 @@
 .logout-button:active {
   transform: translateY(0);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* New hover effect for logout button */
+.logout-button:hover::after {
+  content: "";
+  position: absolute;
+  bottom: -1px;
+  left: 10%;
+  width: 80%;
+  height: 2px;
+  background: rgba(231, 76, 60, 0.7);
+  border-radius: 1px;
 }
 
 /* Spotify icon refinement */
