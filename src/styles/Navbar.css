@@ -338,3 +338,86 @@
   border: 1px solid rgba(255, 255, 255, 0.2);
   font-weight: 600;
 }
+
+/* Auth Buttons Modernization */
+.auth-button {
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+  font-size: 0.95rem;
+  letter-spacing: 0.2px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.25s ease;
+  border: 1px solid transparent;
+  background-color: transparent;
+  color: white;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Login button specific styling */
+.login-button {
+  background-color: rgba(29, 185, 84, 0.15);
+  border: 1px solid rgba(29, 185, 84, 0.3);
+}
+
+.login-button:hover {
+  background-color: rgba(29, 185, 84, 0.25);
+  border-color: rgba(29, 185, 84, 0.5);
+  transform: translateY(-1px);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+}
+
+.login-button:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Logout button specific styling */
+.logout-button {
+  background-color: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.logout-button:hover {
+  background-color: rgba(231, 76, 60, 0.15);
+  border-color: rgba(231, 76, 60, 0.3);
+  color: rgba(231, 76, 60, 0.9);
+  transform: translateY(-1px);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+}
+
+.logout-button:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Spotify icon refinement */
+.spotify-icon {
+  height: 18px;
+  width: auto;
+  margin-right: 4px;
+  transition: transform 0.3s ease;
+}
+
+.login-button:hover .spotify-icon {
+  transform: scale(1.1);
+}
+
+/* Mobile styles preservation with tweaks */
+@media (max-width: 768px) {
+  .menu .auth-button {
+    font-size: 1.1rem;
+    padding: 10px 16px;
+    width: 100%;
+  }
+  
+  .menu .spotify-icon {
+    height: 20px;
+  }
+}
