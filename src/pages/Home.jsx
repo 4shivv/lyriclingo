@@ -105,6 +105,33 @@ function Home() {
                 Try Flashcards
               </Link>
             </motion.div>
+            
+            {/* Social Links - Moved from footer to hero */}
+            <motion.div 
+              className="social-links-container"
+              variants={itemVariants}
+            >
+              <div className="social-links">
+                <motion.a 
+                  href="https://github.com/4shivv" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  whileHover={{ y: -5, scale: 1.1 }}
+                  transition={{ type: "spring", stiffness: 400 }}
+                >
+                  <img src="/github-logo.png" alt="GitHub" className="social-icon" />
+                </motion.a>
+                <motion.a 
+                  href="https://www.linkedin.com/in/shivaganesh-nagamandla" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  whileHover={{ y: -5, scale: 1.1 }}
+                  transition={{ type: "spring", stiffness: 400 }}
+                >
+                  <img src="/linkedin-logo.png" alt="LinkedIn" className="social-icon" />
+                </motion.a>
+              </div>
+            </motion.div>
           </motion.div>
           
           <motion.div 
@@ -181,45 +208,6 @@ function Home() {
           <div className="language-badge">Korean</div>
         </div>
       </motion.div>
-
-      {/* Footer / Social Section */}
-      <div className="home-footer">
-        <p className="footer-tagline">Start your musical language journey today</p>
-        <motion.div 
-          className="footer-cta"
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.98 }}
-        >
-          <button className="primary-cta footer-button" onClick={handleSpotifyLogin}>
-            <img src="/Spotify_Primary_Logo_RGB_Green.png" alt="Spotify" className="cta-icon" />
-            Get Started for Free
-          </button>
-        </motion.div>
-        
-        <div className="social-links-container">
-          <h3 className="social-links-title">Connect with the developer</h3>
-          <div className="social-links">
-            <motion.a 
-              href="https://github.com/4shivv" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              whileHover={{ y: -5, scale: 1.1 }}
-              transition={{ type: "spring", stiffness: 400 }}
-            >
-              <img src="/github-logo.png" alt="GitHub" className="social-icon" />
-            </motion.a>
-            <motion.a 
-              href="https://www.linkedin.com/in/shivaganesh-nagamandla" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              whileHover={{ y: -5, scale: 1.1 }}
-              transition={{ type: "spring", stiffness: 400 }}
-            >
-              <img src="/linkedin-logo.png" alt="LinkedIn" className="social-icon" />
-            </motion.a>
-          </div>
-        </div>
-      </div>
     </div>
   );
 }

@@ -496,72 +496,33 @@
 }
 
 /* Footer */
-.home-footer {
-  padding: 80px 5% 60px;
-  background: url('/public/0haOGWdnNL0-HD copy.jpg') center/cover no-repeat;
-  position: relative;
-  text-align: center;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-  z-index: 1;
-}
+/* Footer section removed */
 
-.home-footer::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(to right, rgba(10, 10, 15, 0.92), rgba(15, 15, 25, 0.88));
-  z-index: -1;
-}
-
-.footer-tagline {
-  font-size: 1.8rem;
-  font-weight: 600;
-  color: white;
-  margin-bottom: 30px;
-  position: relative;
-  z-index: 2;
-}
-
-.footer-cta {
-  margin-bottom: 60px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  position: relative;
-  z-index: 2;
-}
-
-.footer-button {
-  padding: 16px 32px;
-  font-size: 1.2rem;
-  min-width: 260px;
-}
-
+/* Relocated Social Links Container in Hero */
 .social-links-container {
   margin-top: 40px;
-}
-
-.social-links-title {
-  font-size: 1.3rem;
-  color: white;
-  margin-bottom: 20px;
-  font-weight: 500;
-  opacity: 0.8;
+  position: relative;
+  z-index: 2;
 }
 
 .social-links {
   display: flex;
   justify-content: center;
   gap: 25px;
+  padding: 8px 16px;
+  border-radius: 30px;
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  display: inline-flex;
 }
 
 .social-icon {
-  width: 40px;
-  height: 40px;
-  transition: transform 0.3s ease;
+  width: 32px;
+  height: 32px;
+  transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
 }
 
 /* Mobile Responsiveness */
@@ -579,6 +540,14 @@
   
   .hero-cta-container {
     justify-content: center;
+  }
+  
+  .social-links-container {
+    margin-top: 30px;
+  }
+  
+  .social-links {
+    padding: 6px 14px;
   }
   
   .hero-title {
@@ -622,6 +591,15 @@
     margin-bottom: 10px;
   }
   
+  .social-links-container {
+    margin-top: 25px;
+  }
+  
+  .social-icon {
+    width: 28px;
+    height: 28px;
+  }
+  
   .hero-image {
     height: 300px;
     margin-top: 20px;
@@ -644,10 +622,6 @@
   .feature-card {
     width: 100%;
     max-width: 350px;
-  }
-  
-  .footer-tagline {
-    font-size: 1.4rem;
   }
 }
 
