@@ -327,13 +327,28 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn }) {
           Flashcards for {selectedSong ? selectedSong.song : "Unknown Song"}
         </motion.h1>
 
-        {/* Language Selection Dropdown */}
+        {/* Log Current Song Button - Now appears BEFORE the language selection */}
+        {isLoggedIn && (
+          <motion.div 
+            className="log-button-wrapper"
+            variants={textVariants}
+            initial="initial"
+            animate="animate"
+            transition={{ duration: 0.3, delay: 0.1 }}
+          >
+            <button className="log-song-button" onClick={logCurrentSong} disabled={logging}>
+              {logging ? <LoadingSpinner size={20} color="#fff" /> : "🎵 Log Current Song"}
+            </button>
+          </motion.div>
+        )}
+
+        {/* Language Selection Dropdown - Now appears AFTER the log button */}
         <motion.div
-          className="language-selection-container"
+          className={`language-selection-container ${!isLoggedIn ? 'not-logged-in' : ''}`}
           variants={textVariants}
           initial="initial"
           animate="animate"
-          transition={{ duration: 0.3, delay: 0.05 }}
+          transition={{ duration: 0.3, delay: 0.15 }}
         >
           <label htmlFor="language-select">Source Language: </label>
           <div className="select-wrapper">
@@ -358,21 +373,6 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn }) {
             </div>
           )}
         </motion.div>
-
-        {/* Animated Log Current Song Button Wrapper */}
-        {isLoggedIn && (
-          <motion.div 
-            className="log-button-wrapper"
-            variants={textVariants}
-            initial="initial"
-            animate="animate"
-            transition={{ duration: 0.3, delay: 0.1 }}
-          >
-            <button className="log-song-button" onClick={logCurrentSong} disabled={logging}>
-              {logging ? <LoadingSpinner size={20} color="#fff" /> : "🎵 Log Current Song"}
-            </button>
-          </motion.div>
-        )}
 
         <div className="flashcard-wrapper">
           <div className="flashcard-container">

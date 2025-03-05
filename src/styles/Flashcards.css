@@ -43,7 +43,7 @@
 /* Log button wrapper - adjusted for consistent spacing */
 .log-button-wrapper {
   width: 100%;
-  margin-bottom: 50px;
+  margin-bottom: 25px;
   display: flex;
   justify-content: center;
 }
@@ -484,7 +484,7 @@
   }
   
   .log-button-wrapper {
-    margin-bottom: 30px;
+    margin-bottom: 20px;
   }
   
   .nav-button {
@@ -590,12 +590,12 @@
   }
 }
 
-/* Language selection styles */
+/* Language selection styles - Updated with new positioning and spacing */
 .language-selection-container {
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 20px;
+  margin-bottom: 30px;
   gap: 10px;
   color: white;
   background: rgba(255, 255, 255, 0.08);
@@ -604,6 +604,17 @@
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  width: 90%;
+  max-width: 450px;
+  margin-left: auto;
+  margin-right: auto;
+  transition: margin 0.3s ease;
+}
+
+/* Special spacing for when user is not logged in */
+.language-selection-container.not-logged-in {
+  margin-top: 20px;
+  margin-bottom: 40px;
 }
 
 .select-wrapper {
@@ -671,9 +682,17 @@
   .language-selection-container {
     flex-direction: column;
     padding: 8px 12px;
-    width: 90%;
-    margin-left: auto;
-    margin-right: auto;
+    width: 85%;
+    margin-bottom: 25px;
+  }
+  
+  .language-selection-container.not-logged-in {
+    margin-top: 15px;
+    margin-bottom: 30px;
+  }
+  
+  .log-button-wrapper {
+    margin-bottom: 20px;
   }
   
   .language-select {
