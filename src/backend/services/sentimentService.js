@@ -131,15 +131,21 @@ const performSentimentAnalysis = async (text) => {
             "Content-Type": "application/json",
           },
           timeout: 10000,
+          // Don't automatically parse HTML as JSON
+          transformResponse: [(data) => {
+            // Check if the response is HTML
+            if (typeof data === 'string' && (data.includes('<!DOCTYPE html>') || data.includes('<html'))) {
+              throw new Error('Received HTML error page from Hugging Face API');
+            }
+            // Try to parse as JSON
+            try {
+              return JSON.parse(data);
+            } catch (e) {
+              return data;
+            }
+          }],
         }
       );
-
-      // Check if the response contains HTML (error page) instead of JSON
-      if (typeof response.data === 'string' && response.data.includes('<!DOCTYPE html>') || 
-          response.data.includes('<html')) {
-        console.error('⚠️ HUGGINGFACE API: Received HTML error page instead of JSON response');
-        throw new Error('Received HTML error page from Hugging Face API');
-      }
 
       console.log("HUGGINGFACE API RESPONSE:", response.data);
 
@@ -161,13 +167,26 @@ const performSentimentAnalysis = async (text) => {
       return null;
     } catch (error) {
       attempts++;
-      const statusCode = error.response ? error.response.status : "undefined";
-      const isHtmlError = error.response && 
-        typeof error.response.data === 'string' && 
-        (error.response.data.includes('<html') || error.response.data.includes('<!DOCTYPE html>'));
+      
+      // Check for HTML in error response or error message
+      const isHtmlError = 
+        (error.message && error.message.includes('HTML error page')) ||
+        (error.response && 
+         typeof error.response.data === 'string' && 
+         (error.response.data.includes('<html') || error.response.data.includes('<!DOCTYPE html>')));
         
+      const statusCode = error.response ? error.response.status : "undefined";
+      
       if (isHtmlError) {
         console.error(`❌ HUGGINGFACE API: Received HTML error page with status ${statusCode}`);
+        
+        // Always retry HTML errors, especially for 503 status
+        if (attempts < MAX_RETRY_ATTEMPTS) {
+          const delay = RETRY_DELAY_MS * Math.pow(2, attempts - 1);
+          console.log(`⏱️ HUGGINGFACE API: HTML error received. Retrying in ${delay}ms...`);
+          await sleep(delay);
+          continue;
+        }
       } else {
         console.error(
           `❌ HUGGINGFACE API: Attempt ${attempts} failed with status ${statusCode}:`,
