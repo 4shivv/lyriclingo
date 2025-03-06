@@ -125,6 +125,16 @@ function Navbar({ isLoggedIn, setIsLoggedIn }) {
         onClick={toggleMobileMenu} 
         aria-label="Toggle menu"
         aria-expanded={isMobileMenuOpen}
+        style={{ 
+          WebkitTapHighlightColor: 'transparent',
+          outline: 'none',
+          ...(isMobileMenuOpen ? {
+            position: 'fixed',
+            right: '24px',
+            top: '16px',
+            zIndex: 2000
+          } : {})
+        }}
       >
         <div className="hamburger-icon">
           <span className="hamburger-line"></span>

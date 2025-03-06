@@ -492,3 +492,44 @@
     -webkit-overflow-scrolling: touch;
   }
 }
+
+/* Targeted solution for mobile menu highlight issues */
+body.mobile-menu-open .mobile-menu-button {
+  /* Create new stacking context */
+  isolation: isolate;
+  /* Ensure position is fixed relative to viewport */
+  position: fixed !important;
+  right: 24px;
+  top: 16px;
+  /* Place above all other elements */
+  z-index: 2000 !important;
+  /* Remove all visual artifacts */
+  -webkit-tap-highlight-color: transparent !important;
+  box-shadow: none !important;
+  outline: none !important;
+  /* Prevent any text selection */
+  -webkit-user-select: none !important;
+  user-select: none !important;
+}
+
+/* Ensure overlay is correctly positioned beneath button */
+.mobile-menu-overlay {
+  z-index: 1900 !important;
+}
+
+/* Create clean layering for menu content */
+.mobile-menu-container {
+  z-index: 1950 !important;
+}
+
+/* Override any focus styles that might appear */
+.mobile-menu-button:focus-visible,
+.mobile-menu-button:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* Prevent any highlight effect on nested elements */
+.mobile-menu-button * {
+  -webkit-tap-highlight-color: transparent !important;
+}
