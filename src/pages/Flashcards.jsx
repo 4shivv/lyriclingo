@@ -404,19 +404,30 @@ const logCurrentSong = async () => {
         </motion.h1>
 
         {/* Log Current Song Button - Now appears BEFORE the language selection */}
-        {isLoggedIn && (
-          <motion.div 
-            className="log-button-wrapper"
-            variants={textVariants}
-            initial="initial"
-            animate="animate"
-            transition={{ duration: 0.3, delay: 0.1 }}
-          >
+        <motion.div 
+          className="log-button-wrapper"
+          variants={textVariants}
+          initial="initial"
+          animate="animate"
+          transition={{ duration: 0.3, delay: 0.1 }}
+        >
+          {isLoggedIn ? (
             <button className="log-song-button" onClick={logCurrentSong} disabled={logging}>
               {logging ? <LoadingSpinner size={20} color="#fff" /> : "🎵 Log Current Song"}
             </button>
-          </motion.div>
-        )}
+          ) : (
+            <button 
+              className="log-song-button log-song-button-disabled" 
+              onClick={() => setToast({
+                show: true,
+                message: "Please log in with Spotify to access this feature",
+                type: "info"
+              })}
+            >
+              <span className="lock-icon">🔒</span> Log Current Song
+            </button>
+          )}
+        </motion.div>
 
         {/* Language Selection Dropdown - Now appears AFTER the log button */}
         <motion.div
@@ -517,75 +528,87 @@ const logCurrentSong = async () => {
         </motion.div>
 
         {/* Sentiment Analysis Display with Emotions */}
-        {flashcards.length > 0 && (
-          <motion.div 
-            className="sentiment-container"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.3 }}
-          >
-            <h3 className="sentiment-title">Song Mood Analysis</h3>
-            {sentimentLoading ? (
-              <div className="sentiment-loading">
-                <div className="loading-spinner"></div>
-                <span>Analyzing song mood...</span>
+        <motion.div 
+          className="sentiment-container"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.3 }}
+        >
+          <h3 className="sentiment-title">Song Mood Analysis</h3>
+          
+          {!isLoggedIn ? (
+            <div className="sentiment-unauthenticated">
+              <div className="sentiment-lock-icon">🔒</div>
+              <p className="sentiment-login-message">Log in with Spotify to access song mood analysis</p>
+              <p className="sentiment-feature-description">
+                Discover the emotional tones and primary feelings behind your favorite songs
+              </p>
+            </div>
+          ) : sentimentLoading ? (
+            <div className="sentiment-loading">
+              <div className="loading-spinner"></div>
+              <span>Analyzing song mood...</span>
+            </div>
+          ) : sentiment ? (
+            <div className="sentiment-result">
+              <div className="sentiment-emoji">{sentiment.emoji}</div>
+              <div className="sentiment-text">
+                This song appears to be <span className="sentiment-value">{sentiment.sentiment}</span>
               </div>
-            ) : sentiment ? (
-              <div className="sentiment-result">
-                <div className="sentiment-emoji">{sentiment.emoji}</div>
-                <div className="sentiment-text">
-                  This song appears to be <span className="sentiment-value">{sentiment.sentiment}</span>
+              
+              {/* Primary Emotion Display */}
+              {sentiment.primaryEmotion && sentiment.primaryEmotion !== "Unknown" && (
+                <div className="primary-emotion">
+                  Primary emotion: <span className="emotion-value">{sentiment.primaryEmotion}</span>
+                  <span className="emotion-score">({sentiment.emotionScore})</span>
                 </div>
-                
-                {/* Primary Emotion Display */}
-                {sentiment.primaryEmotion && sentiment.primaryEmotion !== "Unknown" && (
-                  <div className="primary-emotion">
-                    Primary emotion: <span className="emotion-value">{sentiment.primaryEmotion}</span>
-                    <span className="emotion-score">({sentiment.emotionScore})</span>
-                  </div>
-                )}
-                
-                {/* Additional Emotions */}
-                {sentiment.emotions && sentiment.emotions.length > 1 && (
-                  <div className="emotion-chips">
-                    {sentiment.emotions.slice(1, 3).map((emotion, index) => (
-                      <div key={index} className="emotion-chip">
-                        {emotion.emotion} <span className="chip-score">{emotion.score}</span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-                
-                <div className="sentiment-score">Confidence: {sentiment.score}</div>
-                
-                {/* Display API source indicator */}
-                {!sentiment.fallback && (
-                  <div className="sentiment-source api">
-                    Analysis performed via API
-                  </div>
-                )}
-                
-                {sentiment.notice && (
-                  <div className="sentiment-notice">
-                    {sentiment.notice}
-                  </div>
-                )}
-                
-                {sentiment.error ? (
-                  <div className="sentiment-error">
-                    {sentiment.error}
-                  </div>
-                ) : (
-                  <div className="sentiment-info">
-                    Based on analysis of the English translations of these lyrics
-                  </div>
-                )}
-              </div>
-            ) : (
-              <div className="sentiment-unavailable">Mood analysis unavailable</div>
-            )}
-          </motion.div>
-        )}
+              )}
+              
+              {/* Additional Emotions */}
+              {sentiment.emotions && sentiment.emotions.length > 1 && (
+                <div className="emotion-chips">
+                  {sentiment.emotions.slice(1, 3).map((emotion, index) => (
+                    <div key={index} className="emotion-chip">
+                      {emotion.emotion} <span className="chip-score">{emotion.score}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+              
+              <div className="sentiment-score">Confidence: {sentiment.score}</div>
+              
+              {/* Display API source indicator */}
+              {!sentiment.fallback && (
+                <div className="sentiment-source api">
+                  Analysis performed via API
+                </div>
+              )}
+              
+              {sentiment.notice && (
+                <div className="sentiment-notice">
+                  {sentiment.notice}
+                </div>
+              )}
+              
+              {sentiment.error ? (
+                <div className="sentiment-error">
+                  {sentiment.error}
+                </div>
+              ) : (
+                <div className="sentiment-info">
+                  Based on analysis of the English translations of these lyrics
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="sentiment-unavailable">
+              {selectedSong ? 
+                "Mood analysis unavailable for this song" : 
+                "Select or log a song to see mood analysis"
+              }
+            </div>
+          )}
+        </motion.div>
 
         <Toast message={toast.message} type={toast.type} onClose={() => setToast({ ...toast, show: false })} />
       </div>
