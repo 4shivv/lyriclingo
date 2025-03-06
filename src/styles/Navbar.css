@@ -294,6 +294,12 @@
     transition: all 0.25s ease;
   }
   
+  /* Add specific styling for span elements in mobile links */
+  .mobile-link-container span {
+    font-size: 1.4rem;
+    font-weight: 500;
+  }
+  
   .mobile-link:hover .mobile-link-container {
     background: rgba(255, 255, 255, 0.08);
     transform: translateX(5px);
@@ -383,7 +389,7 @@
   }
   
   .mobile-link-container span {
-    font-size: 2.25rem;
+    font-size: 1.25rem;
   }
   
   .mobile-link svg {
