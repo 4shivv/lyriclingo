@@ -216,7 +216,7 @@
   
   .mobile-menu-container {
     height: 100%;
-    max-height: 100vh; /* Ensures it doesn't extend beyond viewport */
+    max-height: 90vh; /* Ensures it doesn't extend beyond viewport */
     display: flex;
     flex-direction: column;
     padding: 0;
