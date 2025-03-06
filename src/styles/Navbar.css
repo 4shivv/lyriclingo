@@ -562,7 +562,7 @@ body.mobile-menu-open .mobile-menu-button {
 .mobile-menu-button {
   -webkit-tap-highlight-color: transparent !important;
   position: fixed;
-  top: 14px;
+  top: 10px;
   right: 16px;
   z-index: 2000;
 }
