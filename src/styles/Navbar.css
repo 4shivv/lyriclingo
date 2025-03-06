@@ -222,7 +222,7 @@
     padding: 0;
     position: relative;
     overflow-y: auto;
-    background-color: rgba(10, 10, 15, 0.5); /* Additional background for opacity */
+    background-color: rgba(10, 10, 15, 0.8); /* Additional background for opacity */
   }
   
   /* Mobile menu header with logo and close button */
