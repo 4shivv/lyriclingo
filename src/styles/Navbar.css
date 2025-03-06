@@ -278,7 +278,7 @@
   .mobile-link {
     text-decoration: none;
     color: rgba(255, 255, 255, 0.8);
-    font-size: 10.4rem; /* Increased font size */
+    font-size: 1.4rem; /* Increased font size */
     font-weight: 500;
     transition: all 0.25s ease;
     border-radius: 12px;
@@ -376,10 +376,14 @@
   }
 }
 
-/* Additional responsive adjustments for very small screens */
+/* Ensure font size for small screens is also adjusted */
 @media (max-width: 360px) {
   .mobile-link {
     font-size: 1.25rem; /* Adjusted for new larger base size */
+  }
+  
+  .mobile-link-container span {
+    font-size: 2.25rem;
   }
   
   .mobile-link svg {
