@@ -348,10 +348,32 @@ const getSongSentiment = async (req, res) => {
       return res.status(404).json({ error: "No flashcards found for this song" });
     }
     
-    // Combine all English translations for sentiment analysis
-    const englishText = flashcards.map(card => card.back).join(" ");
+    // OPTIMIZATION: Deduplicate flashcard translations before analysis
+    // This reduces API calls and helps stay under token limits
+    const uniqueTranslations = new Set();
     
-    console.log(`🔍 Starting sentiment analysis for song: "${song}" with ${flashcards.length} flashcards`);
+    // Filter out duplicate translations while preserving the order
+    const uniqueFlashcards = flashcards.filter(card => {
+      // Skip empty or very short translations
+      if (!card.back || card.back.trim().length < 2) return false;
+      
+      // Check if this translation is unique
+      const normalizedText = card.back.trim().toLowerCase();
+      if (uniqueTranslations.has(normalizedText)) {
+        return false;
+      }
+      
+      uniqueTranslations.add(normalizedText);
+      return true;
+    });
+    
+    console.log(`🔍 Deduplication: ${flashcards.length} flashcards → ${uniqueFlashcards.length} unique translations (saved ${Math.round((flashcards.length - uniqueFlashcards.length) / flashcards.length * 100)}% API usage)`);
+    
+    // Combine unique English translations for sentiment analysis
+    // Join with periods to maintain sentence boundaries
+    const englishText = uniqueFlashcards.map(card => card.back.trim()).join(". ");
+    
+    console.log(`🔍 Starting sentiment analysis for song: "${song}" with ${uniqueFlashcards.length} unique translations`);
     
     // Analyze sentiment with API-only approach
     let sentimentResult;

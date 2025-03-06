@@ -4,7 +4,8 @@ const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 const HUGGINGFACE_API_TOKEN = process.env.HUGGINGFACE_API_TOKEN;
 const MAX_RETRY_ATTEMPTS = 3;
 const RETRY_DELAY_MS = 1000;
-const MAX_TEXT_LENGTH = 1500;
+const MAX_TEXT_LENGTH = 1500; // Character limit for initial truncation
+const MAX_TOKEN_LIMIT = 512;  // Hard token limit for the Hugging Face model
 
 // Mapping of raw emotion labels to sentiment information.
 const EMOTION_TO_SENTIMENT_MAP = {
@@ -78,6 +79,52 @@ const EMOTION_TRANSLATIONS = {
   neutral: "Neutral"
 };
 
+/**
+ * Estimates the number of tokens in a text string
+ * This is a simple approximation - actual tokenization depends on the model
+ * 
+ * @param {string} text - The text to estimate tokens for
+ * @returns {number} - Estimated token count
+ */
+const estimateTokenCount = (text) => {
+  // Simple estimate: average English word is ~4 characters + space
+  // This gives us approximately 1 token per 4-5 characters
+  // A more accurate approach would use proper tokenization
+  return Math.ceil(text.length / 4);
+};
+
+/**
+ * Truncates text to stay under the token limit
+ * 
+ * @param {string} text - Text to truncate
+ * @returns {string} - Truncated text
+ */
+const truncateToTokenLimit = (text) => {
+  if (!text) return "";
+  
+  // First apply the character limit as a quick filter
+  let truncatedText = text.length > MAX_TEXT_LENGTH ? 
+    text.substring(0, MAX_TEXT_LENGTH) : text;
+  
+  // Then check if we're still over the token limit
+  let estimatedTokens = estimateTokenCount(truncatedText);
+  
+  if (estimatedTokens <= MAX_TOKEN_LIMIT) {
+    return truncatedText;
+  }
+  
+  // If we're over the token limit, truncate further
+  // Calculate roughly how many characters we need to remove
+  const excessTokens = estimatedTokens - MAX_TOKEN_LIMIT;
+  const charsToRemove = excessTokens * 4; // Approximate
+  
+  // Apply a safety margin by removing a bit more than strictly necessary
+  const safeCharsToKeep = truncatedText.length - charsToRemove - 20;
+  
+  // Truncate to the safe limit and add ellipsis
+  return truncatedText.substring(0, Math.max(100, safeCharsToKeep)) + "...";
+};
+
 const processEmotionResults = (results) => {
   // Map the results to an array of { emotion, score } objects.
   const emotions = results
@@ -121,6 +168,7 @@ const performSentimentAnalysis = async (text) => {
   while (attempts < MAX_RETRY_ATTEMPTS) {
     try {
       console.log(`🔍 HUGGINGFACE API: Making sentiment request (attempt ${attempts + 1})...`);
+      console.log(`📊 Text length: ${text.length} chars, estimated tokens: ${estimateTokenCount(text)}`);
 
       const response = await axios.post(
         HUGGINGFACE_API_URL,
@@ -248,7 +296,10 @@ const analyzeSentiment = async (text) => {
     return createFallbackResponse("API token not configured");
   }
 
-  const truncatedText = text.length > MAX_TEXT_LENGTH ? text.substring(0, MAX_TEXT_LENGTH) + "..." : text;
+  // Apply token-aware truncation
+  const truncatedText = truncateToTokenLimit(text);
+  console.log(`✂️ Truncated text from ${text.length} chars to ${truncatedText.length} chars (token limit: ${MAX_TOKEN_LIMIT})`);
+  
   const analysisResult = await performSentimentAnalysis(truncatedText);
 
   if (analysisResult) {
