@@ -10,7 +10,7 @@
   background: rgba(26, 27, 36, 0.2);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  z-index: 1000;
+  z-index: 100; /* Reduced from 1000 to establish proper stacking */
   box-sizing: border-box;
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
@@ -24,7 +24,7 @@
   text-decoration: none;
   transition: transform 0.3s ease;
   position: relative;
-  z-index: 1001; /* Above mobile menu */
+  z-index: 5; /* Lower z-index to prevent stacking above menu */
 }
 
 .logo-container:hover {
@@ -140,6 +140,14 @@
     display: none;
   }
   
+  /* Hide logo when mobile menu is open (with fallback) */
+  body:has(.mobile-menu-overlay) .logo-container,
+  body.mobile-menu-open .logo-container {
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease, visibility 0.2s ease;
+  }
+  
   /* Show mobile menu button */
   .mobile-menu-button {
     display: flex;
@@ -153,7 +161,7 @@
     cursor: pointer;
     transition: all 0.25s ease;
     position: relative;
-    z-index: 1001; /* Above overlay */
+    z-index: 1500; /* Higher than overlay to remain clickable */
   }
   
   .mobile-menu-button:hover,
@@ -210,7 +218,7 @@
     background: rgba(15, 16, 25, 0.95); /* Increased opacity */
     backdrop-filter: blur(15px); /* Increased blur */
     -webkit-backdrop-filter: blur(15px);
-    z-index: 1000;
+    z-index: 1000; /* Higher than navbar but lower than menu button */
     overflow: hidden;
   }
   
@@ -223,6 +231,7 @@
     position: relative;
     overflow-y: auto;
     background-color: rgba(10, 10, 15, 0.8); /* Additional background for opacity */
+    z-index: 1200; /* Higher than overlay background */
   }
   
   /* Mobile menu header with logo and close button */
@@ -232,6 +241,9 @@
     align-items: center;
     padding: 20px 16px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    background-color: rgba(10, 10, 15, 0.8); /* Added solid background */
+    position: relative; /* Establish stacking context */
+    z-index: 10; /* Ensure it's above other menu content */
   }
   
   .mobile-logo {

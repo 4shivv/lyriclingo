@@ -14,12 +14,17 @@ function Navbar({ isLoggedIn, setIsLoggedIn }) {
   useEffect(() => {
     if (isMobileMenuOpen) {
       document.body.style.overflow = 'hidden';
+      // Add class to body when menu is open
+      document.body.classList.add('mobile-menu-open');
     } else {
       document.body.style.overflow = 'unset';
+      // Remove class when menu is closed
+      document.body.classList.remove('mobile-menu-open');
     }
     
     return () => {
       document.body.style.overflow = 'unset';
+      document.body.classList.remove('mobile-menu-open');
     };
   }, [isMobileMenuOpen]);
 
