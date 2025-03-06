@@ -310,8 +310,8 @@
   
   /* SVG icon styling in mobile links */
   .mobile-link svg {
-    width: 50px; /* Increased icon size */
-    height: 50px; /* Increased icon size */
+    width: 40px; /* Increased icon size */
+    height: 40px; /* Increased icon size */
     stroke-width: 2px;
     transition: all 0.25s ease;
   }
