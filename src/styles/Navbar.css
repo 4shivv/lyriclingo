@@ -433,25 +433,47 @@
   backface-visibility: hidden;
 }
 
-/* Fix for the translucent circle issue on active state */
-.mobile-menu-button.active {
-  background: rgba(255, 255, 255, 0.15) !important;
+/* Comprehensive fix for mobile button highlight issues */
+.mobile-menu-button {
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0) !important;
+  -webkit-touch-callout: none !important;
+  -webkit-user-select: none !important;
+  user-select: none !important;
+  outline: none !important;
   position: relative;
   z-index: 1500;
-  box-shadow: none !important;
-  -webkit-tap-highlight-color: transparent;
 }
 
-/* Remove default focus effects that might be causing the circle */
-.mobile-menu-button:focus {
-  outline: none;
+.mobile-menu-button::after,
+.mobile-menu-button::before {
+  display: none !important;
+}
+
+.mobile-menu-button.active,
+.mobile-menu-button:active {
+  background: rgba(255, 255, 255, 0.15) !important;
+  outline: none !important;
   box-shadow: none !important;
 }
 
-.mobile-menu-button {
-  -webkit-tap-highlight-color: transparent;
-  user-select: none;
-  touch-action: manipulation;
+/* Target ALL states of the button */
+.mobile-menu-button:focus,
+.mobile-menu-button:active,
+.mobile-menu-button:focus-visible,
+.mobile-menu-button:focus-within,
+.mobile-menu-button.active {
+  outline: none !important;
+  box-shadow: none !important;
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0) !important;
+}
+
+/* Applied to specific elements to prevent any visual effects */
+.hamburger-icon,
+.hamburger-line {
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0) !important;
+  -webkit-touch-callout: none !important;
+  -webkit-user-select: none !important;
+  user-select: none !important;
 }
 
 /* Animation performance optimizations for mobile */
