@@ -418,3 +418,55 @@
     padding: 16px 16px; /* Further reduced for very small screens */
   }
 }
+
+/* Hardware acceleration for mobile menu */
+.mobile-menu-overlay {
+  will-change: opacity;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
+
+.mobile-menu-container {
+  will-change: transform, opacity;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+/* Fix for the translucent circle issue on active state */
+.mobile-menu-button.active {
+  background: rgba(255, 255, 255, 0.15) !important;
+  position: relative;
+  z-index: 1500;
+  box-shadow: none !important;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Remove default focus effects that might be causing the circle */
+.mobile-menu-button:focus {
+  outline: none;
+  box-shadow: none !important;
+}
+
+.mobile-menu-button {
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  touch-action: manipulation;
+}
+
+/* Animation performance optimizations for mobile */
+@media (max-width: 768px) {
+  .mobile-link-container,
+  .mobile-auth-button,
+  .mobile-close-button {
+    will-change: transform;
+    transform: translateZ(0);
+    backface-visibility: hidden;
+  }
+  
+  /* Ensure menu scrolls smoothly if content is long */
+  .mobile-menu-container {
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}

@@ -56,28 +56,36 @@ function Navbar({ isLoggedIn, setIsLoggedIn }) {
   const menuVariants = {
     closed: {
       opacity: 0,
-      y: -20,
+      y: -10,
       transition: {
-        staggerChildren: 0.05,
+        staggerChildren: 0.03,
         staggerDirection: -1,
-        when: "afterChildren"
+        when: "afterChildren",
+        ease: "easeInOut",
+        duration: 0.2
       }
     },
     open: {
       opacity: 1,
       y: 0,
       transition: {
-        staggerChildren: 0.1,
+        staggerChildren: 0.05,
         staggerDirection: 1,
-        delayChildren: 0.2,
-        when: "beforeChildren"
+        delayChildren: 0.05,
+        when: "beforeChildren",
+        ease: "easeOut",
+        duration: 0.2
       }
     }
   };
 
   const itemVariants = {
-    closed: { opacity: 0, y: -20 },
-    open: { opacity: 1, y: 0 }
+    closed: { opacity: 0, y: -10 },
+    open: { 
+      opacity: 1, 
+      y: 0,
+      transition: { duration: 0.2, ease: "easeOut" }
+    }
   };
 
   return (
@@ -133,7 +141,7 @@ function Navbar({ isLoggedIn, setIsLoggedIn }) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.3 }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
           >
             <motion.div 
               className="mobile-menu-container"
