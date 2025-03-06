@@ -22,6 +22,7 @@ function Home() {
   // Read the backend URL from Vite's environment variables
   const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:5001";
 
+  
   // Animation variants for staggered animations
   const containerVariants = {
     hidden: { opacity: 0 },
