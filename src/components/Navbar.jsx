@@ -146,7 +146,9 @@ function Navbar({ isLoggedIn, setIsLoggedIn }) {
                 className="mobile-menu-header"
                 variants={itemVariants}
               >
-                <img src="/Subject.png" alt="LyricLingo Logo" className="mobile-logo" />
+                <Link to="/" onClick={closeMobileMenu} className="mobile-logo-link">
+                  <img src="/Subject.png" alt="LyricLingo Logo" className="mobile-logo" />
+                </Link>
                 <button 
                   className="mobile-close-button" 
                   onClick={closeMobileMenu}
