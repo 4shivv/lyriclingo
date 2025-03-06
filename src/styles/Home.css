@@ -496,9 +496,6 @@
   transform: rotate(30deg) translateY(-100%);
 }
 
-/* Footer */
-/* Footer section removed */
-
 /* Relocated Social Links Container in Hero */
 .social-links-container {
   margin-top: 40px;
@@ -601,23 +598,88 @@
     height: 28px;
   }
   
-  .hero-image {
-    height: 300px;
-    margin-top: 20px;
+  /* Hero image container for mobile */
+  .hero-image-container {
+    width: 100%;
+    max-width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
   }
   
+  .hero-image {
+    height: 350px; /* Increased height for mobile */
+    width: 320px; /* Set specific width for mobile */
+    margin: 0 auto; /* Center the image container */
+    position: relative;
+  }
+  
+  /* Adjust card size for mobile */
   .floating-card {
     width: 160px;
     padding: 15px;
   }
   
-  .card-lyric {
-    font-size: 1.2rem;
+  /* Create mobile-specific card positioning class */
+  .hero-image .card1 {
+    left: 50%;
+    top: 10%;
+    transform: translateX(-110%) rotate(-2deg); /* Adjust for better positioning */
+    animation-name: float1-mobile;
   }
   
-  .features-title, 
-  .languages-title {
-    font-size: 1.8rem;
+  .hero-image .card2 {
+    left: 50%;
+    top: 40%;
+    transform: translateX(-50%) rotate(3deg); /* Center the middle card */
+    z-index: 3;
+    animation-name: float2-mobile;
+  }
+  
+  .hero-image .card3 {
+    left: 50%;
+    top: 70%;
+    transform: translateX(10%) rotate(-5deg); /* Adjust for better positioning */
+    animation-name: float3-mobile;
+  }
+  
+  /* Mobile-specific animations */
+  @keyframes float1-mobile {
+    0% { transform: translateX(-110%) rotate(-2deg); }
+    50% { transform: translateX(-110%) translateY(-15px) rotate(-1deg); }
+    100% { transform: translateX(-110%) rotate(-2deg); }
+  }
+  
+  @keyframes float2-mobile {
+    0% { transform: translateX(-50%) rotate(3deg); }
+    50% { transform: translateX(-50%) translateY(-15px) rotate(4deg); }
+    100% { transform: translateX(-50%) rotate(3deg); }
+  }
+  
+  @keyframes float3-mobile {
+    0% { transform: translateX(10%) rotate(-5deg); }
+    50% { transform: translateX(10%) translateY(-15px) rotate(-4deg); }
+    100% { transform: translateX(10%) rotate(-5deg); }
+  }
+  
+  /* Improve language badges container for mobile */
+  .languages-container {
+    padding: 0 10px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+  }
+  
+  .language-badge {
+    margin: 4px;
+    flex-grow: 0;
+    flex-shrink: 0;
+    /* Set a consistent width for uniform appearance */
+    min-width: 120px;
+    text-align: center;
+    padding: 8px 16px;
   }
   
   .feature-card {
@@ -631,21 +693,55 @@
     font-size: 2rem;
   }
   
+  /* Further adjust hero image for smaller screens */
   .hero-image {
-    height: 250px;
+    height: 300px;
+    width: 280px;
   }
   
+  /* Make cards slightly smaller on very small screens */
   .floating-card {
     width: 140px;
     padding: 12px;
   }
   
-  .card1 {
-    left: 5%;
+  /* Fine-tune card positioning for very small screens */
+  .hero-image .card1 {
+    transform: translateX(-100%) rotate(-2deg);
   }
   
-  .card3 {
-    left: 5%;
+  .hero-image .card2 {
+    transform: translateX(-50%) rotate(3deg);
+  }
+  
+  .hero-image .card3 {
+    transform: translateX(0%) rotate(-5deg);
+  }
+  
+  /* Extra small screen-specific animation adjustments */
+  @keyframes float1-mobile {
+    0% { transform: translateX(-100%) rotate(-2deg); }
+    50% { transform: translateX(-100%) translateY(-12px) rotate(-1deg); }
+    100% { transform: translateX(-100%) rotate(-2deg); }
+  }
+  
+  @keyframes float2-mobile {
+    0% { transform: translateX(-50%) rotate(3deg); }
+    50% { transform: translateX(-50%) translateY(-12px) rotate(4deg); }
+    100% { transform: translateX(-50%) rotate(3deg); }
+  }
+  
+  @keyframes float3-mobile {
+    0% { transform: translateX(0%) rotate(-5deg); }
+    50% { transform: translateX(0%) translateY(-12px) rotate(-4deg); }
+    100% { transform: translateX(0%) rotate(-5deg); }
+  }
+  
+  /* Further adjust language badges for very small screens */
+  .language-badge {
+    min-width: 100px;
+    padding: 6px 12px;
+    font-size: 0.9rem;
   }
   
   .feature-card {
