@@ -1,352 +1,82 @@
+/* Base navbar container */
 .navbar {
-    position: fixed;
-    top: 0;
-    width: 90%;
-    padding: 15px 20px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background: linear-gradient(to right, rgba(15, 15, 16, 0.0), rgba(26, 27, 36, 0.0), rgba(35, 37, 50, 0.0));
-    backdrop-filter: blur(15px);
-    -webkit-backdrop-filter: blur(15px);
-    border-bottom: none !important;
-    box-shadow: none !important;
-    z-index: 1000;
-  }
-  
-  .logo-container {
-    display: flex;
-    align-items: center;
-    text-decoration: none;  /* Remove underline */
-    margin-left: 100px;
-    transition: transform 0.3s ease, opacity 0.3s ease; /* Smooth transition added */
-  }
-  
-  .logo-container:hover {
-    transform: scale(1.05);
-    opacity: 1;
-  }
-  
-  .logo-image {
-    height: 40px; /* Adjust as needed */
-    width: auto;
-    margin-right: 10px;
-  }
-  
-  .logo-text {
-    font-size: 1.5rem;
-    font-weight: bold;
-    color: white;
-    transition: text-shadow 0.3s ease;  /* Add transition for text-shadow */
-  }
-  
-  .logo-container:hover .logo-text {
-    text-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);  /* Subtle shadow on hover */
-  }
-  
-  .menu a {
-    position: relative;
-    color: white;
-    text-decoration: none;
-    margin-left: 20px;
-    padding: 8px 12px;
-    border-radius: 5px;
-    transition: color 0.3s ease, transform 0.2s ease, background-color 0.3s ease, box-shadow 0.2s ease;
-  }
-  
-  .menu a:hover {
-    color: white;
-    transform: translateX(5px);
-    background-color: #1aa34a;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
-  }
+  position: fixed;
+  top: 0;
+  width: 100%;
+  padding: 16px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(26, 27, 36, 0.2);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  z-index: 1000;
+  box-sizing: border-box;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  transition: background 0.3s ease, box-shadow 0.3s ease;
+}
 
-  .mobile-menu-button {
-    display: none;
-    background: none;
-    border: none;
-    padding: 10px;
-    cursor: pointer;
-    z-index: 2;
-    transition: transform 0.2s ease;
-  }
+/* Logo container styling */
+.logo-container {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  transition: transform 0.3s ease;
+  position: relative;
+  z-index: 1001; /* Above mobile menu */
+}
 
-  .menu-icon {
-    display: block;
-    width: 25px;
-    height: 2px;
-    background-color: white;
-    position: relative;
-    transition: background-color 0.3s ease;
-  }
+.logo-container:hover {
+  transform: scale(1.05);
+}
 
-  .menu-icon::before,
-  .menu-icon::after {
-    content: '';
-    position: absolute;
-    width: 25px;
-    height: 2px;
-    background-color: white;
-    transition: transform 0.3s ease;
-  }
-
-  .menu-icon::before {
-    top: -8px;
-  }
-
-  .menu-icon::after {
-    bottom: -8px;
-  }
-
-  .menu-open .menu-icon {
-    background-color: transparent;
-  }
-
-  .menu-open .menu-icon::before {
-    transform: translateY(8px) rotate(45deg);
-  }
-
-  .menu-open .menu-icon::after {
-    transform: translateY(-8px) rotate(-45deg);
-  }
-
-  @media (max-width: 768px) {
-    .mobile-menu-button {
-      display: block;
-    }
-    
-    /* Always rendered as flex */
-    .menu {
-      display: flex; /* Always flex so it's in the DOM */
-      position: fixed;
-      top: 60px; /* just below navbar */
-      right: 20px;
-      width: 80%;
-      max-width: 300px;
-      background: 
-        linear-gradient(to bottom right, rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)),
-        linear-gradient(to bottom right, #334E47, #1a1b24);
-      background-blend-mode: multiply;
-      padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-      flex-direction: column;
-      align-items: center;
-      gap: 15px;
-      
-      /* Hidden by default */
-      opacity: 0;
-      visibility: hidden;
-      pointer-events: none;
-      transform: translateY(-10px);
-      transition: opacity 0.3s ease, transform 0.3s ease, visibility 0.3s ease;
-      z-index: 1000;
-    }
-    
-    /* When menu is open, make it visible */
-    .menu.menu-open {
-      opacity: 1;
-      visibility: visible;
-      pointer-events: auto;
-      transform: translateY(0);
-    }
-    
-    .menu a {
-      width: 100%;
-      text-align: center;
-      padding: 12px;
-      font-size: 1.2rem;
-      border-radius: 8px;
-      transition: background 0.3s ease;
-      /* Center text using flex */
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-    
-    .menu a:hover {
-      background: rgba(255, 255, 255, 0.1);
-    }
-    
-    .auth-button {
-      width: 100%;
-      margin: 10px 0;
-      padding: 12px;
-      font-size: 1.2rem;
-      text-align: center;
-      display: flex;
-      justify-content: center;
-    }
-    
-    .logo-container {
-      margin-left: 0;
-      z-index: 2;
-    }
-    
-    .logo-image {
-      height: 35px;
-    }
-    
-    .logo-text {
-      font-size: 1.3rem;
-    }
-  }   
-
-  /* Animation for menu items */
-  @keyframes slideIn {
-    from {
-      opacity: 0;
-      transform: translateY(10px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-
-  @media (max-width: 768px) {
-    .menu.menu-open a,
-    .menu.menu-open button {
-      animation: slideIn 0.3s ease forwards;
-      animation-delay: calc(var(--item-index) * 0.1s);
-      opacity: 0;
-    }
-  }
-
-  .auth-button {
-    transition: background-color 0.3s ease, transform 0.2s ease, color 0.3s ease, box-shadow 0.2s ease;
-  }
-
-  .auth-button:hover {
-    transform: scale(1.05);
-    background-color: #1aa34a;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  }
-
-  .auth-button.logout-button:hover {
-    background: #e74c3c; /* red color */
-    transform: scale(1.05);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-  }
-  
-
-  .mobile-menu-button:hover {
-    transform: scale(1.1);
-  }
-
-  /* Specific faint grey hover effect for Flashcards and History links */
-  .menu a[href="/flashcards"]:hover,
-  .menu a[href="/history"]:hover,
-  .desktop-menu a[href="/flashcards"]:hover,
-  .desktop-menu a[href="/history"]:hover {
-    background-color: rgba(211, 211, 211, 0.3);  /* Faint grey background */
-    color: white;                                /* Keep text white */
-    transform: none;                             /* Remove the slide/translate effect */
-    box-shadow: none;                            /* Remove any box shadow */
-  }
-
-  .desktop-menu {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-  }
-
-  
-  /* Hide the desktop menu on small screens */
-  @media (max-width: 768px) {
-    .desktop-menu {
-      display: none;
-    }
-  }
-
-.spotify-icon {
-  height: 20px;
+.logo-image {
+  height: 36px;
   width: auto;
-  margin-right: 8px;
-  vertical-align: middle;
 }
 
-.desktop-menu a.active {
-  background: rgba(255, 255, 255, 0.2);
-  padding: 8px 12px;
-  border-radius: 8px;
+/* Desktop menu container */
+.desktop-menu {
+  display: flex;
+  align-items: center;
+  gap: 20px;
 }
 
-/* Desktop menu links - modernized */
+/* Desktop links */
 .desktop-menu a {
-  font-family: 'Inter', sans-serif;
+  position: relative;
   font-weight: 500;
   font-size: 0.95rem;
-  letter-spacing: 0.2px;
   color: rgba(255, 255, 255, 0.85);
   text-decoration: none;
   padding: 8px 16px;
-  border-radius: 8px;
-  margin-left: 8px;
-  position: relative;
+  border-radius: 10px;
   transition: color 0.25s ease, background-color 0.25s ease, transform 0.25s ease;
   border: 1px solid transparent;
 }
 
-/* Subtle hover effect */
 .desktop-menu a:hover {
   color: rgba(255, 255, 255, 1);
   background-color: rgba(255, 255, 255, 0.08);
   transform: translateY(-1px);
 }
 
-/* Active state styling - more prominence */
 .desktop-menu a.active {
   color: #ffffff;
   background: rgba(255, 255, 255, 0.12);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   font-weight: 600;
 }
 
-/* Mobile menu links - keeping consistent with desktop styling */
-.menu a {
-  font-family: 'Inter', sans-serif;
-  font-weight: 500;
-  font-size: 1.1rem;
-  letter-spacing: 0.2px;
-  color: rgba(255, 255, 255, 0.85);
-  text-decoration: none;
-  padding: 10px 16px;
-  border-radius: 8px;
-  position: relative;
-  width: 100%;
-  text-align: center;
-  transition: color 0.25s ease, background-color 0.25s ease, transform 0.25s ease;
-  border: 1px solid transparent;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-/* Mobile hover style */
-.menu a:hover {
-  color: rgba(255, 255, 255, 1);
-  background-color: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.1);
-}
-
-/* Mobile active state styling */
-.menu a.active {
-  color: #ffffff;
-  background: rgba(255, 255, 255, 0.12);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  font-weight: 600;
-}
-
-/* Auth Buttons Modernization */
+/* Auth button styling for desktop */
 .auth-button {
-  font-family: 'Inter', sans-serif;
   font-weight: 500;
   font-size: 0.95rem;
   letter-spacing: 0.2px;
   padding: 8px 16px;
-  border-radius: 8px;
+  border-radius: 10px;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -356,11 +86,8 @@
   border: 1px solid transparent;
   background-color: transparent;
   color: white;
-  position: relative;
-  overflow: hidden;
 }
 
-/* Login button specific styling */
 .login-button {
   background-color: rgba(29, 185, 84, 0.15);
   border: 1px solid rgba(29, 185, 84, 0.3);
@@ -373,12 +100,6 @@
   box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
 }
 
-.login-button:active {
-  transform: translateY(0);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-/* Logout button specific styling */
 .logout-button {
   background-color: rgba(255, 255, 255, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.2);
@@ -387,49 +108,284 @@
 .logout-button:hover {
   background-color: rgba(231, 76, 60, 0.15);
   border-color: rgba(231, 76, 60, 0.3);
-  color: white; /* Keep text white for visibility */
   transform: translateY(-1px);
   box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
 }
 
-.logout-button:active {
-  transform: translateY(0);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-/* New hover effect for logout button */
-.logout-button:hover::after {
-  content: "";
-  position: absolute;
-  bottom: -1px;
-  left: 10%;
-  width: 80%;
-  height: 2px;
-  background: rgba(231, 76, 60, 0.7);
-  border-radius: 1px;
-}
-
-/* Spotify icon refinement */
 .spotify-icon {
   height: 18px;
   width: auto;
-  margin-right: 4px;
-  transition: transform 0.3s ease;
 }
 
-.login-button:hover .spotify-icon {
-  transform: scale(1.1);
+/* MOBILE MENU STYLING - NEW IMPLEMENTATION */
+
+/* Hide mobile elements on desktop */
+.mobile-menu-button,
+.mobile-menu-overlay {
+  display: none;
 }
 
-/* Mobile styles preservation with tweaks */
+/* Media query for mobile devices */
 @media (max-width: 768px) {
-  .menu .auth-button {
-    font-size: 1.1rem;
-    padding: 10px 16px;
-    width: 100%;
+  .navbar {
+    padding: 14px 16px;
   }
   
-  .menu .spotify-icon {
-    height: 20px;
+  .logo-image {
+    height: 32px;
+  }
+  
+  /* Hide desktop menu on mobile */
+  .desktop-menu {
+    display: none;
+  }
+  
+  /* Show mobile menu button */
+  .mobile-menu-button {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 44px;
+    height: 44px;
+    background: rgba(255, 255, 255, 0.05);
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    position: relative;
+    z-index: 1001; /* Above overlay */
+  }
+  
+  .mobile-menu-button:hover,
+  .mobile-menu-button:active {
+    background: rgba(255, 255, 255, 0.1);
+  }
+  
+  .mobile-menu-button.active {
+    background: rgba(255, 255, 255, 0.15);
+  }
+  
+  /* Hamburger icon styling */
+  .hamburger-icon {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    width: 24px;
+    height: 18px;
+    position: relative;
+  }
+  
+  .hamburger-line {
+    display: block;
+    width: 100%;
+    height: 2px;
+    background-color: white;
+    border-radius: 2px;
+    transform-origin: center;
+    transition: all 0.3s ease;
+  }
+  
+  /* Hamburger animation when active */
+  .mobile-menu-button.active .hamburger-line:nth-child(1) {
+    transform: translateY(8px) rotate(45deg);
+  }
+  
+  .mobile-menu-button.active .hamburger-line:nth-child(2) {
+    opacity: 0;
+    transform: scaleX(0);
+  }
+  
+  .mobile-menu-button.active .hamburger-line:nth-child(3) {
+    transform: translateY(-8px) rotate(-45deg);
+  }
+  
+  /* Full screen overlay for mobile menu */
+  .mobile-menu-overlay {
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    background: rgba(15, 16, 25, 0.9);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    z-index: 1000;
+    overflow: hidden;
+  }
+  
+  .mobile-menu-container {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+    position: relative;
+    overflow-y: auto;
+  }
+  
+  /* Mobile menu header with logo and close button */
+  .mobile-menu-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  
+  .mobile-logo {
+    height: 36px;
+    width: auto;
+  }
+  
+  .mobile-close-button {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 40px;
+    height: 40px;
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.25s ease;
+  }
+  
+  .mobile-close-button:hover {
+    background: rgba(255, 255, 255, 0.15);
+    transform: rotate(90deg);
+  }
+  
+  /* Mobile menu content container */
+  .mobile-menu-content {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    padding: 32px 24px;
+    gap: 32px;
+    justify-content: space-between;
+  }
+  
+  /* Mobile links container */
+  .mobile-menu-links {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  
+  /* Mobile link styling */
+  .mobile-link {
+    text-decoration: none;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 1.25rem;
+    font-weight: 500;
+    transition: all 0.25s ease;
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  
+  .mobile-link-container {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 14px 16px;
+    border-radius: 12px;
+    transition: all 0.25s ease;
+  }
+  
+  .mobile-link:hover .mobile-link-container {
+    background: rgba(255, 255, 255, 0.08);
+    transform: translateX(5px);
+  }
+  
+  .mobile-link.active {
+    color: white;
+  }
+  
+  .mobile-link.active .mobile-link-container {
+    background: rgba(255, 255, 255, 0.1);
+    border-left: 3px solid rgba(29, 185, 84, 0.7);
+  }
+  
+  /* SVG icon styling in mobile links */
+  .mobile-link svg {
+    width: 24px;
+    height: 24px;
+    stroke-width: 2px;
+    transition: all 0.25s ease;
+  }
+  
+  .mobile-link:hover svg,
+  .mobile-link.active svg {
+    stroke: rgba(29, 185, 84, 0.9);
+  }
+  
+  /* Mobile auth button container */
+  .mobile-menu-auth {
+    margin-top: auto;
+    padding: 16px 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  
+  /* Mobile auth button styling */
+  .mobile-auth-button {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    padding: 16px;
+    font-size: 1.1rem;
+    font-weight: 500;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    color: white;
+    background: rgba(255, 255, 255, 0.08);
+  }
+  
+  /* Login button specific styling */
+  .mobile-auth-button.login {
+    background: rgba(29, 185, 84, 0.15);
+    border: 1px solid rgba(29, 185, 84, 0.3);
+  }
+  
+  .mobile-auth-button.login:hover {
+    background: rgba(29, 185, 84, 0.25);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+  }
+  
+  /* Logout button specific styling */
+  .mobile-auth-button.logout {
+    background: rgba(231, 76, 60, 0.08);
+    border: 1px solid rgba(231, 76, 60, 0.2);
+  }
+  
+  .mobile-auth-button.logout:hover {
+    background: rgba(231, 76, 60, 0.15);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+  }
+  
+  /* Spotify logo in mobile login button */
+  .spotify-logo {
+    height: 24px;
+    width: auto;
+  }
+}
+
+/* Additional responsive adjustments for very small screens */
+@media (max-width: 360px) {
+  .mobile-link {
+    font-size: 1.1rem;
+  }
+  
+  .mobile-auth-button {
+    font-size: 1rem;
+    padding: 14px;
+  }
+  
+  .mobile-menu-content {
+    padding: 24px 16px;
   }
 }
