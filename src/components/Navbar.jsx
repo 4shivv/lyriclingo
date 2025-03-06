@@ -45,7 +45,15 @@ function Navbar({ isLoggedIn, setIsLoggedIn }) {
   };
 
   const toggleMobileMenu = () => {
+    // Toggle menu state
     setIsMobileMenuOpen(prev => !prev);
+    
+    // Toggle body class for additional styling hooks
+    if (!isMobileMenuOpen) {
+      document.body.classList.add('mobile-menu-open');
+    } else {
+      document.body.classList.remove('mobile-menu-open');
+    }
   };
 
   const closeMobileMenu = () => {
@@ -125,16 +133,6 @@ function Navbar({ isLoggedIn, setIsLoggedIn }) {
         onClick={toggleMobileMenu} 
         aria-label="Toggle menu"
         aria-expanded={isMobileMenuOpen}
-        style={{ 
-          WebkitTapHighlightColor: 'transparent',
-          outline: 'none',
-          ...(isMobileMenuOpen ? {
-            position: 'fixed',
-            right: '24px',
-            top: '16px',
-            zIndex: 2000
-          } : {})
-        }}
       >
         <div className="hamburger-icon">
           <span className="hamburger-line"></span>
@@ -167,16 +165,6 @@ function Navbar({ isLoggedIn, setIsLoggedIn }) {
                 <Link to="/" onClick={closeMobileMenu} className="mobile-logo-link">
                   <img src="/Subject.png" alt="LyricLingo Logo" className="mobile-logo" />
                 </Link>
-                <button 
-                  className="mobile-close-button" 
-                  onClick={closeMobileMenu}
-                  aria-label="Close menu"
-                >
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M18 6L6 18" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                    <path d="M6 6L18 18" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                </button>
               </motion.div>
 
               <div className="mobile-menu-content">

@@ -557,3 +557,41 @@ body.mobile-menu-open .mobile-menu-button {
 .mobile-menu-button * {
   -webkit-tap-highlight-color: transparent !important;
 }
+
+/* Position the mobile menu button to remain fixed during menu open state */
+.mobile-menu-button {
+  -webkit-tap-highlight-color: transparent !important;
+  position: fixed;
+  top: 14px;
+  right: 16px;
+  z-index: 2000;
+}
+
+/* Ensure the mobile menu button remains visible regardless of menu state */
+body.mobile-menu-open .logo-container,
+body:has(.mobile-menu-overlay) .logo-container {
+  opacity: 0;
+  visibility: hidden;
+}
+
+/* Remove or hide the original close button */
+.mobile-menu-header .mobile-close-button {
+  display: none;
+}
+
+/* Enhance the mobile menu header to account for removed close button */
+.mobile-menu-header {
+  justify-content: center;
+  padding: 20px 16px;
+}
+
+/* Improve transformation of hamburger to X for clearer indication */
+.mobile-menu-button.active .hamburger-line:nth-child(1) {
+  transform: translateY(8px) rotate(45deg);
+  width: 100%;
+}
+
+.mobile-menu-button.active .hamburger-line:nth-child(3) {
+  transform: translateY(-8px) rotate(-45deg);
+  width: 100%;
+}
