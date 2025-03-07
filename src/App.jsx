@@ -23,25 +23,32 @@ function AppContent() {
   const location = useLocation();
 
   useEffect(() => {
+    // Check for Spotify tokens in URL parameters
     const urlParams = new URLSearchParams(window.location.search);
     const accessToken = urlParams.get("access_token");
     const refreshToken = urlParams.get("refresh_token");
 
     if (accessToken && refreshToken) {
+      // Store Spotify tokens but DON'T change app login state
       localStorage.setItem("spotify_access_token", accessToken);
       localStorage.setItem("spotify_refresh_token", refreshToken);
-      setIsLoggedIn(true);
-
+      
       // ✅ Remove tokens from URL
       window.history.replaceState({}, document.title, "/flashcards");
 
       // ✅ Redirect user to Flashcards page
       navigate("/flashcards", { replace: true });
+    } 
+    
+    // Check app authentication separately using a different storage mechanism
+    // This ensures the app auth state is independent of Spotify connection
+    const isAppLoggedIn = sessionStorage.getItem("app_logged_in") === "true";
+    const isAppLoggedOut = sessionStorage.getItem("app_logged_out") === "true";
+    
+    if (isAppLoggedIn && !isAppLoggedOut) {
+      setIsLoggedIn(true);
     } else {
-      const storedToken = localStorage.getItem("spotify_access_token");
-      if (storedToken) {
-        setIsLoggedIn(true);
-      }
+      setIsLoggedIn(false);
     }
   }, [navigate]);
 
