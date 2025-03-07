@@ -6,6 +6,7 @@ import Flashcards from "./pages/Flashcards";
 import History from "./pages/History";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
+import Signup from "./pages/Signup";
 import "./styles/Global.css";
 
 function App() {
@@ -119,6 +120,17 @@ function AppContent() {
               transition={{ duration: 0.3 }}
             >
               <Login setIsLoggedIn={setIsLoggedIn} />
+            </motion.div>
+          } />
+          <Route path="/signup" element={
+            <motion.div
+              variants={pageVariants}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+              transition={{ duration: 0.3 }}
+            >
+              <Signup setIsLoggedIn={setIsLoggedIn} />
             </motion.div>
           } />
         </Routes>
