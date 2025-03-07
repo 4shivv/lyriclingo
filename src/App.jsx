@@ -5,6 +5,7 @@ import Navbar from "./components/Navbar";
 import Flashcards from "./pages/Flashcards";
 import History from "./pages/History";
 import Home from "./pages/Home";
+import Login from "./pages/Login";
 import "./styles/Global.css";
 
 function App() {
@@ -100,6 +101,17 @@ function AppContent() {
               transition={{ duration: 0.3 }}
             >
               <History setSelectedSong={setSelectedSong} />
+            </motion.div>
+          } />
+          <Route path="/login" element={
+            <motion.div
+              variants={pageVariants}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+              transition={{ duration: 0.3 }}
+            >
+              <Login setIsLoggedIn={setIsLoggedIn} />
             </motion.div>
           } />
         </Routes>

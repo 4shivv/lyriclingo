@@ -84,22 +84,43 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn, setIsLoggedIn }
   const longPressTimer = useRef(null);
   const LONG_PRESS_THRESHOLD = 300; // milliseconds
 
-  // Handle Spotify login
+  // Spotify-specific state, independent from navbar auth
+  const [spotifyConnected, setSpotifyConnected] = useState(false);
+  
+  // Check if user is connected to Spotify on component mount
+  useEffect(() => {
+    const spotifyToken = localStorage.getItem("spotify_access_token");
+    if (spotifyToken) {
+      setSpotifyConnected(true);
+    }
+  }, []);
+
+  // Handle Spotify login - independent from navbar auth
   const handleSpotifyLogin = () => {
     window.location.href = `${backendUrl}/api/spotify/login`;
   };
 
-  // Handle Spotify logout
+  // Handle Spotify logout - only affects Spotify connection, not overall auth
   const handleSpotifyLogout = async () => {
     try {
       await fetch(`${backendUrl}/api/songs/clear`, { method: "DELETE" });
     } catch (error) {
       console.error("Error clearing history on logout:", error);
     }
+    
+    // Only remove Spotify tokens, not overall auth
     localStorage.removeItem("spotify_access_token");
     localStorage.removeItem("spotify_refresh_token");
-    setIsLoggedIn(false);
-    navigate("/");
+    
+    // Update Spotify connection state
+    setSpotifyConnected(false);
+    
+    // Show toast notification
+    setToast({
+      show: true,
+      message: "Disconnected from Spotify",
+      type: "info"
+    });
   };
 
   // Modified navigation functions
@@ -272,7 +293,7 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn, setIsLoggedIn }
     if (!accessToken || !refreshToken) {
       setToast({
         show: true,
-        message: "You need to log in with Spotify first!",
+        message: "You need to connect to Spotify first!",
         type: "error"
       });
       setLogging(false);
@@ -297,10 +318,10 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn, setIsLoggedIn }
             type: "error"
           });
           
-          // Force logout on auth expiration
+          // Update Spotify connection state on auth expiration
           localStorage.removeItem("spotify_access_token");
           localStorage.removeItem("spotify_refresh_token");
-          setIsLoggedIn(false);
+          setSpotifyConnected(false);
           
         } else if (errorData && errorData.scopeIssue) {
           setToast({
@@ -309,10 +330,10 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn, setIsLoggedIn }
             type: "error"
           });
           
-          // Force logout on scope issues
+          // Update Spotify connection state on scope issues
           localStorage.removeItem("spotify_access_token");
           localStorage.removeItem("spotify_refresh_token");
-          setIsLoggedIn(false);
+          setSpotifyConnected(false);
           
         } else if (currentResponse.status === 429) {
           setToast({
@@ -420,7 +441,7 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn, setIsLoggedIn }
           Flashcards for {selectedSong ? selectedSong.song : "Unknown Song"}
         </motion.h1>
 
-        {/* NEW: Spotify Auth Button (moved from navbar) */}
+        {/* Spotify Auth Button with independent state */}
         <motion.div 
           className="spotify-auth-container"
           variants={textVariants}
@@ -428,10 +449,19 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn, setIsLoggedIn }
           animate="animate"
           transition={{ duration: 0.3, delay: 0.05 }}
         >
-          {isLoggedIn ? (
-            <div className="spotify-connected-status">
-              <span className="spotify-status-icon">✓</span>
-              <span>Connected to Spotify</span>
+          {spotifyConnected ? (
+            <div className="spotify-auth-wrapper">
+              <div className="spotify-connected-status">
+                <span className="spotify-status-icon">✓</span>
+                <span>Connected to Spotify</span>
+              </div>
+              <button 
+                className="spotify-disconnect-button" 
+                onClick={handleSpotifyLogout}
+                aria-label="Disconnect Spotify"
+              >
+                Disconnect
+              </button>
             </div>
           ) : (
             <button 
@@ -445,7 +475,7 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn, setIsLoggedIn }
           )}
         </motion.div>
 
-        {/* Log Current Song Button */}
+        {/* Log Current Song Button - uses spotifyConnected state */}
         <motion.div 
           className="log-button-wrapper"
           variants={textVariants}
@@ -453,7 +483,7 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn, setIsLoggedIn }
           animate="animate"
           transition={{ duration: 0.3, delay: 0.1 }}
         >
-          {isLoggedIn ? (
+          {spotifyConnected ? (
             <button className="log-song-button" onClick={logCurrentSong} disabled={logging}>
               {logging ? <LoadingSpinner size={20} color="#fff" /> : "🎵 Log Current Song"}
             </button>
@@ -462,7 +492,7 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn, setIsLoggedIn }
               className="log-song-button log-song-button-disabled" 
               onClick={() => setToast({
                 show: true,
-                message: "Please log in with Spotify to access this feature",
+                message: "Please connect to Spotify to access this feature",
                 type: "info"
               })}
             >
@@ -578,10 +608,10 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn, setIsLoggedIn }
         >
           <h3 className="sentiment-title">Song Mood Analysis</h3>
           
-          {!isLoggedIn ? (
+          {!spotifyConnected ? (
             <div className="sentiment-unauthenticated">
               <div className="sentiment-lock-icon">🔒</div>
-              <p className="sentiment-login-message">Log in with Spotify to access song mood analysis</p>
+              <p className="sentiment-login-message">Connect to Spotify to access song mood analysis</p>
               <p className="sentiment-feature-description">
                 Discover the emotional tones and primary feelings behind your favorite songs
               </p>

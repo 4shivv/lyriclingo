@@ -1,137 +1,259 @@
 /* Center the login box */
 .login-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    text-align: center;
-  }
-  
-  /* Login Box */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  text-align: center;
+  background: linear-gradient(135deg, #334E47, #1a1b24, #2a1f36);
+  padding: 20px;
+}
+
+/* Login Box */
+.login-box {
+  background: rgba(24, 24, 24, 0.8);
+  backdrop-filter: blur(10px);
+  padding: 40px;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  max-width: 420px;
+  width: 100%;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transform: translateY(50px);
+}
+
+/* Title */
+.login-title {
+  font-size: 2rem;
+  color: white;
+  margin-bottom: 30px;
+  letter-spacing: 0.5px;
+  position: relative;
+  display: inline-block;
+}
+
+.login-title::after {
+  content: "";
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 3px;
+  background: linear-gradient(90deg, rgba(29, 185, 84, 0.8), rgba(29, 185, 84, 0.2));
+  border-radius: 3px;
+}
+
+/* Social Login Buttons */
+.social-login {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 14px;
+  margin-bottom: 14px;
+  font-size: 1rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: 500;
+  position: relative;
+  overflow: hidden;
+}
+
+.social-login::after {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    45deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.03) 50%,
+    transparent 100%
+  );
+  transform: rotate(45deg);
+  z-index: 1;
+  pointer-events: none;
+  transition: transform 0.6s ease;
+}
+
+.social-login:hover::after {
+  transform: rotate(45deg) translate(10%, 10%);
+}
+
+.spotify-login {
+  background: #1DB954;
+  color: white;
+}
+
+.spotify-login:hover {
+  background: #1aa34a;
+  transform: translateY(-3px);
+  box-shadow: 0 5px 15px rgba(29, 185, 84, 0.3);
+}
+
+.google-login {
+  background: #ffffff;
+  color: #333;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.google-login:hover {
+  background: #f8f8f8;
+  transform: translateY(-3px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.apple-login {
+  background: #000000;
+  color: white;
+}
+
+.apple-login:hover {
+  background: #222222;
+  transform: translateY(-3px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.social-login:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* Social Icons */
+.social-icon {
+  height: 24px;
+  width: auto;
+  margin-right: 12px;
+}
+
+/* Separator */
+.separator {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  margin: 25px 0;
+  color: #aaa;
+  font-size: 0.9rem;
+}
+
+.separator::before,
+.separator::after {
+  content: "";
+  flex: 1;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.separator span {
+  padding: 0 10px;
+}
+
+/* Input Fields */
+.login-input {
+  width: 100%;
+  padding: 14px;
+  margin-bottom: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+  color: white;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+.login-input:focus {
+  border-color: rgba(29, 185, 84, 0.5);
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(29, 185, 84, 0.2);
+}
+
+.login-input:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.login-input::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* Submit Button */
+.login-submit {
+  width: 100%;
+  padding: 14px;
+  font-size: 1.1rem;
+  background: #1DB954;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: 600;
+  margin-top: 5px;
+}
+
+.login-submit:hover:not(:disabled) {
+  background: #1aa34a;
+  transform: translateY(-3px);
+  box-shadow: 0 5px 15px rgba(29, 185, 84, 0.3);
+}
+
+.login-submit:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* Additional Options */
+.login-footer,
+.forgot-password {
+  font-size: 0.9rem;
+  color: #bbb;
+  margin-top: 16px;
+}
+
+.login-footer a,
+.forgot-password a {
+  color: #1DB954;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.login-footer a:hover,
+.forgot-password a:hover {
+  color: #1aa34a;
+  text-decoration: underline;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 480px) {
   .login-box {
-    background: #181818;
-    padding: 40px;
-    border-radius: 12px;
-    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
-    max-width: 400px;
-    width: 100%;
+    padding: 30px 20px;
+    max-width: 100%;
   }
   
-  /* Title */
   .login-title {
-    font-size: 2rem;
-    color: white;
-    margin-bottom: 20px;
+    font-size: 1.8rem;
   }
   
-  /* Social Login Buttons */
   .social-login {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
     padding: 12px;
-    margin-bottom: 10px;
-    font-size: 1.1rem;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background 0.3s ease, transform 0.2s ease;
+    font-size: 0.9rem;
   }
   
-  .spotify-login {
-    background: #1DB954;
-    color: white;
-  }
-  
-  .google-login {
-    background: #ffffff;
-    color: black;
-  }
-  
-  .apple-login {
-    background: #000000;
-    color: white;
-  }
-  
-  .social-login:hover {
-    transform: scale(1.02);
-  }
-  
-  /* Social Icons */
   .social-icon {
     height: 20px;
-    width: 20px;
-    margin-right: 10px;
   }
   
-  /* Separator */
-  .separator {
-    display: flex;
-    align-items: center;
-    text-align: center;
-    margin: 20px 0;
-    color: #888;
-    font-size: 0.9rem;
-  }
-  
-  .separator::before,
-  .separator::after {
-    content: "";
-    flex: 1;
-    border-bottom: 1px solid #444;
-  }
-  
-  .separator span {
-    padding: 0 10px;
-  }
-  
-  /* Input Fields */
-  .login-input {
-    width: 100%;
-    padding: 12px;
-    margin-bottom: 10px;
-    border: 1px solid #333;
-    background: #222;
-    color: white;
-    border-radius: 8px;
-    font-size: 1rem;
-  }
-  
-  /* Submit Button */
+  .login-input,
   .login-submit {
-    width: 100%;
     padding: 12px;
-    font-size: 1.2rem;
-    background: #1DB954;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background 0.3s ease, transform 0.2s ease;
+    font-size: 0.95rem;
   }
-  
-  .login-submit:hover {
-    background: #1aa34a;
-    transform: scale(1.05);
-  }
-  
-  /* Additional Options */
-  .login-footer,
-  .forgot-password {
-    font-size: 0.9rem;
-    color: #bbb;
-    margin-top: 10px;
-  }
-  
-  .login-footer a,
-  .forgot-password a {
-    color: #1DB954;
-    text-decoration: none;
-  }
-  
-  .login-footer a:hover,
-  .forgot-password a:hover {
-    text-decoration: underline;
-  }
-  
+}

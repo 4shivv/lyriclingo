@@ -905,6 +905,24 @@
   font-size: 1.1rem;
 }
 
+.spotify-disconnect-button {
+  background: rgba(255, 255, 255, 0.08);
+  color: #ff6b6b;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  padding: 8px 16px;
+  border-radius: 30px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.spotify-disconnect-button:hover {
+  background: rgba(255, 99, 99, 0.1);
+  border-color: rgba(255, 99, 99, 0.2);
+  transform: translateY(-2px);
+}
+
 /* Adjust log button positioning with new Spotify auth button above it */
 .log-button-wrapper {
   margin-bottom: 25px;
@@ -924,5 +942,15 @@
   
   .spotify-auth-container {
     margin-bottom: 20px;
+  }
+  
+  .spotify-auth-wrapper {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .spotify-disconnect-button {
+    font-size: 0.8rem;
+    padding: 6px 12px;
   }
 }

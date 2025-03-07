@@ -28,19 +28,14 @@ function Navbar({ isLoggedIn, setIsLoggedIn }) {
     };
   }, [isMobileMenuOpen]);
 
-  // Generic login handler (no Spotify branding)
+  // Navigate to login page instead of direct auth
   const handleLogin = () => {
-    window.location.href = `${backendUrl}/api/spotify/login`;
+    navigate("/login");
   };
 
-  const handleLogout = async () => {
-    try {
-      await fetch(`${backendUrl}/api/songs/clear`, { method: "DELETE" });
-    } catch (error) {
-      console.error("Error clearing history on logout:", error);
-    }
-    localStorage.removeItem("spotify_access_token");
-    localStorage.removeItem("spotify_refresh_token");
+  // Simple frontend logout - just UI state change
+  const handleLogout = () => {
+    // Note: This doesn't affect Spotify connection, just the app's login state
     setIsLoggedIn(false);
     navigate("/");
   };
