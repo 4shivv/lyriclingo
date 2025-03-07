@@ -1,12 +1,13 @@
 import React, { useRef } from "react";
 import { motion, useInView } from "framer-motion";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import "../styles/Home.css";
 
 function Home() {
   // Create refs for scroll-triggered animations
   const featuresRef = useRef(null);
   const languagesRef = useRef(null);
+  const navigate = useNavigate();
   
   // Use inView hook to detect when elements are in viewport
   const featuresInView = useInView(featuresRef, { 
@@ -19,9 +20,10 @@ function Home() {
     amount: 0.2 
   });
 
-  // Read the backend URL from Vite's environment variables
-  const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:5001";
-
+  // Navigation handler
+  const handleGetStarted = () => {
+    navigate("/login");
+  };
   
   // Animation variants for staggered animations
   const containerVariants = {
@@ -62,11 +64,6 @@ function Home() {
       description: "Discover the emotional tone and sentiment behind lyrics"
     }
   ];
-
-  // Handle Spotify login
-  const handleSpotifyLogin = () => {
-    window.location.href = `${backendUrl}/api/spotify/login`;
-  };
 
   return (
     <div className="home-container">
@@ -111,10 +108,12 @@ function Home() {
             >
               <button 
                 className="primary-cta" 
-                onClick={handleSpotifyLogin}
+                onClick={handleGetStarted}
               >
-                <img src="/Spotify_Primary_Logo_RGB_Green.png" alt="Spotify" className="cta-icon" />
-                Connect with Spotify
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+                Get Started
               </button>
               
               <Link to="/flashcards" className="secondary-cta">
