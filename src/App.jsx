@@ -83,7 +83,12 @@ function AppContent() {
               exit="exit"
               transition={{ duration: 0.3 }}
             >
-              <Flashcards isLoggedIn={isLoggedIn} selectedSong={selectedSong} setSelectedSong={setSelectedSong} />
+              <Flashcards 
+                isLoggedIn={isLoggedIn} 
+                setIsLoggedIn={setIsLoggedIn} 
+                selectedSong={selectedSong} 
+                setSelectedSong={setSelectedSong} 
+              />
             </motion.div>
           } />
           <Route path="/history" element={

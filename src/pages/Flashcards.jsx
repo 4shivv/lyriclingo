@@ -61,7 +61,7 @@ function EmptyFlashcardState({ songName }) {
   );
 }
 
-function Flashcards({ selectedSong, setSelectedSong, isLoggedIn }) {
+function Flashcards({ selectedSong, setSelectedSong, isLoggedIn, setIsLoggedIn }) {
   const navigate = useNavigate();
   const [flashcards, setFlashcards] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -83,6 +83,24 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn }) {
   const [isLongPress, setIsLongPress] = useState(false);
   const longPressTimer = useRef(null);
   const LONG_PRESS_THRESHOLD = 300; // milliseconds
+
+  // Handle Spotify login
+  const handleSpotifyLogin = () => {
+    window.location.href = `${backendUrl}/api/spotify/login`;
+  };
+
+  // Handle Spotify logout
+  const handleSpotifyLogout = async () => {
+    try {
+      await fetch(`${backendUrl}/api/songs/clear`, { method: "DELETE" });
+    } catch (error) {
+      console.error("Error clearing history on logout:", error);
+    }
+    localStorage.removeItem("spotify_access_token");
+    localStorage.removeItem("spotify_refresh_token");
+    setIsLoggedIn(false);
+    navigate("/");
+  };
 
   // Modified navigation functions
   const handleMouseDown = (direction) => {
@@ -246,148 +264,147 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn }) {
   }, [selectedSong, flashcards.length, backendUrl]);
 
   // Function to log the current song
-// Updated logCurrentSong function for Flashcards.jsx
-const logCurrentSong = async () => {
-  setLogging(true);
-  const accessToken = localStorage.getItem("spotify_access_token");
-  const refreshToken = localStorage.getItem("spotify_refresh_token");
+  const logCurrentSong = async () => {
+    setLogging(true);
+    const accessToken = localStorage.getItem("spotify_access_token");
+    const refreshToken = localStorage.getItem("spotify_refresh_token");
 
-  if (!accessToken || !refreshToken) {
-    setToast({
-      show: true,
-      message: "You need to log in with Spotify first!",
-      type: "error"
-    });
-    setLogging(false);
-    return;
-  }
-
-  try {
-    // Fetch the currently playing song from Spotify
-    const currentResponse = await fetch(
-      `${backendUrl}/api/spotify/current-song?accessToken=${accessToken}&refreshToken=${refreshToken}`
-    );
-    
-    // Handle potential errors with better user feedback
-    if (!currentResponse.ok) {
-      const errorData = await currentResponse.json();
-      
-      // Handle specific error cases
-      if (currentResponse.status === 401 || (errorData && errorData.authExpired)) {
-        setToast({
-          show: true,
-          message: "Your Spotify session has expired. Please log in again.",
-          type: "error"
-        });
-        
-        // Force logout on auth expiration
-        localStorage.removeItem("spotify_access_token");
-        localStorage.removeItem("spotify_refresh_token");
-        setIsLoggedIn(false);
-        
-      } else if (errorData && errorData.scopeIssue) {
-        setToast({
-          show: true,
-          message: "Your Spotify account needs additional permissions. Please log in again.",
-          type: "error"
-        });
-        
-        // Force logout on scope issues
-        localStorage.removeItem("spotify_access_token");
-        localStorage.removeItem("spotify_refresh_token");
-        setIsLoggedIn(false);
-        
-      } else if (currentResponse.status === 429) {
-        setToast({
-          show: true,
-          message: "Too many requests to Spotify. Please try again in a moment.",
-          type: "warning"
-        });
-        
-      } else if (currentResponse.status === 412 || (errorData && errorData.noActiveDevice)) {
-        setToast({
-          show: true,
-          message: "No active Spotify playback found. Please start playing music in your Spotify app.",
-          type: "warning"
-        });
-        
-      } else if (currentResponse.status === 404) {
-        setToast({
-          show: true,
-          message: "No song currently playing on Spotify.",
-          type: "info"
-        });
-        
-      } else {
-        setToast({
-          show: true,
-          message: errorData?.error || "Error connecting to Spotify. Please try again.",
-          type: "error"
-        });
-      }
-      
+    if (!accessToken || !refreshToken) {
+      setToast({
+        show: true,
+        message: "You need to log in with Spotify first!",
+        type: "error"
+      });
       setLogging(false);
       return;
     }
-    
-    // Process successful response
-    const currentData = await currentResponse.json();
 
-    if (currentData.song) {
-      // Log the song in your history by posting it to your API
-      const logResponse = await fetch(`${backendUrl}/api/songs/log`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(currentData)
-      });
+    try {
+      // Fetch the currently playing song from Spotify
+      const currentResponse = await fetch(
+        `${backendUrl}/api/spotify/current-song?accessToken=${accessToken}&refreshToken=${refreshToken}`
+      );
       
-      if (!logResponse.ok) {
-        const logError = await logResponse.json();
-        setToast({ 
-          show: true, 
-          message: logError.error || "Failed to log song", 
-          type: "error" 
-        });
+      // Handle potential errors with better user feedback
+      if (!currentResponse.ok) {
+        const errorData = await currentResponse.json();
+        
+        // Handle specific error cases
+        if (currentResponse.status === 401 || (errorData && errorData.authExpired)) {
+          setToast({
+            show: true,
+            message: "Your Spotify session has expired. Please log in again.",
+            type: "error"
+          });
+          
+          // Force logout on auth expiration
+          localStorage.removeItem("spotify_access_token");
+          localStorage.removeItem("spotify_refresh_token");
+          setIsLoggedIn(false);
+          
+        } else if (errorData && errorData.scopeIssue) {
+          setToast({
+            show: true,
+            message: "Your Spotify account needs additional permissions. Please log in again.",
+            type: "error"
+          });
+          
+          // Force logout on scope issues
+          localStorage.removeItem("spotify_access_token");
+          localStorage.removeItem("spotify_refresh_token");
+          setIsLoggedIn(false);
+          
+        } else if (currentResponse.status === 429) {
+          setToast({
+            show: true,
+            message: "Too many requests to Spotify. Please try again in a moment.",
+            type: "warning"
+          });
+          
+        } else if (currentResponse.status === 412 || (errorData && errorData.noActiveDevice)) {
+          setToast({
+            show: true,
+            message: "No active Spotify playback found. Please start playing music in your Spotify app.",
+            type: "warning"
+          });
+          
+        } else if (currentResponse.status === 404) {
+          setToast({
+            show: true,
+            message: "No song currently playing on Spotify.",
+            type: "info"
+          });
+          
+        } else {
+          setToast({
+            show: true,
+            message: errorData?.error || "Error connecting to Spotify. Please try again.",
+            type: "error"
+          });
+        }
+        
         setLogging(false);
         return;
       }
       
-      const logData = await logResponse.json();
+      // Process successful response
+      const currentData = await currentResponse.json();
 
-      // Reset language to auto-detect for new song
-      setSelectedLanguage("auto");
-      
-      // Set loading state to true as we're about to update selectedSong
-      setIsLoadingCards(true);
-      
-      // Show success toast
+      if (currentData.song) {
+        // Log the song in your history by posting it to your API
+        const logResponse = await fetch(`${backendUrl}/api/songs/log`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(currentData)
+        });
+        
+        if (!logResponse.ok) {
+          const logError = await logResponse.json();
+          setToast({ 
+            show: true, 
+            message: logError.error || "Failed to log song", 
+            type: "error" 
+          });
+          setLogging(false);
+          return;
+        }
+        
+        const logData = await logResponse.json();
+
+        // Reset language to auto-detect for new song
+        setSelectedLanguage("auto");
+        
+        // Set loading state to true as we're about to update selectedSong
+        setIsLoadingCards(true);
+        
+        // Show success toast
+        setToast({
+          show: true,
+          message: `🎵 Logged: ${logData.song.song} by ${logData.song.artist}`,
+          type: "success"
+        });
+        
+        // Update selected song which will trigger the useEffect to fetch flashcards
+        setSelectedSong(logData.song);
+        setCurrentSong(logData.song);
+      } else {
+        setToast({
+          show: true,
+          message: "No song currently playing!",
+          type: "info"
+        });
+      }
+    } catch (err) {
+      console.error("Error logging song:", err);
       setToast({
         show: true,
-        message: `🎵 Logged: ${logData.song.song} by ${logData.song.artist}`,
-        type: "success"
+        message: "Network error while fetching current song.",
+        type: "error"
       });
-      
-      // Update selected song which will trigger the useEffect to fetch flashcards
-      setSelectedSong(logData.song);
-      setCurrentSong(logData.song);
-    } else {
-      setToast({
-        show: true,
-        message: "No song currently playing!",
-        type: "info"
-      });
+    } finally {
+      setLogging(false);
     }
-  } catch (err) {
-    console.error("Error logging song:", err);
-    setToast({
-      show: true,
-      message: "Network error while fetching current song.",
-      type: "error"
-    });
-  } finally {
-    setLogging(false);
-  }
-};
+  };
 
   return (
     <div className="flashcards-container">
@@ -403,7 +420,32 @@ const logCurrentSong = async () => {
           Flashcards for {selectedSong ? selectedSong.song : "Unknown Song"}
         </motion.h1>
 
-        {/* Log Current Song Button - Now appears BEFORE the language selection */}
+        {/* NEW: Spotify Auth Button (moved from navbar) */}
+        <motion.div 
+          className="spotify-auth-container"
+          variants={textVariants}
+          initial="initial"
+          animate="animate"
+          transition={{ duration: 0.3, delay: 0.05 }}
+        >
+          {isLoggedIn ? (
+            <div className="spotify-connected-status">
+              <span className="spotify-status-icon">✓</span>
+              <span>Connected to Spotify</span>
+            </div>
+          ) : (
+            <button 
+              className="spotify-auth-button" 
+              onClick={handleSpotifyLogin}
+              aria-label="Login with Spotify"
+            >
+              <img src="/Spotify_Primary_Logo_RGB_Green.png" alt="Spotify Icon" className="spotify-icon" />
+              Connect to Spotify
+            </button>
+          )}
+        </motion.div>
+
+        {/* Log Current Song Button */}
         <motion.div 
           className="log-button-wrapper"
           variants={textVariants}
@@ -429,7 +471,7 @@ const logCurrentSong = async () => {
           )}
         </motion.div>
 
-        {/* Language Selection Dropdown - Now appears AFTER the log button */}
+        {/* Language Selection Dropdown */}
         <motion.div
           className={`language-selection-container ${!isLoggedIn ? 'not-logged-in' : ''}`}
           variants={textVariants}

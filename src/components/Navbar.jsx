@@ -28,6 +28,7 @@ function Navbar({ isLoggedIn, setIsLoggedIn }) {
     };
   }, [isMobileMenuOpen]);
 
+  // Generic login handler (no Spotify branding)
   const handleLogin = () => {
     window.location.href = `${backendUrl}/api/spotify/login`;
   };
@@ -103,7 +104,7 @@ function Navbar({ isLoggedIn, setIsLoggedIn }) {
         <span className="logo-text"></span>
       </Link>
 
-      {/* Desktop Menu */}
+      {/* Desktop Menu - Updated with generic login button (no Spotify branding) */}
       <div className="desktop-menu">
         {isLoggedIn ? (
           <button className="auth-button logout-button" onClick={handleLogout}>
@@ -113,10 +114,9 @@ function Navbar({ isLoggedIn, setIsLoggedIn }) {
           <button 
             className="auth-button login-button" 
             onClick={handleLogin}
-            aria-label="Login with Spotify"
+            aria-label="Login"
           >
-            <img src="/Spotify_Primary_Logo_RGB_Green.png" alt="Spotify Icon" className="spotify-icon" />
-            Login with Spotify
+            Login
           </button>
         )}
         <NavLink to="/flashcards" className={({ isActive }) => (isActive ? "active" : "")}>
@@ -208,6 +208,7 @@ function Navbar({ isLoggedIn, setIsLoggedIn }) {
                   </NavLink>
                 </motion.div>
 
+                {/* Updated mobile menu auth buttons (no Spotify branding) */}
                 <motion.div 
                   className="mobile-menu-auth"
                   variants={itemVariants}
@@ -237,8 +238,12 @@ function Navbar({ isLoggedIn, setIsLoggedIn }) {
                       }}
                       whileTap={{ scale: 0.95 }}
                     >
-                      <img src="/Spotify_Primary_Logo_RGB_Green.png" alt="Spotify" className="spotify-logo" />
-                      <span>Login with Spotify</span>
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M15 3H19C19.5304 3 20.0391 3.21071 20.4142 3.58579C20.7893 3.96086 21 4.46957 21 5V19C21 19.5304 20.7893 20.0391 20.4142 20.4142C20.0391 20.7893 19.5304 21 19 21H15" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                        <path d="M10 17L15 12L10 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                        <path d="M15 12H3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                      <span>Login</span>
                     </motion.button>
                   )}
                 </motion.div>
