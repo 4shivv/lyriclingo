@@ -35,8 +35,13 @@ function Navbar({ isLoggedIn, setIsLoggedIn }) {
 
   // Simple frontend logout - just UI state change
   const handleLogout = () => {
-    // Note: This doesn't affect Spotify connection, just the app's login state
+    // This only affects the app's login state, not Spotify connection
+    // We do NOT touch the Spotify tokens here to maintain separation
     setIsLoggedIn(false);
+    
+    // Store a flag in sessionStorage indicating navbar logout
+    sessionStorage.setItem("app_logged_out", "true");
+    
     navigate("/");
   };
 

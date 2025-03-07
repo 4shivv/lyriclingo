@@ -84,7 +84,7 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn, setIsLoggedIn }
   const longPressTimer = useRef(null);
   const LONG_PRESS_THRESHOLD = 300; // milliseconds
 
-  // Spotify-specific state, independent from navbar auth
+  // Spotify-specific state, completely independent from navbar auth
   const [spotifyConnected, setSpotifyConnected] = useState(false);
   
   // Check if user is connected to Spotify on component mount
@@ -93,6 +93,16 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn, setIsLoggedIn }
     if (spotifyToken) {
       setSpotifyConnected(true);
     }
+    
+    // Listen for Spotify token changes (for cross-component updates)
+    const handleStorageChange = (e) => {
+      if (e.key === "spotify_access_token") {
+        setSpotifyConnected(!!e.newValue);
+      }
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
   // Handle Spotify login - independent from navbar auth
@@ -114,6 +124,8 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn, setIsLoggedIn }
     
     // Update Spotify connection state
     setSpotifyConnected(false);
+    setFlashcards([]);
+    setSentiment(null);
     
     // Show toast notification
     setToast({
@@ -441,7 +453,7 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn, setIsLoggedIn }
           Flashcards for {selectedSong ? selectedSong.song : "Unknown Song"}
         </motion.h1>
 
-        {/* Spotify Auth Button with independent state */}
+        {/* Integrated Spotify Auth Button with toggle functionality */}
         <motion.div 
           className="spotify-auth-container"
           variants={textVariants}
@@ -449,30 +461,23 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn, setIsLoggedIn }
           animate="animate"
           transition={{ duration: 0.3, delay: 0.05 }}
         >
-          {spotifyConnected ? (
-            <div className="spotify-auth-wrapper">
-              <div className="spotify-connected-status">
-                <span className="spotify-status-icon">✓</span>
-                <span>Connected to Spotify</span>
-              </div>
-              <button 
-                className="spotify-disconnect-button" 
-                onClick={handleSpotifyLogout}
-                aria-label="Disconnect Spotify"
-              >
-                Disconnect
-              </button>
-            </div>
-          ) : (
-            <button 
-              className="spotify-auth-button" 
-              onClick={handleSpotifyLogin}
-              aria-label="Login with Spotify"
-            >
-              <img src="/Spotify_Primary_Logo_RGB_Green.png" alt="Spotify Icon" className="spotify-icon" />
-              Connect to Spotify
-            </button>
-          )}
+          <button 
+            className={`spotify-auth-button ${spotifyConnected ? "connected" : ""}`}
+            onClick={spotifyConnected ? handleSpotifyLogout : handleSpotifyLogin}
+            aria-label={spotifyConnected ? "Disconnect from Spotify" : "Connect to Spotify"}
+          >
+            <img src="/Spotify_Primary_Logo_RGB_Green.png" alt="Spotify Icon" className="spotify-icon" />
+            {spotifyConnected ? (
+              <>
+                <span className="spotify-status-text">
+                  <span className="spotify-status-icon">✓</span> Connected
+                </span>
+                <span className="spotify-disconnect-text">Disconnect</span>
+              </>
+            ) : (
+              "Connect to Spotify"
+            )}
+          </button>
         </motion.div>
 
         {/* Log Current Song Button - uses spotifyConnected state */}
