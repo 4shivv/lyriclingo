@@ -689,17 +689,18 @@ body:has(.mobile-menu-overlay) .logo-container {
   /* Core styling */
   background: rgba(252, 220, 77, 0.15) !important;
   border: 1px solid rgba(252, 220, 77, 0.3) !important;
-  border-radius: 30px !important;
+  border-radius: 12px !important; /* Match the border-radius of nav links */
   color: rgba(252, 220, 77, 0.95) !important;
   
-  /* Dimensions and spacing */
-  padding: 6px 18px !important;
+  /* Adjusted dimensions to match links */
+  padding: 10px 18px !important; /* Match the nav links' vertical padding */
   height: auto !important;
+  margin-top: -2px !important; /* Shift slightly upward for alignment */
   margin-left: 12px !important;
   
-  /* Typography */
-  font-size: 0.95rem !important;
-  font-weight: 500 !important;
+  /* Typography updates for consistency */
+  font-size: 0.95rem !important; /* Match the font size of nav links */
+  font-weight: 500 !important; /* Same weight as nav links */
   letter-spacing: 0.3px !important;
   
   /* Layout properties */
@@ -708,40 +709,44 @@ body:has(.mobile-menu-overlay) .logo-container {
   justify-content: center !important;
   gap: 8px !important;
   
-  /* Visual effects */
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15) !important;
+  /* Visual effects for consistency */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important; /* Matching nav links' shadow */
   position: relative !important;
   overflow: hidden !important;
   
-  /* Interaction properties */
+  /* Transition matching for consistency */
+  transition: all 0.25s ease !important; /* Match transition timing of links */
   cursor: pointer !important;
-  transition: all 0.3s ease !important;
   white-space: nowrap !important;
+
+  /* Slight vertical alignment adjustment */
+  transform: translateY(-1px) !important;
 }
 
-/* Icon styling with higher specificity */
+/* Icon styling refined */
 .navbar .auth-button svg {
-  width: 16px !important;
-  height: 16px !important;
+  width: 18px !important; /* Slightly larger icon */
+  height: 18px !important;
   stroke: rgba(252, 220, 77, 0.95) !important;
+  stroke-width: 2px !important; /* Match stroke width of nav link icons */
   flex-shrink: 0 !important;
 }
 
-/* Hover state with higher specificity */
+/* Hover state matching nav links */
 .navbar .auth-button:hover {
   background: rgba(252, 220, 77, 0.25) !important;
   border-color: rgba(252, 220, 77, 0.4) !important;
-  transform: translateY(-3px) scale(1.05) !important;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25) !important;
+  transform: translateY(-3px) !important; /* Match nav links' hover transform */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important; /* Match nav links' hover shadow */
 }
 
-/* Active state with higher specificity */
+/* Active state matching nav links */
 .navbar .auth-button:active {
   transform: translateY(0) scale(0.98) !important;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
 }
 
-/* Logout variant with higher specificity */
+/* Logout variant with refinements */
 .navbar .logout-button {
   background: rgba(255, 255, 255, 0.08) !important;
   border: 1px solid rgba(255, 255, 255, 0.15) !important;
@@ -762,7 +767,16 @@ body:has(.mobile-menu-overlay) .logo-container {
   stroke: rgba(255, 99, 99, 0.9) !important;
 }
 
-/* Reduce spacing between navbar items */
+/* Desktop menu refinements for consistent vertical alignment */
 .navbar .desktop-menu {
-  gap: 16px !important; 
+  gap: 16px !important;
+  align-items: center !important;
+  height: 100% !important;
+}
+
+/* Ensure links and buttons have consistent vertical alignment */
+.navbar .desktop-menu a,
+.navbar .desktop-menu .auth-button {
+  display: flex !important;
+  align-items: center !important;
 }
