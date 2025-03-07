@@ -36,11 +36,11 @@
   width: auto;
 }
 
-/* Desktop menu container - improved alignment */
+/* Desktop menu container - improved alignment with reduced spacing */
 .desktop-menu {
   display: flex;
   align-items: center;
-  gap: 24px; /* Increased spacing between items */
+  gap: 16px; /* Reduced spacing between items from 24px to 16px */
 }
 
 /* Navbar nav links - improved styling */
@@ -79,7 +79,7 @@
   font-weight: 600;
 }
 
-/* Navbar authentication button - Spotify-style variant */
+/* Navbar authentication button - Enhanced Spotify-style with yellow accent */
 .auth-button {
   /* Core styling */
   background: rgba(252, 220, 77, 0.15);
@@ -87,13 +87,11 @@
   border-radius: 30px;
   color: rgba(252, 220, 77, 0.95);
   
-  /* Dimensions and spacing */
-  height: 36px;
-  padding: 0 16px;
-  margin-left: 12px;
+  /* Dimensions and spacing - adjusted for vertical alignment */
+  padding: 6px 18px;
   
   /* Typography */
-  font-size: 0.9rem;
+  font-size: 0.95rem;
   font-weight: 500;
   letter-spacing: 0.3px;
   
@@ -101,11 +99,16 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 8px;
+  
+  /* Enhanced visual effects */
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+  position: relative;
+  overflow: hidden;
   
   /* Interaction properties */
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
   white-space: nowrap;
 }
 
@@ -117,16 +120,18 @@
   flex-shrink: 0;
 }
 
-/* Hover state */
+/* Hover state - enhanced with scale and box-shadow */
 .auth-button:hover {
   background: rgba(252, 220, 77, 0.25);
   border-color: rgba(252, 220, 77, 0.4);
-  transform: translateY(-1px);
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
 }
 
-/* Active state */
+/* Active state - enhanced with scale */
 .auth-button:active {
-  transform: translateY(0);
+  transform: translateY(0) scale(0.98);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 /* Logout variant */
@@ -144,10 +149,17 @@
   background: rgba(255, 99, 99, 0.1);
   border-color: rgba(255, 99, 99, 0.2);
   color: rgba(255, 99, 99, 0.9);
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
 }
 
 .logout-button:hover svg {
   stroke: rgba(255, 99, 99, 0.9);
+}
+
+.logout-button:active {
+  transform: translateY(0) scale(0.98);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 /* Ensure buttons align with navigation links */
