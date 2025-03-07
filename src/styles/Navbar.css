@@ -683,3 +683,86 @@ body:has(.mobile-menu-overlay) .logo-container {
   transform: translateY(-8px) rotate(-45deg);
   width: 100%;
 }
+
+/* More specific selectors to override existing styles */
+.navbar .auth-button {
+  /* Core styling */
+  background: rgba(252, 220, 77, 0.15) !important;
+  border: 1px solid rgba(252, 220, 77, 0.3) !important;
+  border-radius: 30px !important;
+  color: rgba(252, 220, 77, 0.95) !important;
+  
+  /* Dimensions and spacing */
+  padding: 6px 18px !important;
+  height: auto !important;
+  margin-left: 12px !important;
+  
+  /* Typography */
+  font-size: 0.95rem !important;
+  font-weight: 500 !important;
+  letter-spacing: 0.3px !important;
+  
+  /* Layout properties */
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  
+  /* Visual effects */
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15) !important;
+  position: relative !important;
+  overflow: hidden !important;
+  
+  /* Interaction properties */
+  cursor: pointer !important;
+  transition: all 0.3s ease !important;
+  white-space: nowrap !important;
+}
+
+/* Icon styling with higher specificity */
+.navbar .auth-button svg {
+  width: 16px !important;
+  height: 16px !important;
+  stroke: rgba(252, 220, 77, 0.95) !important;
+  flex-shrink: 0 !important;
+}
+
+/* Hover state with higher specificity */
+.navbar .auth-button:hover {
+  background: rgba(252, 220, 77, 0.25) !important;
+  border-color: rgba(252, 220, 77, 0.4) !important;
+  transform: translateY(-3px) scale(1.05) !important;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25) !important;
+}
+
+/* Active state with higher specificity */
+.navbar .auth-button:active {
+  transform: translateY(0) scale(0.98) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* Logout variant with higher specificity */
+.navbar .logout-button {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+.navbar .logout-button svg {
+  stroke: rgba(255, 255, 255, 0.9) !important;
+}
+
+.navbar .logout-button:hover {
+  background: rgba(255, 99, 99, 0.1) !important;
+  border-color: rgba(255, 99, 99, 0.2) !important;
+  color: rgba(255, 99, 99, 0.9) !important;
+}
+
+.navbar .logout-button:hover svg {
+  stroke: rgba(255, 99, 99, 0.9) !important;
+}
+
+/* Reduce spacing between navbar items */
+.navbar .desktop-menu {
+  gap: 16px !important; 
+}
