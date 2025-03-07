@@ -79,84 +79,87 @@
   font-weight: 600;
 }
 
-/* Refined navbar auth button styling */
+/* Navbar authentication button - Spotify-style variant */
 .auth-button {
-  /* Compact dimensions */
-  padding: 6px 12px;
-  border-radius: 6px;
-  font-size: 0.85rem;
-  font-weight: 500;
+  /* Core styling */
+  background: rgba(252, 220, 77, 0.15);
+  border: 1px solid rgba(252, 220, 77, 0.3);
+  border-radius: 30px;
+  color: rgba(252, 220, 77, 0.95);
   
-  /* Alignment properties */
+  /* Dimensions and spacing */
+  height: 36px;
+  padding: 0 16px;
+  margin-left: 12px;
+  
+  /* Typography */
+  font-size: 0.9rem;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+  
+  /* Layout properties */
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
   
-  /* Transition properties */
-  transition: all 0.2s ease;
-  
-  /* Reset and positioning */
-  border: none;
+  /* Interaction properties */
   cursor: pointer;
-  margin-left: 8px;
-  height: 32px;
-  min-width: 0;
+  transition: all 0.2s ease;
   white-space: nowrap;
 }
 
-/* Login button specific styling */
-.login-button {
-  background: rgba(252, 220, 77, 0.15);
-  color: rgba(252, 220, 77, 0.9);
-  border: 1px solid rgba(252, 220, 77, 0.3);
-}
-
-.login-button:hover {
-  background: rgba(252, 220, 77, 0.2);
-  border-color: rgba(252, 220, 77, 0.4);
-}
-
-.login-button svg {
-  stroke: rgba(252, 220, 77, 0.9);
+/* Icon styling */
+.auth-button svg {
   width: 16px;
   height: 16px;
+  stroke: rgba(252, 220, 77, 0.95);
+  flex-shrink: 0;
 }
 
-/* Logout button specific styling */
+/* Hover state */
+.auth-button:hover {
+  background: rgba(252, 220, 77, 0.25);
+  border-color: rgba(252, 220, 77, 0.4);
+  transform: translateY(-1px);
+}
+
+/* Active state */
+.auth-button:active {
+  transform: translateY(0);
+}
+
+/* Logout variant */
 .logout-button {
   background: rgba(255, 255, 255, 0.08);
-  color: rgba(255, 255, 255, 0.9);
   border: 1px solid rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.logout-button svg {
+  stroke: rgba(255, 255, 255, 0.9);
 }
 
 .logout-button:hover {
   background: rgba(255, 99, 99, 0.1);
-  color: rgba(255, 99, 99, 0.9);
   border-color: rgba(255, 99, 99, 0.2);
+  color: rgba(255, 99, 99, 0.9);
 }
 
-.logout-button svg {
-  stroke: currentColor;
-  width: 16px;
-  height: 16px;
+.logout-button:hover svg {
+  stroke: rgba(255, 99, 99, 0.9);
 }
 
-/* Active states for both buttons */
-.auth-button:active {
-  transform: translateY(1px);
+/* Ensure buttons align with navigation links */
+.desktop-menu {
+  display: flex;
+  align-items: center;
 }
 
-/* Responsive adjustments */
-@media (max-width: 768px) {
-  .auth-button {
-    padding: 7px 14px;
-    font-size: 0.85rem;
-  }
-  
-  .auth-button svg {
-    width: 16px;
-    height: 16px;
-  }
+.nav-links a {
+  height: 36px;
+  display: flex;
+  align-items: center;
 }
 
 .spotify-icon {
