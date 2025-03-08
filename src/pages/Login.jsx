@@ -4,6 +4,8 @@ import { motion } from "framer-motion";
 import "../styles/Login.css";
 import Toast from "../components/Toast";
 
+const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:5001";
+
 function Login({ setIsLoggedIn }) {
   const navigate = useNavigate();
   const [toast, setToast] = useState({ show: false, message: "", type: "error" });

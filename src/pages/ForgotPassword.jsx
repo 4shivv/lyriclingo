@@ -4,6 +4,8 @@ import { motion } from "framer-motion";
 import "../styles/ForgotPassword.css";
 import Toast from "../components/Toast";
 
+const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:5001";
+
 function ForgotPassword() {
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -16,7 +18,7 @@ function ForgotPassword() {
     setIsLoading(true);
     
     try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/auth/forgot-password`, {
+      const response = await fetch(`${backendUrl}/api/auth/forgot-password`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email })
