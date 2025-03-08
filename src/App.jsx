@@ -7,6 +7,8 @@ import History from "./pages/History";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 import "./styles/Global.css";
 
 function App() {
@@ -133,6 +135,8 @@ function AppContent() {
               <Signup setIsLoggedIn={setIsLoggedIn} />
             </motion.div>
           } />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password/:token" element={<ResetPassword />} />
         </Routes>
       </AnimatePresence>
     </>

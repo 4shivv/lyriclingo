@@ -144,7 +144,7 @@ function Login({ setIsLoggedIn }) {
             </div>
 
             <div className="forgot-password-row">
-              <a href="#" className="forgot-password-link">Forgot password?</a>
+              <Link to="/forgot-password" className="forgot-password-link">Forgot password?</Link>
             </div>
             
             <button 
