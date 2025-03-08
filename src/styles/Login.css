@@ -371,3 +371,327 @@
     gap: 20px;
   }
 }
+
+/* ==== SHARED STYLES FOR LOGIN AND SIGNUP ==== */
+
+/* These styles can be added to both login.css and signup.css files */
+
+/* Mobile-specific adjustments for login/signup pages */
+@media (max-width: 992px) {
+  .login-content-wrapper,
+  .signup-content-wrapper {
+    flex-direction: column;
+    max-width: 600px;
+    min-height: auto;
+  }
+  
+  .login-form-container,
+  .signup-form-container {
+    padding: 35px 25px;
+    order: 1; /* Put form first on mobile */
+  }
+  
+  .login-info-panel,
+  .signup-info-panel {
+    padding: 35px 25px;
+    border-left: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    order: 0; /* Put info panel at top on mobile */
+    max-height: 300px; /* Limit height to prioritize form content */
+    overflow-y: auto;
+  }
+  
+  .login-title,
+  .signup-title {
+    font-size: 1.8rem;
+    margin-bottom: 12px;
+  }
+  
+  .login-subtitle,
+  .signup-subtitle {
+    font-size: 0.95rem;
+  }
+  
+  .login-form,
+  .signup-form {
+    max-width: 100%;
+    gap: 18px;
+  }
+  
+  .info-panel-content {
+    padding: 0 10px;
+  }
+  
+  .info-panel-title {
+    font-size: 1.6rem;
+    margin-bottom: 15px;
+  }
+  
+  .info-panel-description {
+    font-size: 1rem;
+    margin-bottom: 18px;
+  }
+  
+  .feature-list {
+    gap: 14px;
+  }
+  
+  .feature-item {
+    font-size: 0.95rem;
+  }
+}
+
+/* Small Mobile Screens */
+@media (max-width: 576px) {
+  .login-page-container,
+  .signup-page-container {
+    padding: 0; /* Remove padding to use full screen */
+  }
+  
+  .login-content-wrapper,
+  .signup-content-wrapper {
+    min-height: 100vh; /* Use full height */
+    border-radius: 0; /* Remove border radius */
+    box-shadow: none; /* Remove shadow */
+    border: none; /* Remove border */
+  }
+  
+  .login-form-container,
+  .signup-form-container {
+    padding: 24px 20px;
+    height: auto;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .login-info-panel,
+  .signup-info-panel {
+    padding: 24px 20px;
+    max-height: 250px; /* Further reduce panel height */
+  }
+  
+  .login-header,
+  .signup-header {
+    margin-bottom: 20px;
+    text-align: center; /* Center align on smallest screens */
+  }
+  
+  .login-title,
+  .signup-title {
+    font-size: 1.6rem;
+  }
+  
+  .login-subtitle,
+  .signup-subtitle {
+    font-size: 0.9rem;
+  }
+  
+  /* Make form controls bigger for touch */
+  .login-input,
+  .signup-input {
+    padding: 14px 16px 14px 46px;
+    font-size: 16px; /* Prevent iOS zoom on focus */
+    height: 50px; /* Taller touch targets */
+  }
+  
+  .password-toggle-button {
+    width: 44px;
+    height: 44px;
+  }
+  
+  .login-button,
+  .signup-button {
+    padding: 16px;
+    font-size: 1rem;
+    height: 54px; /* Larger touch target */
+    margin-top: 6px;
+  }
+  
+  /* Better spacing for form groups */
+  .form-group {
+    margin-bottom: 5px;
+  }
+  
+  .form-label {
+    font-size: 0.9rem;
+    margin-bottom: 6px;
+  }
+  
+  .login-footer,
+  .signup-footer {
+    margin-top: 20px;
+    text-align: center;
+  }
+  
+  /* Full width info panel content */
+  .info-panel-content {
+    max-width: 100%;
+    padding: 0 5px;
+    text-align: center;
+  }
+  
+  .info-panel-title {
+    font-size: 1.4rem;
+  }
+  
+  .info-panel-description {
+    font-size: 0.9rem;
+    line-height: 1.4;
+    margin-bottom: 15px;
+  }
+  
+  .feature-list {
+    align-items: center;
+    gap: 12px;
+  }
+  
+  .feature-item {
+    font-size: 0.85rem;
+    text-align: left;
+    width: 100%;
+    max-width: 280px;
+  }
+  
+  .feature-icon {
+    font-size: 1.2rem;
+  }
+  
+  /* Ensure proper password validation positioning */
+  .password-requirements,
+  .password-mismatch {
+    font-size: 0.75rem;
+    margin-top: 3px;
+  }
+}
+
+/* Extra Small Mobile Screens */
+@media (max-width: 360px) {
+  .login-title,
+  .signup-title {
+    font-size: 1.4rem;
+  }
+  
+  .login-subtitle,
+  .signup-subtitle {
+    font-size: 0.85rem;
+  }
+  
+  .login-form,
+  .signup-form {
+    gap: 14px;
+  }
+  
+  .login-input,
+  .signup-input,
+  .login-button,
+  .signup-button {
+    font-size: 0.95rem;
+  }
+  
+  .login-info-panel,
+  .signup-info-panel {
+    max-height: 220px;
+    padding: 20px 15px;
+  }
+  
+  /* Make sure input icons are properly sized and positioned */
+  .input-icon {
+    font-size: 0.9rem;
+    left: 14px;
+  }
+  
+  /* Ensure footer text is readable */
+  .login-text,
+  .signup-text {
+    font-size: 0.85rem;
+  }
+  
+  /* Adjust padding for very small screens */
+  .login-form-container,
+  .signup-form-container {
+    padding: 20px 15px;
+  }
+}
+
+/* Fix iOS input zoom issue */
+@media screen and (max-width: 576px) {
+  input[type="text"],
+  input[type="email"],
+  input[type="password"] {
+    font-size: 16px !important; /* Prevents iOS zoom on focus */
+  }
+}
+
+/* Fix viewport height issues on mobile browsers */
+@media (max-width: 992px) {
+  .login-page-container,
+  .signup-page-container {
+    min-height: -webkit-fill-available;
+    min-height: 100vh;
+  }
+  
+  /* Fix for iOS Safari and some Android browsers */
+  @supports (-webkit-touch-callout: none) {
+    .login-page-container,
+    .signup-page-container {
+      min-height: -webkit-fill-available;
+    }
+  }
+}
+
+/* Enhancement for better mobile touch interactions */
+@media (max-width: 576px) {
+  /* Add tap highlight color override for better mobile feedback */
+  .login-button,
+  .signup-button,
+  .login-link,
+  .signup-link,
+  .forgot-password-link,
+  .password-toggle-button {
+    -webkit-tap-highlight-color: rgba(255, 255, 255, 0.1);
+  }
+  
+  /* Apply better active state for mobile touches */
+  .login-button:active,
+  .signup-button:active {
+    opacity: 0.8;
+    transform: scale(0.98);
+    transition: all 0.1s ease;
+  }
+}
+
+/* Accessibility improvements for mobile */
+@media (max-width: 576px) {
+  .login-input:focus,
+  .signup-input:focus {
+    outline: 2px solid rgba(252, 220, 77, 0.5);
+    box-shadow: 0 0 0 3px rgba(252, 220, 77, 0.2);
+  }
+  
+  /* Increase touch target sizes */
+  .password-toggle-button,
+  .forgot-password-link {
+    min-height: 44px;
+    min-width: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+/* Fix for mobile keyboards pushing content */
+@media (max-width: 576px) {
+  .login-content-wrapper,
+  .signup-content-wrapper {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .login-form-container,
+  .signup-form-container {
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
