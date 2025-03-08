@@ -36,22 +36,28 @@ function AppContent() {
       localStorage.setItem("spotify_access_token", accessToken);
       localStorage.setItem("spotify_refresh_token", refreshToken);
       
-      // ✅ Remove tokens from URL
+      // Remove tokens from URL
       window.history.replaceState({}, document.title, "/flashcards");
 
-      // ✅ Redirect user to Flashcards page
+      // Redirect user to Flashcards page
       navigate("/flashcards", { replace: true });
     } 
     
-    // Check app authentication separately using a different storage mechanism
-    // This ensures the app auth state is independent of Spotify connection
-    const isAppLoggedIn = sessionStorage.getItem("app_logged_in") === "true";
+    // Check app authentication using JWT token presence
+    const token = localStorage.getItem("token") || sessionStorage.getItem("auth_token");
     const isAppLoggedOut = sessionStorage.getItem("app_logged_out") === "true";
     
-    if (isAppLoggedIn && !isAppLoggedOut) {
+    if (token && !isAppLoggedOut) {
+      // Store token in both locations for consistency
+      localStorage.setItem("token", token);
+      sessionStorage.setItem("auth_token", token);
+      
       setIsLoggedIn(true);
+      sessionStorage.setItem("app_logged_in", "true");
+      sessionStorage.removeItem("app_logged_out");
     } else {
       setIsLoggedIn(false);
+      sessionStorage.removeItem("app_logged_in");
     }
   }, [navigate]);
 
@@ -63,6 +69,22 @@ function AppContent() {
     };
     document.title = routeTitleMap[location.pathname] || "LyricLingo";
   }, [location]);
+
+  // Add protected route component to restrict access to authenticated routes
+  function ProtectedRoute({ isLoggedIn, children }) {
+    const navigate = useNavigate();
+    const location = useLocation();
+    
+    useEffect(() => {
+      if (!isLoggedIn) {
+        // Store the attempted URL to redirect back after login
+        sessionStorage.setItem("redirect_after_login", location.pathname);
+        navigate("/login");
+      }
+    }, [isLoggedIn, navigate, location]);
+    
+    return isLoggedIn ? children : null;
+  }
 
   const pageVariants = {
     initial: { opacity: 0, y: 20 },
@@ -87,31 +109,35 @@ function AppContent() {
             </motion.div>
           } />
           <Route path="/flashcards" element={
-            <motion.div
-              variants={pageVariants}
-              initial="initial"
-              animate="animate"
-              exit="exit"
-              transition={{ duration: 0.3 }}
-            >
-              <Flashcards 
-                isLoggedIn={isLoggedIn} 
-                setIsLoggedIn={setIsLoggedIn} 
-                selectedSong={selectedSong} 
-                setSelectedSong={setSelectedSong} 
-              />
-            </motion.div>
+            <ProtectedRoute isLoggedIn={isLoggedIn}>
+              <motion.div
+                variants={pageVariants}
+                initial="initial"
+                animate="animate"
+                exit="exit"
+                transition={{ duration: 0.3 }}
+              >
+                <Flashcards 
+                  isLoggedIn={isLoggedIn} 
+                  setIsLoggedIn={setIsLoggedIn} 
+                  selectedSong={selectedSong} 
+                  setSelectedSong={setSelectedSong} 
+                />
+              </motion.div>
+            </ProtectedRoute>
           } />
           <Route path="/history" element={
-            <motion.div
-              variants={pageVariants}
-              initial="initial"
-              animate="animate"
-              exit="exit"
-              transition={{ duration: 0.3 }}
-            >
-              <History setSelectedSong={setSelectedSong} />
-            </motion.div>
+            <ProtectedRoute isLoggedIn={isLoggedIn}>
+              <motion.div
+                variants={pageVariants}
+                initial="initial"
+                animate="animate"
+                exit="exit"
+                transition={{ duration: 0.3 }}
+              >
+                <History setSelectedSong={setSelectedSong} />
+              </motion.div>
+            </ProtectedRoute>
           } />
           <Route path="/login" element={
             <motion.div

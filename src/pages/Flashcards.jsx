@@ -238,7 +238,7 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn, setIsLoggedIn }
     
     setIsLoadingCards(true);
     
-    // Get JWT token
+    // Get JWT token - Try both localStorage and sessionStorage
     const token = localStorage.getItem("token") || sessionStorage.getItem("auth_token");
     
     if (!token) {
@@ -248,8 +248,13 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn, setIsLoggedIn }
         type: "error"
       });
       setIsLoadingCards(false);
+      navigate("/login"); // Redirect to login page
       return;
     }
+    
+    // Store token in both places for consistency
+    localStorage.setItem("token", token);
+    sessionStorage.setItem("auth_token", token);
     
     // Construct URL with language parameter if not auto-detect
     let url = `${backendUrl}/api/songs/flashcards?song=${encodeURIComponent(selectedSong.song)}`;
@@ -266,6 +271,10 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn, setIsLoggedIn }
         if (!res.ok) {
           if (res.status === 401) {
             // Handle authentication error specifically
+            localStorage.removeItem("token");
+            sessionStorage.removeItem("auth_token");
+            setIsLoggedIn(false);
+            sessionStorage.setItem("app_logged_out", "true");
             throw new Error("Authentication expired. Please log in again.");
           }
           throw new Error(`Failed to fetch flashcards: ${res.status}`);
@@ -336,6 +345,10 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn, setIsLoggedIn }
         return;
       }
       
+      // Store token in both places for consistency
+      localStorage.setItem("token", token);
+      sessionStorage.setItem("auth_token", token);
+      
       // Construct the URL with song and artist parameters
       let url = `${backendUrl}/api/songs/sentiment?song=${encodeURIComponent(selectedSong.song)}`;
       if (selectedSong.artist) {
@@ -344,12 +357,16 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn, setIsLoggedIn }
       
       fetch(url, {
         headers: {
-          "Authorization": `Bearer ${token}`  // Add JWT token here
+          "Authorization": `Bearer ${token}`
         }
       })
         .then(res => {
           if (!res.ok) {
             if (res.status === 401) {
+              localStorage.removeItem("token");
+              sessionStorage.removeItem("auth_token");
+              setIsLoggedIn(false);
+              sessionStorage.setItem("app_logged_out", "true");
               throw new Error("Authentication expired. Please log in again.");
             }
             throw new Error(`Sentiment analysis failed: ${res.status}`);
@@ -375,12 +392,24 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn, setIsLoggedIn }
   // Function to log the current song
   const logCurrentSong = async () => {
     setLogging(true);
+    
+    // Check authentication first
+    const jwtToken = localStorage.getItem("token") || sessionStorage.getItem("auth_token");
+    if (!jwtToken) {
+      setToast({
+        show: true,
+        message: "You need to be logged in to save songs. Please log in first.",
+        type: "error"
+      });
+      setLogging(false);
+      navigate("/login");
+      return;
+    }
+
+    // Then check Spotify connection
     const accessToken = localStorage.getItem("spotify_access_token");
     const refreshToken = localStorage.getItem("spotify_refresh_token");
     
-    // Get JWT token for authentication with your backend
-    const jwtToken = localStorage.getItem("token");
-
     if (!accessToken || !refreshToken) {
       setToast({
         show: true,
@@ -391,16 +420,6 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn, setIsLoggedIn }
       return;
     }
     
-    if (!jwtToken) {
-      setToast({
-        show: true,
-        message: "You need to be logged in to save songs. Please log in first.",
-        type: "error"
-      });
-      setLogging(false);
-      return;
-    }
-
     try {
       // Fetch the currently playing song from Spotify
       const currentResponse = await fetch(
@@ -471,10 +490,9 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn, setIsLoggedIn }
       
       // Process successful response
       const currentData = await currentResponse.json();
-
+      
       if (currentData.song) {
         // Log the song in your history by posting it to your API
-        // *** IMPORTANT: ADD AUTHORIZATION HEADER WITH JWT TOKEN ***
         const logResponse = await fetch(`${backendUrl}/api/songs/log`, {
           method: "POST",
           headers: { 
@@ -610,18 +628,34 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn, setIsLoggedIn }
           animate="animate"
           transition={{ duration: 0.3, delay: 0.1 }}
         >
-          {spotifyConnected ? (
-            <button className="log-song-button" onClick={logCurrentSong} disabled={logging}>
-              {logging ? <LoadingSpinner size={20} color="#fff" /> : "🎵 Log Current Song"}
-            </button>
+          {isLoggedIn ? (
+            spotifyConnected ? (
+              <button className="log-song-button" onClick={logCurrentSong} disabled={logging}>
+                {logging ? <LoadingSpinner size={20} color="#fff" /> : "🎵 Log Current Song"}
+              </button>
+            ) : (
+              <button 
+                className="log-song-button log-song-button-disabled" 
+                onClick={() => setToast({
+                  show: true,
+                  message: "Please connect to Spotify to access this feature",
+                  type: "info"
+                })}
+              >
+                <span className="lock-icon">🔒</span> Log Current Song
+              </button>
+            )
           ) : (
             <button 
               className="log-song-button log-song-button-disabled" 
-              onClick={() => setToast({
-                show: true,
-                message: "Please connect to Spotify to access this feature",
-                type: "info"
-              })}
+              onClick={() => {
+                setToast({
+                  show: true,
+                  message: "Please log in to access this feature",
+                  type: "info"
+                });
+                navigate("/login");
+              }}
             >
               <span className="lock-icon">🔒</span> Log Current Song
             </button>

@@ -15,10 +15,10 @@ function History({ setSelectedSong }) {
   const [toast, setToast] = useState({ show: false, message: "", type: "error" });
   const navigate = useNavigate(); // Initialize navigation
 
-  // Add at the start of your component
+  // Add this authorization check at the beginning of the component
   useEffect(() => {
     // Check authentication on component mount
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem("token") || sessionStorage.getItem("auth_token");
     if (!token) {
       setToast({
         show: true,
@@ -26,14 +26,21 @@ function History({ setSelectedSong }) {
         type: "warning"
       });
       navigate("/login");
+      return;
     }
-  }, []);
+    
+    // Store token in both places for consistency
+    localStorage.setItem("token", token);
+    sessionStorage.setItem("auth_token", token);
+    
+    fetchHistory();
+  }, [navigate]);
 
   // Fetch history from API
   const fetchHistory = async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem("token") || sessionStorage.getItem("auth_token");
       if (!token) {
         setToast({
           show: true,
@@ -41,8 +48,13 @@ function History({ setSelectedSong }) {
           type: "error"
         });
         setLoading(false);
+        navigate("/login");
         return;
       }
+      
+      // Store token in both places for consistency
+      localStorage.setItem("token", token);
+      sessionStorage.setItem("auth_token", token);
       
       const res = await fetch(
         `${backendUrl}/api/songs/history?t=${Date.now()}`,
@@ -54,6 +66,18 @@ function History({ setSelectedSong }) {
       );
       
       if (!res.ok) {
+        if (res.status === 401) {
+          localStorage.removeItem("token");
+          sessionStorage.removeItem("auth_token");
+          setToast({
+            show: true,
+            message: "Authentication expired. Please log in again.",
+            type: "error"
+          });
+          setLoading(false);
+          navigate("/login");
+          return;
+        }
         throw new Error(`Failed to fetch history: ${res.status}`);
       }
       
