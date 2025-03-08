@@ -15,6 +15,20 @@ function History({ setSelectedSong }) {
   const [toast, setToast] = useState({ show: false, message: "", type: "error" });
   const navigate = useNavigate(); // Initialize navigation
 
+  // Add at the start of your component
+  useEffect(() => {
+    // Check authentication on component mount
+    const token = localStorage.getItem("token");
+    if (!token) {
+      setToast({
+        show: true,
+        message: "Please log in to access this feature",
+        type: "warning"
+      });
+      navigate("/login");
+    }
+  }, []);
+
   // Fetch history from API
   const fetchHistory = async () => {
     setLoading(true);
@@ -65,16 +79,31 @@ function History({ setSelectedSong }) {
   const clearHistory = async () => {
     setClearLoading(true);
     try {
-      const accessToken = localStorage.getItem("spotify_access_token");
-      await fetch(`${backendUrl}/api/songs/clear?accessToken=${accessToken}`, {
+      // Retrieve JWT token
+      const token = localStorage.getItem("token");
+      if (!token) {
+        setToast({ show: true, message: "Authentication required", type: "error" });
+        setClearLoading(false);
+        return;
+      }
+
+      const response = await fetch(`${backendUrl}/api/songs/clear`, {
         method: "DELETE",
-        headers: { "Content-Type": "application/json" }
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`  // Add JWT token
+        }
       });
+
+      if (!response.ok) {
+        throw new Error(`Failed to clear history: ${response.status}`);
+      }
+
       setToast({ show: true, message: "History Cleared!", type: "success" });
-      fetchHistory();
+      setHistory([]);  // Clear history state immediately
     } catch (error) {
       console.error("Error clearing history:", error);
-      setToast({ show: true, message: "Error clearing history.", type: "error" });
+      setToast({ show: true, message: error.message || "Error clearing history", type: "error" });
     } finally {
       setClearLoading(false);
     }
@@ -82,6 +111,12 @@ function History({ setSelectedSong }) {
 
   // Navigate to flashcards for selected song
   const handleSongClick = (song) => {
+    // Store token in sessionStorage for cross-component access
+    const token = localStorage.getItem("token");
+    if (token) {
+      sessionStorage.setItem("auth_token", token);
+    }
+    
     setSelectedSong(song);
     navigate("/flashcards");
   };

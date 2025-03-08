@@ -239,7 +239,17 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn, setIsLoggedIn }
     setIsLoadingCards(true);
     
     // Get JWT token
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem("token") || sessionStorage.getItem("auth_token");
+    
+    if (!token) {
+      setToast({
+        show: true,
+        message: "Authentication required. Please log in again.",
+        type: "error"
+      });
+      setIsLoadingCards(false);
+      return;
+    }
     
     // Construct URL with language parameter if not auto-detect
     let url = `${backendUrl}/api/songs/flashcards?song=${encodeURIComponent(selectedSong.song)}`;
@@ -254,25 +264,23 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn, setIsLoggedIn }
     })
       .then(res => {
         if (!res.ok) {
+          if (res.status === 401) {
+            // Handle authentication error specifically
+            throw new Error("Authentication expired. Please log in again.");
+          }
           throw new Error(`Failed to fetch flashcards: ${res.status}`);
         }
         return res.json();
       })
       .then(data => {
         if (data.error) {
-          console.error("Error fetching flashcards:", data.error);
-          setToast({
-            show: true,
-            message: `Error: ${data.error}`,
-            type: "error"
-          });
-        } else {
-          setFlashcards(data);
-          
-          // If response includes detected language info, update state
-          if (data.length > 0 && data[0].detectedLanguage) {
-            setDetectedLanguage(data[0].detectedLanguage);
-          }
+          throw new Error(data.error);
+        } 
+        setFlashcards(data);
+        
+        // If response includes detected language info, update state
+        if (data.length > 0 && data[0].detectedLanguage) {
+          setDetectedLanguage(data[0].detectedLanguage);
         }
         setIsLoadingCards(false);
       })
@@ -280,7 +288,7 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn, setIsLoggedIn }
         console.error("Error fetching flashcards:", error);
         setToast({
           show: true,
-          message: "Failed to load flashcards. Please try again.",
+          message: error.message || "Failed to load flashcards",
           type: "error"
         });
         setIsLoadingCards(false);
@@ -518,6 +526,20 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn, setIsLoggedIn }
       setLogging(false);
     }
   };
+
+  // Add at the start of your component
+  useEffect(() => {
+    // Check authentication on component mount
+    const token = localStorage.getItem("token");
+    if (!token) {
+      setToast({
+        show: true,
+        message: "Please log in to access this feature",
+        type: "warning"
+      });
+      navigate("/login");
+    }
+  }, []);
 
   return (
     <div className="flashcards-container">
