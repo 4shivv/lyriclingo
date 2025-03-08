@@ -1,10 +1,36 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import "../styles/Signup.css";
 import Toast from "../components/Toast";
 
 const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:5001";
+
+const checkBackendConnectivity = async (setToast) => {
+  try {
+    console.log(`Checking backend connectivity to: ${backendUrl}`);
+    
+    const response = await fetch(`${backendUrl}/api/health`, { 
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+      signal: AbortSignal.timeout(5000) 
+    });
+    
+    if (response.ok) {
+      console.log('✅ Backend is reachable');
+    } else {
+      console.warn(`⚠️ Backend returned status: ${response.status}`);
+    }
+  } catch (error) {
+    console.error(`❌ Backend connectivity error: ${error.message}`);
+    
+    setToast({
+      show: true,
+      message: "Unable to connect to server. Please check your network connection.",
+      type: "error"
+    });
+  }
+};
 
 function Signup({ setIsLoggedIn }) {
   const navigate = useNavigate();
@@ -17,6 +43,10 @@ function Signup({ setIsLoggedIn }) {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  
+  useEffect(() => {
+    checkBackendConnectivity(setToast);
+  }, []);
   
   // Handle input changes
   const handleChange = (e) => {
@@ -32,18 +62,46 @@ function Signup({ setIsLoggedIn }) {
     e.preventDefault();
     setIsLoading(true);
     
+    // First validate passwords match
+    if (formData.password !== formData.confirmPassword) {
+      setToast({
+        show: true,
+        message: "Passwords do not match",
+        type: "error"
+      });
+      setIsLoading(false);
+      return;
+    }
+    
     try {
-      const response = await fetch(`${backendUrl}/api/auth/signup`, {
+      const response = await fetch(`${backendUrl}/api/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: formData.email, password: formData.password, name: formData.name })
+        body: JSON.stringify({ 
+          email: formData.email, 
+          password: formData.password, 
+          name: formData.name 
+        })
       });
       
-      const data = await response.json();
-      
+      // Check if response is OK before attempting to parse JSON
       if (!response.ok) {
-        throw new Error(data.error || 'Signup failed');
+        // First try to get error as JSON
+        let errorData;
+        const contentType = response.headers.get('content-type');
+        
+        if (contentType && contentType.includes('application/json')) {
+          errorData = await response.json();
+          throw new Error(errorData.error || `Registration failed with status: ${response.status}`);
+        } else {
+          // If not JSON, get text and throw generic error
+          const textError = await response.text();
+          console.error('Received non-JSON response:', textError.substring(0, 150) + '...');
+          throw new Error(`Registration failed. Server returned status: ${response.status}`);
+        }
       }
+      
+      const data = await response.json();
       
       // Store JWT token
       localStorage.setItem('token', data.token);
@@ -54,9 +112,10 @@ function Signup({ setIsLoggedIn }) {
       setIsLoading(false);
       navigate("/flashcards");
     } catch (error) {
+      console.error("Registration error:", error);
       setToast({
         show: true,
-        message: error.message,
+        message: error.message || "Registration failed. Please check your network connection and try again.",
         type: "error"
       });
       setIsLoading(false);
