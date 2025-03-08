@@ -10,7 +10,9 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@mongodb-js/saslprep": "^1.2.0",
     "axios": "^1.7.9",
+    "bcrypt": "^5.1.1",
     "cheerio": "^1.0.0",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
@@ -19,8 +21,7 @@
     "mongoose": "^8.9.5",
     "passport": "^0.7.0",
     "passport-spotify": "^2.0.0",
-    "spotify-web-api-node": "^5.0.2",
-    "@mongodb-js/saslprep": "^1.2.0"
+    "spotify-web-api-node": "^5.0.2"
   },
   "devDependencies": {
     "vite": "^6.1.0"
