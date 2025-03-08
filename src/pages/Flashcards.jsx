@@ -326,11 +326,24 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn, setIsLoggedIn }
     setLogging(true);
     const accessToken = localStorage.getItem("spotify_access_token");
     const refreshToken = localStorage.getItem("spotify_refresh_token");
+    
+    // Get JWT token for authentication with your backend
+    const jwtToken = localStorage.getItem("token");
 
     if (!accessToken || !refreshToken) {
       setToast({
         show: true,
         message: "You need to connect to Spotify first!",
+        type: "error"
+      });
+      setLogging(false);
+      return;
+    }
+    
+    if (!jwtToken) {
+      setToast({
+        show: true,
+        message: "You need to be logged in to save songs. Please log in first.",
         type: "error"
       });
       setLogging(false);
@@ -410,9 +423,13 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn, setIsLoggedIn }
 
       if (currentData.song) {
         // Log the song in your history by posting it to your API
+        // *** IMPORTANT: ADD AUTHORIZATION HEADER WITH JWT TOKEN ***
         const logResponse = await fetch(`${backendUrl}/api/songs/log`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { 
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${jwtToken}`  // Add the JWT token here
+          },
           body: JSON.stringify(currentData)
         });
         
