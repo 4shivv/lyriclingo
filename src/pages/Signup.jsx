@@ -26,65 +26,39 @@ function Signup({ setIsLoggedIn }) {
   };
   
   // Handle form submission
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
     
-    // Basic validation
-    if (!formData.name || !formData.email || !formData.password || !formData.confirmPassword) {
-      setToast({
-        show: true,
-        message: "All fields are required",
-        type: "error"
+    try {
+      const response = await fetch(`${backendUrl}/api/auth/signup`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: formData.email, password: formData.password, name: formData.name })
       });
-      setIsLoading(false);
-      return;
-    }
-    
-    // Password matching validation
-    if (formData.password !== formData.confirmPassword) {
-      setToast({
-        show: true,
-        message: "Passwords do not match",
-        type: "error"
-      });
-      setIsLoading(false);
-      return;
-    }
-    
-    // Password strength validation
-    if (formData.password.length < 8) {
-      setToast({
-        show: true,
-        message: "Password must be at least 8 characters long",
-        type: "error"
-      });
-      setIsLoading(false);
-      return;
-    }
-    
-    // Simulate API call for account creation
-    setTimeout(() => {
-      // Set app authentication state in sessionStorage
+      
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.error || 'Signup failed');
+      }
+      
+      // Store JWT token
+      localStorage.setItem('token', data.token);
       sessionStorage.setItem("app_logged_in", "true");
       sessionStorage.removeItem("app_logged_out");
       
-      // Update component state
       setIsLoggedIn(true);
       setIsLoading(false);
-      
-      // Show success toast before navigation
+      navigate("/flashcards");
+    } catch (error) {
       setToast({
         show: true,
-        message: "Account created successfully!",
-        type: "success"
+        message: error.message,
+        type: "error"
       });
-      
-      // Navigate after a short delay to allow the toast to be seen
-      setTimeout(() => {
-        navigate("/flashcards");
-      }, 1500);
-    }, 1000);
+      setIsLoading(false);
+    }
   };
   
   // Animation variants

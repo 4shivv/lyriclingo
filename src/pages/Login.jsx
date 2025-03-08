@@ -13,32 +13,39 @@ function Login({ setIsLoggedIn }) {
   const [showPassword, setShowPassword] = useState(false);
   
   // Handle form submission
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
     
-    // Basic validation
-    if (!email || !password) {
-      setToast({
-        show: true,
-        message: "Please enter both email and password",
-        type: "error"
+    try {
+      const response = await fetch(`${backendUrl}/api/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
       });
-      setIsLoading(false);
-      return;
-    }
-    
-    // Simulate login for frontend demo
-    setTimeout(() => {
-      // Set app authentication state in sessionStorage
+      
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.error || 'Login failed');
+      }
+      
+      // Store JWT token
+      localStorage.setItem('token', data.token);
       sessionStorage.setItem("app_logged_in", "true");
       sessionStorage.removeItem("app_logged_out");
       
-      // Update component state
       setIsLoggedIn(true);
       setIsLoading(false);
       navigate("/flashcards");
-    }, 800);
+    } catch (error) {
+      setToast({
+        show: true,
+        message: error.message,
+        type: "error"
+      });
+      setIsLoading(false);
+    }
   };
   
   // Animation variants

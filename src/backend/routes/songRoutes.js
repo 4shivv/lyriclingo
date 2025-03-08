@@ -1,15 +1,17 @@
 const express = require("express");
+const authMiddleware = require("../middleware/auth");
 const { logSong, getSongHistory, clearHistory, getFlashcardsForSong, deleteSong, getSongSentiment } = require("../controllers/songController");
 
 const router = express.Router();
 
-router.post("/log", logSong);
-router.get("/history", getSongHistory);
-router.delete("/clear", clearHistory);
-router.delete("/:id", deleteSong);
-router.get("/flashcards", getFlashcardsForSong);
-router.post("/logout", clearHistory);
-router.get("/sentiment", getSongSentiment);
+// Protected routes require authentication
+router.post("/log", authMiddleware, logSong);
+router.get("/history", authMiddleware, getSongHistory);
+router.delete("/clear", authMiddleware, clearHistory);
+router.delete("/:id", authMiddleware, deleteSong);
+router.get("/flashcards", authMiddleware, getFlashcardsForSong);
+router.post("/logout", authMiddleware, clearHistory);
+router.get("/sentiment", authMiddleware, getSongSentiment);
 
 // Add this route to check API configuration
 router.get("/check-sentiment-config", async (req, res) => {

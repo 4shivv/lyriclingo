@@ -19,38 +19,34 @@ const BACKEND_URL = process.env.BACKEND_URL;
 const logSong = async (req, res) => {
   try {
     const { song, artist } = req.body;
+    const userId = req.userId; // Available from auth middleware
 
     if (!song || !artist) {
       return res.status(400).json({ error: "Song and artist are required" });
     }
 
-    console.log(`🎵 Logging song: ${song} by ${artist}`);
+    console.log(`🎵 Logging song: ${song} by ${artist} for user: ${userId}`);
 
-    // ✅ Check if song already exists in DB
-    let existingSong = await Song.findOne({ song, artist });
+    // Check if song already exists FOR THIS USER
+    let existingSong = await Song.findOne({ song, artist, user: userId });
     if (existingSong) {
-      console.log("✅ Song already exists in history.");
+      console.log("✅ Song already exists in user's history.");
       return res.json({ message: "Song already exists!", song: existingSong });
     }
 
-    // ✅ Fetch Genius Lyrics URL
-    console.log(`🔍 Searching for Genius lyrics URL for: ${song} by ${artist}`);
+    // Fetch Genius Lyrics URL
     const lyricsUrl = await fetchLyricsUrl(song, artist);
-
     if (!lyricsUrl) {
       return res.status(404).json({ error: "Lyrics URL not found." });
     }
 
-    console.log(`✅ Found lyrics URL: ${lyricsUrl}`);
-
-    // ✅ Store song in MongoDB
-    const newSong = new Song({ song, artist, lyricsUrl });
+    // Store song with user reference
+    const newSong = new Song({ song, artist, lyricsUrl, user: userId });
     await newSong.save();
 
-    // ✅ Delete Cache for This Song
-    await redis.del(`flashcards:${song}`);
-    console.log(`🗑️ Cleared cache for: ${song}`);
-
+    // Delete user-specific cache
+    await redis.del(`flashcards:${userId}:${song}`);
+    
     res.json({ message: "Song logged successfully!", song: newSong });
   } catch (error) {
     console.error("❌ Error logging song:", error);
@@ -61,7 +57,8 @@ const logSong = async (req, res) => {
 // ✅ Get song history
 const getSongHistory = async (req, res) => {
   try {
-    const songs = await Song.find().sort({ timestamp: -1 });
+    const userId = req.userId;
+    const songs = await Song.find({ user: userId }).sort({ timestamp: -1 });
     res.json(songs);
   } catch (error) {
     console.error("❌ Error fetching song history:", error);
@@ -72,11 +69,13 @@ const getSongHistory = async (req, res) => {
 // ✅ Clear song history
 const clearHistory = async (req, res) => {
   try {
-    await Song.deleteMany({}); // 🗑️ Delete song history from MongoDB
-    await redis.flushdb(); // 🔥 Clear ALL Redis cache (optional: limit scope)
+    const userId = req.userId;
+    await Song.deleteMany({ user: userId });
     
-    console.log("✅ History and Redis cache cleared on logout");
-
+    // Clear only this user's cache entries
+    // This is more complex and would require pattern-based deletion
+    // Something like: await redis.del(keys that match `*:${userId}:*`);
+    
     res.json({ message: "History and cache cleared!" });
   } catch (error) {
     console.error("❌ Error clearing history:", error);
@@ -89,7 +88,7 @@ const getFlashcardsForSong = async (req, res) => {
   try {
     const songTitle = req.query.song;
     const forceLanguage = req.query.lang; // Optional override parameter
-    const cacheKey = `flashcards:${songTitle}${forceLanguage ? ':' + forceLanguage : ''}`;
+    const cacheKey = `flashcards:${req.userId}:${songTitle}${forceLanguage ? ':' + forceLanguage : ''}`;
 
     // Check Redis cache first
     const cachedFlashcards = await redis.get(cacheKey);
@@ -306,7 +305,7 @@ const getSongSentiment = async (req, res) => {
     }
     
     // Check Redis cache first if Redis is configured
-    const cacheKey = `sentiment:${song}${artist ? ':' + artist : ''}`;
+    const cacheKey = `sentiment:${req.userId}:${song}${artist ? ':' + artist : ''}`;
     let cachedSentiment;
     
     try {

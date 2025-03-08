@@ -323,10 +323,11 @@ const fetchCurrentSong = async (userAccessToken, refreshToken) => {
  * Login to Spotify with enhanced scopes
  * Export this function to be used in the controller
  */
-const getAuthorizationUrl = () => {
+const getAuthorizationUrl = (userId) => {
     return `https://accounts.spotify.com/authorize?client_id=${CLIENT_ID}` +
            `&response_type=code&redirect_uri=${encodeURIComponent(REDIRECT_URI)}` +
-           `&scope=${encodeURIComponent(REQUIRED_SCOPES)}`;
+           `&scope=${encodeURIComponent(REQUIRED_SCOPES)}` +
+           `${userId ? `&state=${userId}` : ''}`;
 };
 
 module.exports = { 

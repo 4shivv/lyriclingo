@@ -1,5 +1,6 @@
 const spotifyService = require("../services/spotifyService");
 const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173";
+const User = require("../models/User");
 
 // Use the enhanced scope definition from the service
 // The redirect to Spotify's authorization page
@@ -11,6 +12,7 @@ const login = (req, res) => {
 // Handle the Spotify OAuth callback
 const handleSpotifyCallback = async (req, res) => {
   const { code } = req.query;
+  const { userId } = req.query; // Pass userId in the redirect URL
 
   if (!code) return res.status(400).json({ error: "No code provided" });
 
@@ -18,9 +20,25 @@ const handleSpotifyCallback = async (req, res) => {
     const response = await spotifyService.exchangeCodeForToken(code);
     const accessToken = response.access_token;
     const refreshToken = response.refresh_token;
+    const expiresIn = response.expires_in || 3600;
+    
+    // Calculate token expiration time
+    const expiresAt = new Date(Date.now() + expiresIn * 1000);
+    
+    // If userId is provided, store tokens in the database
+    if (userId) {
+      await User.findByIdAndUpdate(userId, {
+        spotifyConnected: true,
+        spotifyTokens: {
+          accessToken,
+          refreshToken,
+          expiresAt
+        }
+      });
+    }
 
-    // Redirect back to the frontend using the configured FRONTEND_URL
-    res.redirect(`${FRONTEND_URL}/?access_token=${accessToken}&refresh_token=${refreshToken}`);
+    // Redirect to frontend with tokens
+    res.redirect(`${FRONTEND_URL}/?access_token=${accessToken}&refresh_token=${refreshToken}&userId=${userId}`);
   } catch (error) {
     console.error("❌ Spotify OAuth Error:", error.response ? error.response.data : error.message);
     res.status(500).json({ error: "Failed to authenticate with Spotify" });
@@ -29,29 +47,51 @@ const handleSpotifyCallback = async (req, res) => {
 
 // Fetch the currently playing song with enhanced error handling
 const getCurrentSong = async (req, res) => {
-  const { accessToken, refreshToken } = req.query;
-  
-  if (!accessToken || !refreshToken) {
-    return res.status(400).json({ error: "Missing access token or refresh token" });
-  }
-  
   try {
+    let accessToken, refreshToken;
+    
+    // If authenticated user, try to get tokens from database first
+    if (req.userId) {
+      const user = await User.findById(req.userId);
+      if (user && user.spotifyConnected) {
+        accessToken = user.spotifyTokens.accessToken;
+        refreshToken = user.spotifyTokens.refreshToken;
+        
+        // Check if token is expired and needs refresh
+        if (user.spotifyTokens.expiresAt < new Date()) {
+          console.log("🔄 Token expired, refreshing from database token");
+          const newAccessToken = await spotifyService.refreshAccessToken(refreshToken);
+          if (newAccessToken) {
+            // Update token in database
+            user.spotifyTokens.accessToken = newAccessToken;
+            user.spotifyTokens.expiresAt = new Date(Date.now() + 3600 * 1000);
+            await user.save();
+            accessToken = newAccessToken;
+          }
+        }
+      }
+    }
+    
+    // Fall back to query params if database tokens aren't available
+    if (!accessToken || !refreshToken) {
+      accessToken = req.query.accessToken;
+      refreshToken = req.query.refreshToken;
+    }
+    
+    if (!accessToken || !refreshToken) {
+      return res.status(400).json({ error: "Missing access token or refresh token" });
+    }
+    
     const songData = await spotifyService.fetchCurrentSong(accessToken, refreshToken);
     
-    // Enhanced user-friendly error handling
-    if (songData.error) {
-      let statusCode = 404;
-      
-      // Determine appropriate status code based on error type
-      if (songData.authExpired) statusCode = 401;
-      if (songData.rateLimited) statusCode = 429;
-      if (songData.noActiveDevice) statusCode = 412; // Precondition Failed
-      
-      return res.status(statusCode).json({ 
-        error: songData.error,
-        authExpired: songData.authExpired || false,
-        scopeIssue: songData.scopeIssue || false
-      });
+    // Handle token refresh if needed
+    if (songData.newAccessToken && req.userId) {
+      const user = await User.findById(req.userId);
+      if (user) {
+        user.spotifyTokens.accessToken = songData.newAccessToken;
+        user.spotifyTokens.expiresAt = new Date(Date.now() + 3600 * 1000);
+        await user.save();
+      }
     }
     
     res.json(songData);

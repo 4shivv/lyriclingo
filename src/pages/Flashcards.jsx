@@ -107,7 +107,32 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn, setIsLoggedIn }
 
   // Handle Spotify login - independent from navbar auth
   const handleSpotifyLogin = () => {
-    window.location.href = `${backendUrl}/api/spotify/login`;
+    // Get user ID from JWT token
+    const token = localStorage.getItem('token');
+    if (!token) {
+      setToast({
+        show: true,
+        message: "You must log in to connect Spotify",
+        type: "error"
+      });
+      return;
+    }
+    
+    // Decode token to get userId (can also be handled by backend)
+    try {
+      const tokenData = JSON.parse(atob(token.split('.')[1]));
+      const userId = tokenData.id;
+      
+      // Redirect to Spotify login with userId included
+      window.location.href = `${backendUrl}/api/spotify/login?userId=${userId}`;
+    } catch (error) {
+      console.error("Error parsing token:", error);
+      setToast({
+        show: true,
+        message: "Authentication error. Please log in again.",
+        type: "error"
+      });
+    }
   };
 
   // Handle Spotify logout - only affects Spotify connection, not overall auth
@@ -461,23 +486,29 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn, setIsLoggedIn }
           animate="animate"
           transition={{ duration: 0.3, delay: 0.05 }}
         >
-          <button 
-            className={`spotify-auth-button ${spotifyConnected ? "connected" : ""}`}
-            onClick={spotifyConnected ? handleSpotifyLogout : handleSpotifyLogin}
-            aria-label={spotifyConnected ? "Disconnect from Spotify" : "Connect to Spotify"}
-          >
-            <img src="/Spotify_Primary_Logo_RGB_Green.png" alt="Spotify Icon" className="spotify-icon" />
-            {spotifyConnected ? (
-              <>
-                <span className="spotify-status-text">
-                  <span className="spotify-status-icon">✓</span> Connected
-                </span>
-                <span className="spotify-disconnect-text">Disconnect</span>
-              </>
+          {isLoggedIn ? (
+            // Spotify connection button logic (already implemented)
+            spotifyConnected ? (
+              <button className="spotify-auth-button connected" onClick={handleSpotifyLogout}>
+                Disconnect from Spotify
+              </button>
             ) : (
-              "Connect to Spotify"
-            )}
-          </button>
+              <button className="spotify-auth-button" onClick={handleSpotifyLogin}>
+                Connect to Spotify
+              </button>
+            )
+          ) : (
+            <button 
+              className="spotify-auth-button spotify-auth-button-disabled" 
+              onClick={() => setToast({
+                show: true,
+                message: "Please log in to connect Spotify",
+                type: "info"
+              })}
+            >
+              <span className="lock-icon">🔒</span> Connect to Spotify
+            </button>
+          )}
         </motion.div>
 
         {/* Log Current Song Button - uses spotifyConnected state */}
