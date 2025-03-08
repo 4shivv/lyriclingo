@@ -3,7 +3,7 @@ import { NavLink, Link, useNavigate, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import "../styles/Navbar.css";
 
-function Navbar({ isLoggedIn, setIsLoggedIn }) {
+function Navbar({ isLoggedIn, setIsLoggedIn, setSpotifyConnected }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
@@ -35,12 +35,21 @@ function Navbar({ isLoggedIn, setIsLoggedIn }) {
 
   // Simple frontend logout - just UI state change
   const handleLogout = () => {
-    // This only affects the app's login state, not Spotify connection
-    // We do NOT touch the Spotify tokens here to maintain separation
-    setIsLoggedIn(false);
+    // Clear all auth tokens - both app and Spotify
+    localStorage.removeItem("token");
+    sessionStorage.removeItem("auth_token");
     
-    // Store a flag in sessionStorage indicating navbar logout
+    // Clear Spotify tokens as well
+    localStorage.removeItem("spotify_access_token");
+    localStorage.removeItem("spotify_refresh_token");
+    
+    // Update application state
+    setIsLoggedIn(false);
+    setSpotifyConnected(false);
+    
+    // Set logged out flag
     sessionStorage.setItem("app_logged_out", "true");
+    sessionStorage.removeItem("app_logged_in");
     
     navigate("/");
   };

@@ -5,25 +5,21 @@
  * @returns {Promise} - Fetch promise with proper auth headers
  */
 export const fetchWithAuth = async (url, options = {}) => {
-  // Get the JWT token from localStorage
-  const token = localStorage.getItem('token');
+  const token = localStorage.getItem('token') || sessionStorage.getItem("auth_token");
   
-  // Set up headers with authorization if token exists
-  const headers = {
-    'Content-Type': 'application/json',
-    ...options.headers
-  };
-  
-  if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
-  } else {
+  if (!token) {
+    // Clear Spotify tokens as well on auth failure
+    localStorage.removeItem("spotify_access_token");
+    localStorage.removeItem("spotify_refresh_token");
+    
     console.warn('No authentication token found. Request may fail if endpoint requires authentication.');
+    throw new Error('Authentication required');
   }
   
-  // Create the complete options object
-  const fetchOptions = {
-    ...options,
-    headers
+  const headers = {
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${token}`,
+    ...options.headers
   };
   
   // Log request details if in development mode
@@ -32,14 +28,17 @@ export const fetchWithAuth = async (url, options = {}) => {
   }
   
   try {
-    const response = await fetch(url, fetchOptions);
+    const response = await fetch(url, { ...options, headers });
     
-    // Handle common authentication errors
     if (response.status === 401) {
-      console.error('Authentication token expired or invalid');
-      // Optionally, you could implement automatic logout here
-      // localStorage.removeItem('token');
-      // window.location.href = '/login';
+      // Clear ALL tokens on auth failure
+      localStorage.removeItem('token');
+      sessionStorage.removeItem("auth_token");
+      localStorage.removeItem("spotify_access_token");
+      localStorage.removeItem("spotify_refresh_token");
+      
+      sessionStorage.setItem("app_logged_out", "true");
+      throw new Error('Authentication expired');
     }
     
     // If response is not OK and not a 401 auth error

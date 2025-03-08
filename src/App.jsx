@@ -73,15 +73,16 @@ function AppContent() {
   // Add protected route component to restrict access to authenticated routes
   function ProtectedRoute({ isLoggedIn, children }) {
     const navigate = useNavigate();
-    const location = useLocation();
     
     useEffect(() => {
-      if (!isLoggedIn) {
-        // Store the attempted URL to redirect back after login
-        sessionStorage.setItem("redirect_after_login", location.pathname);
+      // Check both flags and token existence
+      const token = localStorage.getItem("token") || sessionStorage.getItem("auth_token");
+      const isLoggedOut = sessionStorage.getItem("app_logged_out") === "true";
+      
+      if (!token || isLoggedOut) {
         navigate("/login");
       }
-    }, [isLoggedIn, navigate, location]);
+    }, [navigate]);
     
     return isLoggedIn ? children : null;
   }
