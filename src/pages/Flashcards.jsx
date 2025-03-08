@@ -314,14 +314,26 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn, setIsLoggedIn }
     if (selectedSong && flashcards.length > 0) {
       setSentimentLoading(true);
       
+      // Retrieve JWT token from local storage
+      const token = localStorage.getItem('token');
+      
       // Construct the URL with song and artist if available
       let url = `${backendUrl}/api/songs/sentiment?song=${encodeURIComponent(selectedSong.song)}`;
       if (selectedSong.artist) {
         url += `&artist=${encodeURIComponent(selectedSong.artist)}`;
       }
       
-      fetch(url)
-        .then(res => res.json())
+      fetch(url, {
+        headers: {
+          'Authorization': `Bearer ${token}`  // Add JWT token to request headers
+        }
+      })
+        .then(res => {
+          if (!res.ok) {
+            throw new Error(`Sentiment analysis failed: ${res.status}`);
+          }
+          return res.json();
+        })
         .then(data => {
           setSentiment(data);
           setSentimentLoading(false);
@@ -329,6 +341,11 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn, setIsLoggedIn }
         .catch(error => {
           console.error("Error fetching sentiment:", error);
           setSentimentLoading(false);
+          setToast({
+            show: true,
+            message: "Failed to load sentiment analysis. Please try again.",
+            type: "error"
+          });
         });
     }
   }, [selectedSong, flashcards.length, backendUrl]);
