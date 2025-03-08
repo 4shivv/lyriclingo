@@ -299,19 +299,19 @@ const deleteSong = async (req, res) => {
 const getSongSentiment = async (req, res) => {
   try {
     const { song, artist } = req.query;
+    const userId = req.userId; // From auth middleware
     
     if (!song) {
       return res.status(400).json({ error: "Song title is required" });
     }
     
-    // Check Redis cache first if Redis is configured
-    const cacheKey = `sentiment:${req.userId}:${song}${artist ? ':' + artist : ''}`;
+    // Check Redis cache first
+    const cacheKey = `sentiment:${userId}:${song}${artist ? ':' + artist : ''}`;
     let cachedSentiment;
     
     try {
-      // Only try to get from cache if Redis is configured
-      if (global.redisClient) {
-        cachedSentiment = await global.redisClient.get(cacheKey);
+      if (redis) {
+        cachedSentiment = await redis.get(cacheKey);
       }
     } catch (cacheError) {
       console.log("Cache check failed, proceeding without cache");
@@ -322,16 +322,34 @@ const getSongSentiment = async (req, res) => {
       return res.json(JSON.parse(cachedSentiment));
     }
     
-    // Find the song's flashcards
+    // Find the song to ensure it exists in user's history
+    const userSong = await Song.findOne({ 
+      user: userId,
+      song: song
+    });
+    
+    if (!userSong) {
+      return res.status(404).json({ 
+        error: "Song not found in your history. Please log the song first." 
+      });
+    }
+    
+    // Get flashcards first (they contain translations)
     let flashcards;
     try {
-      // Try to get flashcards from the existing endpoint
-      const flashcardsUrl = `${req.protocol}://${req.get('host')}/api/songs/flashcards?song=${encodeURIComponent(song)}${artist ? '&artist=' + encodeURIComponent(artist) : ''}`;
-      const response = await fetch(flashcardsUrl);
+      // Construct the URL for flashcards
+      const backendUrl = process.env.BACKEND_URL || `${req.protocol}://${req.get('host')}`;
+      const flashcardsUrl = `${backendUrl}/api/songs/flashcards?song=${encodeURIComponent(song)}${artist ? '&artist=' + encodeURIComponent(artist) : ''}`;
+      
+      // Attach original request's auth token to internal request
+      const response = await fetch(flashcardsUrl, {
+        headers: {
+          'Authorization': req.headers.authorization
+        }
+      });
       
       if (!response.ok) {
-        console.error(`Failed to fetch flashcards: ${response.status} ${response.statusText}`);
-        return res.status(500).json({ error: "Failed to fetch flashcards for sentiment analysis" });
+        throw new Error(`Failed to fetch flashcards: ${response.status}`);
       }
       
       flashcards = await response.json();
@@ -347,42 +365,28 @@ const getSongSentiment = async (req, res) => {
       return res.status(404).json({ error: "No flashcards found for this song" });
     }
     
-    // OPTIMIZATION: Deduplicate flashcard translations before analysis
-    // This reduces API calls and helps stay under token limits
+    // Deduplicate flashcard translations
     const uniqueTranslations = new Set();
-    
-    // Filter out duplicate translations while preserving the order
     const uniqueFlashcards = flashcards.filter(card => {
-      // Skip empty or very short translations
       if (!card.back || card.back.trim().length < 2) return false;
-      
-      // Check if this translation is unique
       const normalizedText = card.back.trim().toLowerCase();
-      if (uniqueTranslations.has(normalizedText)) {
-        return false;
-      }
-      
+      if (uniqueTranslations.has(normalizedText)) return false;
       uniqueTranslations.add(normalizedText);
       return true;
     });
     
-    console.log(`🔍 Deduplication: ${flashcards.length} flashcards → ${uniqueFlashcards.length} unique translations (saved ${Math.round((flashcards.length - uniqueFlashcards.length) / flashcards.length * 100)}% API usage)`);
-    
-    // Combine unique English translations for sentiment analysis
-    // Join with periods to maintain sentence boundaries
+    // Combine unique English translations
     const englishText = uniqueFlashcards.map(card => card.back.trim()).join(". ");
     
-    console.log(`🔍 Starting sentiment analysis for song: "${song}" with ${uniqueFlashcards.length} unique translations`);
-    
-    // Analyze sentiment with API-only approach
+    // Analyze sentiment with error handling
     let sentimentResult;
     try {
       sentimentResult = await analyzeSentiment(englishText);
-      console.log(`✅ API sentiment analysis for "${song}": ${sentimentResult.sentiment} / ${sentimentResult.primaryEmotion || 'Unknown'}`);
+      console.log(`✅ Sentiment analysis for "${song}": ${sentimentResult.sentiment}`);
     } catch (sentimentError) {
-      console.error(`❌ CRITICAL: Sentiment analysis failed for "${song}":`, sentimentError);
+      console.error(`❌ Sentiment analysis failed for "${song}":`, sentimentError);
       
-      // Provide a default sentiment when API fails
+      // Provide default sentiment on API failure
       sentimentResult = {
         sentiment: "Neutral",
         emoji: "😐",
@@ -390,10 +394,8 @@ const getSongSentiment = async (req, res) => {
         emotions: [],
         primaryEmotion: "Unknown",
         emotionScore: "0.00",
-        error: "Analysis service unavailable",
         fallback: true
       };
-      console.log(`⚠️ Using emergency neutral fallback for "${song}"`);
     }
     
     // Add song metadata
@@ -402,20 +404,19 @@ const getSongSentiment = async (req, res) => {
       artist: artist || "Unknown Artist"
     };
     
-    // Cache the sentiment result for 7 days if Redis is available
+    // Cache the result (with error handling)
     try {
-      if (global.redisClient) {
-        await global.redisClient.setex(cacheKey, 604800, JSON.stringify(sentimentResult));
-        console.log(`💾 CACHED API sentiment result for: "${song}"`);
+      if (redis) {
+        await redis.setex(cacheKey, 604800, JSON.stringify(sentimentResult));
       }
     } catch (cacheError) {
-      console.log(`❌ Failed to cache sentiment result for "${song}":`, cacheError.message);
+      console.log(`❌ Failed to cache sentiment result: ${cacheError.message}`);
     }
     
-    res.json(sentimentResult);
+    return res.json(sentimentResult);
   } catch (error) {
     console.error("Error analyzing song sentiment:", error);
-    res.status(500).json({ 
+    return res.status(500).json({ 
       error: "Failed to analyze song sentiment",
       fallback: {
         sentiment: "Unknown",

@@ -5,21 +5,26 @@
  * @returns {Promise} - Fetch promise with proper auth headers
  */
 export const fetchWithAuth = async (url, options = {}) => {
+  // Get JWT token with fallback options
   const token = localStorage.getItem('token') || sessionStorage.getItem("auth_token");
   
   if (!token) {
-    // Clear Spotify tokens as well on auth failure
-    localStorage.removeItem("spotify_access_token");
-    localStorage.removeItem("spotify_refresh_token");
-    
-    console.warn('No authentication token found. Request may fail if endpoint requires authentication.');
+    console.warn('No authentication token found.');
     throw new Error('Authentication required');
   }
   
+  // Create headers with authorization
   const headers = {
     'Content-Type': 'application/json',
     'Authorization': `Bearer ${token}`,
+    'Cache-Control': 'no-cache',
     ...options.headers
+  };
+  
+  // Create fetch options
+  const fetchOptions = {
+    ...options,
+    headers
   };
   
   // Log request details if in development mode
@@ -28,21 +33,16 @@ export const fetchWithAuth = async (url, options = {}) => {
   }
   
   try {
-    const response = await fetch(url, { ...options, headers });
+    const response = await fetch(url, fetchOptions);
     
+    // Handle authentication errors
     if (response.status === 401) {
-      // Clear ALL tokens on auth failure
-      localStorage.removeItem('token');
-      sessionStorage.removeItem("auth_token");
-      localStorage.removeItem("spotify_access_token");
-      localStorage.removeItem("spotify_refresh_token");
-      
-      sessionStorage.setItem("app_logged_out", "true");
-      throw new Error('Authentication expired');
+      console.error('Authentication token expired or invalid');
+      throw new Error('Authentication expired. Please log in again.');
     }
     
-    // If response is not OK and not a 401 auth error
-    if (!response.ok && response.status !== 401) {
+    // Handle other errors
+    if (!response.ok) {
       const contentType = response.headers.get('content-type');
       if (contentType && contentType.includes('application/json')) {
         const errorData = await response.json();
@@ -52,7 +52,6 @@ export const fetchWithAuth = async (url, options = {}) => {
       }
     }
     
-    // If everything is fine, return the response for further processing
     return response;
   } catch (error) {
     console.error('Fetch error:', error.message);

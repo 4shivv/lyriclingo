@@ -238,7 +238,7 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn, setIsLoggedIn }
     
     setIsLoadingCards(true);
     
-    // Get JWT token - Try both localStorage and sessionStorage
+    // Get JWT token with fallback options
     const token = localStorage.getItem("token") || sessionStorage.getItem("auth_token");
     
     if (!token) {
@@ -248,15 +248,10 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn, setIsLoggedIn }
         type: "error"
       });
       setIsLoadingCards(false);
-      navigate("/login"); // Redirect to login page
       return;
     }
     
-    // Store token in both places for consistency
-    localStorage.setItem("token", token);
-    sessionStorage.setItem("auth_token", token);
-    
-    // Construct URL with language parameter if not auto-detect
+    // Construct URL with language parameter
     let url = `${backendUrl}/api/songs/flashcards?song=${encodeURIComponent(selectedSong.song)}`;
     if (selectedLanguage !== "auto") {
       url += `&lang=${selectedLanguage}`;
@@ -264,20 +259,20 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn, setIsLoggedIn }
     
     fetch(url, {
       headers: {
-        "Authorization": `Bearer ${token}`
+        "Authorization": `Bearer ${token}`,
+        "Cache-Control": "no-cache"
       }
     })
       .then(res => {
         if (!res.ok) {
           if (res.status === 401) {
-            // Handle authentication error specifically
-            localStorage.removeItem("token");
-            sessionStorage.removeItem("auth_token");
-            setIsLoggedIn(false);
-            sessionStorage.setItem("app_logged_out", "true");
             throw new Error("Authentication expired. Please log in again.");
           }
-          throw new Error(`Failed to fetch flashcards: ${res.status}`);
+          return res.json().then(data => {
+            throw new Error(data.error || `Failed to fetch flashcards: ${res.status}`);
+          }).catch(e => {
+            throw new Error(`Failed to fetch flashcards: ${res.status}`);
+          });
         }
         return res.json();
       })
@@ -287,7 +282,7 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn, setIsLoggedIn }
         } 
         setFlashcards(data);
         
-        // If response includes detected language info, update state
+        // Update detected language
         if (data.length > 0 && data[0].detectedLanguage) {
           setDetectedLanguage(data[0].detectedLanguage);
         }
@@ -331,7 +326,7 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn, setIsLoggedIn }
     if (selectedSong && flashcards.length > 0) {
       setSentimentLoading(true);
       
-      // Retrieve JWT token
+      // Retrieve JWT token with fallback options
       const token = localStorage.getItem("token") || sessionStorage.getItem("auth_token");
       
       if (!token) {
@@ -345,10 +340,6 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn, setIsLoggedIn }
         return;
       }
       
-      // Store token in both places for consistency
-      localStorage.setItem("token", token);
-      sessionStorage.setItem("auth_token", token);
-      
       // Construct the URL with song and artist parameters
       let url = `${backendUrl}/api/songs/sentiment?song=${encodeURIComponent(selectedSong.song)}`;
       if (selectedSong.artist) {
@@ -357,19 +348,20 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn, setIsLoggedIn }
       
       fetch(url, {
         headers: {
-          "Authorization": `Bearer ${token}`
+          "Authorization": `Bearer ${token}`,
+          "Cache-Control": "no-cache"  // Prevent caching issues
         }
       })
         .then(res => {
           if (!res.ok) {
             if (res.status === 401) {
-              localStorage.removeItem("token");
-              sessionStorage.removeItem("auth_token");
-              setIsLoggedIn(false);
-              sessionStorage.setItem("app_logged_out", "true");
               throw new Error("Authentication expired. Please log in again.");
             }
-            throw new Error(`Sentiment analysis failed: ${res.status}`);
+            return res.json().then(data => {
+              throw new Error(data.error || `Sentiment analysis failed: ${res.status}`);
+            }).catch(e => {
+              throw new Error(`Sentiment analysis failed: ${res.status}`);
+            });
           }
           return res.json();
         })
@@ -380,10 +372,27 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn, setIsLoggedIn }
         .catch(error => {
           console.error("Error fetching sentiment:", error);
           setSentimentLoading(false);
+          
+          // Provide a fallback sentiment object when the API fails
+          setSentiment({
+            sentiment: "Neutral",
+            emoji: "😐",
+            score: "0.50",
+            emotions: [],
+            primaryEmotion: "Unknown",
+            emotionScore: "0.00",
+            fallback: true,
+            error: error.message,
+            songMetadata: {
+              title: selectedSong.song,
+              artist: selectedSong.artist || "Unknown Artist"
+            }
+          });
+          
           setToast({
             show: true,
-            message: "Failed to load sentiment analysis: " + error.message,
-            type: "error"
+            message: "Unable to analyze sentiment: " + error.message,
+            type: "warning"
           });
         });
     }

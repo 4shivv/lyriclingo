@@ -75,8 +75,11 @@ function Login({ setIsLoggedIn }) {
       
       const data = await response.json();
       
-      // Store JWT token
+      // Store JWT token in both locations for consistency
       localStorage.setItem('token', data.token);
+      sessionStorage.setItem('auth_token', data.token);
+      
+      // Set login flags
       sessionStorage.setItem("app_logged_in", "true");
       sessionStorage.removeItem("app_logged_out");
       

@@ -68,6 +68,26 @@ if (process.env.NODE_ENV === 'production') {
   });
 }
 
+// Global error handler for better API error responses
+app.use((err, req, res, next) => {
+  console.error("Server error:", err);
+  
+  // Handle known error types
+  if (err.name === "ValidationError") {
+    return res.status(400).json({ error: "Validation error", details: err.message });
+  }
+  
+  if (err.name === "UnauthorizedError" || err.name === "JsonWebTokenError") {
+    return res.status(401).json({ error: "Authentication error", details: err.message });
+  }
+  
+  // Default error response
+  res.status(500).json({ 
+    error: "An unexpected error occurred", 
+    details: process.env.NODE_ENV === "development" ? err.message : undefined
+  });
+});
+
 // Start Server
 app.listen(PORT, () => {
   console.log(`Server running on ${process.env.BACKEND_URL || `http://localhost:${PORT}`}`);
