@@ -489,6 +489,7 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn, setIsLoggedIn }
           type: "info"
         });
       }
+      
     } catch (err) {
       console.error("Error logging song:", err);
       setToast({
