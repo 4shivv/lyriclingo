@@ -10,6 +10,7 @@
   align-items: center;
   justify-content: center;
   padding: 40px 20px;
+  padding-top: 80px;
 }
 
 .signup-page-container::after {
@@ -38,6 +39,9 @@
   overflow: hidden;
   box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
   border: 1px solid rgba(255, 255, 255, 0.08);
+  margin-top: 5px;
+  max-height: calc(100vh - 65px);
+  overflow-y: auto;
 }
 
 /* Sign Up Form Container */
@@ -259,6 +263,7 @@
   border-left: 1px solid rgba(255, 255, 255, 0.08);
   position: relative;
   overflow: hidden;
+  z-index: 10;
 }
 
 .info-panel-content {
@@ -307,6 +312,7 @@
     flex-direction: column;
     max-width: 600px;
     min-height: auto;
+    padding-top: 70px;
   }
   
   .signup-form-container {
@@ -319,6 +325,8 @@
     border-left: none;
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
     order: 0; /* Put info panel second on mobile */
+    position: relative;
+    z-index: 10;
   }
   
   .signup-title {
@@ -333,10 +341,14 @@
 @media (max-width: 576px) {
   .signup-page-container {
     padding: 20px;
+    padding-top: 60px;
   }
   
   .signup-content-wrapper {
     min-height: auto;
+    margin-top: 5px;
+    max-height: calc(100vh - 65px);
+    overflow-y: auto;
   }
   
   .signup-form-container {
@@ -382,6 +394,7 @@
     flex-direction: column;
     max-width: 600px;
     min-height: auto;
+    padding-top: 70px;
   }
   
   .login-form-container,
@@ -398,6 +411,8 @@
     order: 0; /* Put info panel at top on mobile */
     max-height: 300px; /* Limit height to prioritize form content */
     overflow-y: auto;
+    position: relative;
+    z-index: 10;
   }
   
   .login-title,
@@ -692,5 +707,68 @@
     flex: 1;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* ===== NAVBAR OVERLAP FIX FOR LOGIN/SIGNUP PAGES ===== */
+
+/* Add these styles to both Login.css and Signup.css */
+
+/* Base container adjustments to account for navbar */
+.login-page-container,
+.signup-page-container {
+  padding-top: 80px; /* Add padding to account for navbar height */
+}
+
+/* Mobile-specific adjustments */
+@media (max-width: 992px) {
+  .login-page-container,
+  .signup-page-container {
+    padding-top: 70px; /* Slightly reduced padding for smaller screens */
+  }
+  
+  .login-info-panel,
+  .signup-info-panel {
+    /* Ensure the info panel is visible below navbar */
+    position: relative;
+    z-index: 10; /* Lower than navbar (100) but still above other content */
+  }
+}
+
+/* Small screen adjustments */
+@media (max-width: 576px) {
+  .login-page-container,
+  .signup-page-container {
+    padding-top: 60px; /* Further reduced for very small screens */
+  }
+  
+  /* Adjust content wrapper for better spacing */
+  .login-content-wrapper,
+  .signup-content-wrapper {
+    margin-top: 5px; /* Small margin after the navbar padding */
+    max-height: calc(100vh - 65px); /* Prevent overflow */
+    overflow-y: auto; /* Allow scrolling within the content */
+  }
+  
+  /* Ensure proper scrolling for the entire container */
+  .login-page-container,
+  .signup-page-container {
+    height: 100vh;
+    overflow: hidden; /* Prevent double scrollbars */
+  }
+}
+
+/* Ensure there's no overlap with navbar on any screen size */
+@media (max-height: 700px) {
+  /* For shorter screens, reduce some spacing */
+  .login-info-panel,
+  .signup-info-panel {
+    padding-top: 15px;
+    padding-bottom: 15px;
+  }
+  
+  .login-title,
+  .signup-title {
+    margin-bottom: 10px;
   }
 } 
