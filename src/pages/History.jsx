@@ -19,15 +19,39 @@ function History({ setSelectedSong }) {
   const fetchHistory = async () => {
     setLoading(true);
     try {
-      const accessToken = localStorage.getItem("spotify_access_token");
+      const token = localStorage.getItem("token");
+      if (!token) {
+        setToast({
+          show: true,
+          message: "Authentication required. Please log in again.",
+          type: "error"
+        });
+        setLoading(false);
+        return;
+      }
+      
       const res = await fetch(
-        `${backendUrl}/api/songs/history?accessToken=${accessToken}&t=${Date.now()}`
+        `${backendUrl}/api/songs/history?t=${Date.now()}`,
+        {
+          headers: {
+            "Authorization": `Bearer ${token}`
+          }
+        }
       );
+      
+      if (!res.ok) {
+        throw new Error(`Failed to fetch history: ${res.status}`);
+      }
+      
       const data = await res.json();
       setHistory(data);
     } catch (error) {
       console.error("Error fetching history:", error);
-      setToast({ show: true, message: "Error fetching history.", type: "error" });
+      setToast({ 
+        show: true, 
+        message: error.message || "Error fetching history.", 
+        type: "error" 
+      });
     } finally {
       setLoading(false);
     }

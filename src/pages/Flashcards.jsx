@@ -238,14 +238,26 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn, setIsLoggedIn }
     
     setIsLoadingCards(true);
     
+    // Get JWT token
+    const token = localStorage.getItem("token");
+    
     // Construct URL with language parameter if not auto-detect
     let url = `${backendUrl}/api/songs/flashcards?song=${encodeURIComponent(selectedSong.song)}`;
     if (selectedLanguage !== "auto") {
       url += `&lang=${selectedLanguage}`;
     }
     
-    fetch(url)
-      .then(res => res.json())
+    fetch(url, {
+      headers: {
+        "Authorization": `Bearer ${token}`
+      }
+    })
+      .then(res => {
+        if (!res.ok) {
+          throw new Error(`Failed to fetch flashcards: ${res.status}`);
+        }
+        return res.json();
+      })
       .then(data => {
         if (data.error) {
           console.error("Error fetching flashcards:", data.error);
@@ -462,6 +474,14 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn, setIsLoggedIn }
         // Update selected song which will trigger the useEffect to fetch flashcards
         setSelectedSong(logData.song);
         setCurrentSong(logData.song);
+
+        // Also trigger history refresh if user visits history page
+        sessionStorage.setItem("refresh_history", "true");
+
+        // Force flashcards data to reload
+        setIsLoadingCards(true);
+        setFlashcards([]);
+        fetchFlashcards();
       } else {
         setToast({
           show: true,
