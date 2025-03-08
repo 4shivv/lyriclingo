@@ -74,6 +74,8 @@ function Signup({ setIsLoggedIn }) {
     }
     
     try {
+      console.log("Attempting to register with:", backendUrl);
+      
       const response = await fetch(`${backendUrl}/api/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -86,6 +88,8 @@ function Signup({ setIsLoggedIn }) {
       
       // Check if response is OK before attempting to parse JSON
       if (!response.ok) {
+        console.error(`Registration failed with status: ${response.status}`);
+        
         // First try to get error as JSON
         let errorData;
         const contentType = response.headers.get('content-type');
@@ -94,7 +98,7 @@ function Signup({ setIsLoggedIn }) {
           errorData = await response.json();
           throw new Error(errorData.error || `Registration failed with status: ${response.status}`);
         } else {
-          // If not JSON, get text and throw generic error
+          // If not JSON, get text and log for debugging
           const textError = await response.text();
           console.error('Received non-JSON response:', textError.substring(0, 150) + '...');
           throw new Error(`Registration failed. Server returned status: ${response.status}`);
@@ -102,6 +106,7 @@ function Signup({ setIsLoggedIn }) {
       }
       
       const data = await response.json();
+      console.log("Registration successful:", data);
       
       // Store JWT token
       localStorage.setItem('token', data.token);
