@@ -322,10 +322,21 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn, setIsLoggedIn }
     if (selectedSong && flashcards.length > 0) {
       setSentimentLoading(true);
       
-      // Retrieve JWT token from local storage
-      const token = localStorage.getItem('token');
+      // Retrieve JWT token
+      const token = localStorage.getItem("token") || sessionStorage.getItem("auth_token");
       
-      // Construct the URL with song and artist if available
+      if (!token) {
+        setSentimentLoading(false);
+        setSentiment(null);
+        setToast({
+          show: true,
+          message: "Authentication required to analyze sentiment",
+          type: "error"
+        });
+        return;
+      }
+      
+      // Construct the URL with song and artist parameters
       let url = `${backendUrl}/api/songs/sentiment?song=${encodeURIComponent(selectedSong.song)}`;
       if (selectedSong.artist) {
         url += `&artist=${encodeURIComponent(selectedSong.artist)}`;
@@ -333,11 +344,14 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn, setIsLoggedIn }
       
       fetch(url, {
         headers: {
-          'Authorization': `Bearer ${token}`  // Add JWT token to request headers
+          "Authorization": `Bearer ${token}`  // Add JWT token here
         }
       })
         .then(res => {
           if (!res.ok) {
+            if (res.status === 401) {
+              throw new Error("Authentication expired. Please log in again.");
+            }
             throw new Error(`Sentiment analysis failed: ${res.status}`);
           }
           return res.json();
@@ -351,7 +365,7 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn, setIsLoggedIn }
           setSentimentLoading(false);
           setToast({
             show: true,
-            message: "Failed to load sentiment analysis. Please try again.",
+            message: "Failed to load sentiment analysis: " + error.message,
             type: "error"
           });
         });
