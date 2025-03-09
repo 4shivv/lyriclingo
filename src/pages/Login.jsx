@@ -1,36 +1,13 @@
+// src/pages/Login.jsx - Updated with improved token management
+
 import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import "../styles/Login.css";
 import Toast from "../components/Toast";
+import { storeAuthToken } from "../utils/auth";
 
 const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:5001";
-
-const checkBackendConnectivity = async (setToast) => {
-  try {
-    console.log(`Checking backend connectivity to: ${backendUrl}`);
-    
-    const response = await fetch(`${backendUrl}/api/health`, { 
-      method: 'GET',
-      headers: { 'Content-Type': 'application/json' },
-      signal: AbortSignal.timeout(5000) 
-    });
-    
-    if (response.ok) {
-      console.log('✅ Backend is reachable');
-    } else {
-      console.warn(`⚠️ Backend returned status: ${response.status}`);
-    }
-  } catch (error) {
-    console.error(`❌ Backend connectivity error: ${error.message}`);
-    
-    setToast({
-      show: true,
-      message: "Unable to connect to server. Please check your network connection.",
-      type: "error"
-    });
-  }
-};
 
 function Login({ setIsLoggedIn }) {
   const navigate = useNavigate();
@@ -40,8 +17,13 @@ function Login({ setIsLoggedIn }) {
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   
+  // Check for redirect after login
   useEffect(() => {
-    checkBackendConnectivity(setToast);
+    const redirectPath = sessionStorage.getItem('redirectAfterLogin');
+    if (redirectPath) {
+      // Remove it once we've got it
+      sessionStorage.removeItem('redirectAfterLogin');
+    }
   }, []);
   
   // Handle form submission
@@ -56,72 +38,50 @@ function Login({ setIsLoggedIn }) {
         body: JSON.stringify({ email, password })
       });
       
-      // Check if response is OK before attempting to parse JSON
+      // Check if response is OK
       if (!response.ok) {
-        // First try to get error as JSON
-        let errorData;
-        const contentType = response.headers.get('content-type');
+        let errorMessage = `Login failed with status: ${response.status}`;
         
-        if (contentType && contentType.includes('application/json')) {
-          errorData = await response.json();
-          throw new Error(errorData.error || `Login failed with status: ${response.status}`);
-        } else {
-          // If not JSON, get text and throw generic error
-          const textError = await response.text();
-          console.error('Received non-JSON response:', textError.substring(0, 150) + '...');
-          throw new Error(`Login failed. Server returned status: ${response.status}`);
+        // Try to get error message from response
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.error || errorMessage;
+        } catch (e) {
+          // If parsing fails, use generic message
+          console.error("Error parsing error response:", e);
         }
+        
+        throw new Error(errorMessage);
       }
       
       const data = await response.json();
       
-      // Store JWT token in both locations for consistency
-      localStorage.setItem('token', data.token);
-      sessionStorage.setItem('auth_token', data.token);
+      // Store JWT token consistently using our utility
+      storeAuthToken(data.token);
       
-      // Set login flags
-      sessionStorage.setItem("app_logged_in", "true");
-      sessionStorage.removeItem("app_logged_out");
-      
+      // Update logged in state
       setIsLoggedIn(true);
-      setIsLoading(false);
-      navigate("/flashcards");
+      
+      // Redirect to saved location or flashcards
+      const redirectPath = sessionStorage.getItem('redirectAfterLogin') || '/flashcards';
+      sessionStorage.removeItem('redirectAfterLogin');
+      
+      navigate(redirectPath);
     } catch (error) {
       console.error("Login error:", error);
       setToast({
         show: true,
-        message: error.message || "Login failed. Please check your network connection and try again.",
+        message: error.message || "Login failed. Please try again.",
         type: "error"
       });
+    } finally {
       setIsLoading(false);
     }
   };
   
-  // Animation variants
-  const containerVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { 
-      opacity: 1, 
-      y: 0,
-      transition: { 
-        duration: 0.5,
-        staggerChildren: 0.1,
-        delayChildren: 0.2
-      }
-    }
-  };
-  
-  const itemVariants = {
-    hidden: { opacity: 0, y: 10 },
-    visible: { 
-      opacity: 1, 
-      y: 0,
-      transition: { duration: 0.4 }
-    }
-  };
-
   return (
     <div className="login-page-container">
+      {/* Rest of component remains the same */}
       <motion.div 
         className="login-content-wrapper"
         variants={containerVariants}
@@ -164,7 +124,7 @@ function Login({ setIsLoggedIn }) {
                   <path d="M12 1C8.676 1 6 3.676 6 7V9H4C2.895 9 2 9.895 2 11V21C2 22.105 2.895 23 4 23H20C21.105 23 22 22.105 22 21V11C22 9.895 21.105 9 20 9H18V7C18 3.676 15.324 1 12 1ZM12 3C14.276 3 16 4.724 16 7V9H8V7C8 4.724 9.724 3 12 3ZM12 15C13.105 15 14 15.895 14 17C14 18.105 13.105 19 12 19C10.895 19 10 18.105 10 17C10 15.895 10.895 15 12 15Z" fill="currentColor"/>
                 </svg>
                 <input 
-                  type={showPassword ? "text" : "password"} 
+                  type={showPassword ? "text" : "password"}
                   id="password"
                   placeholder="Enter your password" 
                   className="login-input"
@@ -252,5 +212,28 @@ function Login({ setIsLoggedIn }) {
     </div>
   );
 }
+
+// Animation variants
+const containerVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { 
+    opacity: 1, 
+    y: 0,
+    transition: { 
+      duration: 0.5,
+      staggerChildren: 0.1,
+      delayChildren: 0.2
+    }
+  }
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 10 },
+  visible: { 
+    opacity: 1, 
+    y: 0,
+    transition: { duration: 0.4 }
+  }
+};
 
 export default Login;

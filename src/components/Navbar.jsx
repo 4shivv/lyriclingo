@@ -33,24 +33,14 @@ function Navbar({ isLoggedIn, setIsLoggedIn, setSpotifyConnected }) {
     navigate("/login");
   };
 
-  // Simple frontend logout - just UI state change
   const handleLogout = () => {
-    // Clear all auth tokens - both app and Spotify
-    localStorage.removeItem("token");
-    sessionStorage.removeItem("auth_token");
+    // Clear all auth tokens and user-specific data
+    clearAuthData();
     
-    // Clear Spotify tokens as well
-    localStorage.removeItem("spotify_access_token");
-    localStorage.removeItem("spotify_refresh_token");
-    
-    // Update application state
+    // Update app state
     setIsLoggedIn(false);
-    setSpotifyConnected(false);
     
-    // Set logged out flag
-    sessionStorage.setItem("app_logged_out", "true");
-    sessionStorage.removeItem("app_logged_in");
-    
+    // Navigate to home page
     navigate("/");
   };
 

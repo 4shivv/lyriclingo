@@ -1,65 +1,16 @@
+// src/pages/Flashcards.jsx - Updated with proper data isolation and token handling
+
 import React, { useState, useEffect, useRef } from "react";
 import "../styles/Flashcards.css";
 import Toast from "../components/Toast";
 import LoadingSpinner from "../components/LoadingSpinner";
-
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import { isAuthenticated, getUserId, getSpotifyTokens, storeSpotifyTokens } from "../utils/auth";
+import { apiGet, apiPost } from "../utils/api";
 
 // Use Vite's env variable for backend URL; fallback to localhost for development.
 const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:5001";
-
-// Language options for the dropdown
-const LANGUAGE_OPTIONS = [
-  { code: "auto", name: "Auto-detect" },
-  { code: "ES", name: "Spanish" },
-  { code: "FR", name: "French" },
-  { code: "PT", name: "Portuguese" },
-  { code: "IT", name: "Italian" },
-  { code: "DE", name: "German" },
-  { code: "JA", name: "Japanese" },
-  { code: "ZH", name: "Chinese" },
-  { code: "RU", name: "Russian" },
-  { code: "KO", name: "Korean" }
-];
-
-// Variants for text and button animations
-const textVariants = {
-  initial: { opacity: 0, y: 20 },
-  animate: { opacity: 1, y: 0 }
-};
-
-// Enhanced LoadingEllipsis Component without Emoji
-function LoadingEllipsis() {
-  const [dots, setDots] = useState('.');
-  
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setDots(prev => prev.length >= 3 ? '.' : prev + '.');
-    }, 400);
-    return () => clearInterval(interval);
-  }, []);
-  
-  return (
-    <div className="loading-ellipsis">
-      Fetching flashcards<span className="animated-dots">{dots}</span>
-    </div>
-  );
-}
-
-// New EmptyFlashcardState Component without Emoji
-function EmptyFlashcardState({ songName }) {
-  return (
-    <div className="empty-flashcard-container">
-      <div className="empty-flashcard-text">
-        No flashcards available{songName ? ` for "${songName}"` : ''}
-      </div>
-      <div className="empty-flashcard-subtext">
-        Try selecting a different song or log a new song from Spotify
-      </div>
-    </div>
-  );
-}
 
 function Flashcards({ selectedSong, setSelectedSong, isLoggedIn, setIsLoggedIn }) {
   const navigate = useNavigate();
@@ -67,313 +18,163 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn, setIsLoggedIn }
   const [currentIndex, setCurrentIndex] = useState(0);
   const [flipped, setFlipped] = useState(false);
   const [toast, setToast] = useState({ show: false, message: "", type: "error" });
-  const [currentSong, setCurrentSong] = useState(null);
-  const [error, setError] = useState(null);
-  const [logging, setLogging] = useState(false); // Track logging status
-  const [isLoadingCards, setIsLoadingCards] = useState(false); // New state for loading flashcards
+  const [logging, setLogging] = useState(false);
+  const [isLoadingCards, setIsLoadingCards] = useState(false);
   const [sentiment, setSentiment] = useState(null);
   const [sentimentLoading, setSentimentLoading] = useState(false);
   const [selectedLanguage, setSelectedLanguage] = useState("auto");
   const [detectedLanguage, setDetectedLanguage] = useState(null);
-
-  // State to track navigation intervals
-  const [navInterval, setNavInterval] = useState(null);
-  
-  // Add these state variables to track long press
-  const [isLongPress, setIsLongPress] = useState(false);
-  const longPressTimer = useRef(null);
-  const LONG_PRESS_THRESHOLD = 300; // milliseconds
-
-  // Spotify-specific state, completely independent from navbar auth
   const [spotifyConnected, setSpotifyConnected] = useState(false);
   
-  // Check if user is connected to Spotify on component mount
+  // Check authentication and redirect if not logged in
   useEffect(() => {
-    const spotifyToken = localStorage.getItem("spotify_access_token");
-    if (spotifyToken) {
-      setSpotifyConnected(true);
+    if (!isAuthenticated()) {
+      setToast({
+        show: true,
+        message: "Please log in to access this feature",
+        type: "warning"
+      });
+      navigate("/login");
     }
-    
-    // Listen for Spotify token changes (for cross-component updates)
-    const handleStorageChange = (e) => {
-      if (e.key === "spotify_access_token") {
-        setSpotifyConnected(!!e.newValue);
-      }
-    };
-    
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
-  }, []);
-
-  // Handle Spotify login - independent from navbar auth
+  }, [navigate]);
+  
+  // Check Spotify connection based on user ID
+  useEffect(() => {
+    const spotifyTokens = getSpotifyTokens();
+    setSpotifyConnected(!!spotifyTokens);
+  }, [isLoggedIn]);
+  
+  // Handle Spotify login
   const handleSpotifyLogin = () => {
-    // Get user ID from JWT token
-    const token = localStorage.getItem('token');
-    if (!token) {
+    const userId = getUserId();
+    if (!userId) {
       setToast({
         show: true,
         message: "You must log in to connect Spotify",
         type: "error"
       });
+      navigate("/login");
       return;
     }
     
-    // Decode token to get userId (can also be handled by backend)
+    // Redirect to Spotify login with userId included
+    window.location.href = `${backendUrl}/api/spotify/login?userId=${userId}`;
+  };
+  
+  // Handle Spotify logout
+  const handleSpotifyLogout = async () => {
     try {
-      const tokenData = JSON.parse(atob(token.split('.')[1]));
-      const userId = tokenData.id;
+      // Clear history on Spotify disconnect
+      await apiDelete(`${backendUrl}/api/songs/clear`);
       
-      // Redirect to Spotify login with userId included
-      window.location.href = `${backendUrl}/api/spotify/login?userId=${userId}`;
-    } catch (error) {
-      console.error("Error parsing token:", error);
+      // Clear Spotify tokens but keep user logged in
+      localStorage.removeItem(`spotify_access_token:${getUserId()}`);
+      localStorage.removeItem(`spotify_refresh_token:${getUserId()}`);
+      localStorage.removeItem("spotify_access_token");
+      localStorage.removeItem("spotify_refresh_token");
+      
+      // Update UI state
+      setSpotifyConnected(false);
+      setFlashcards([]);
+      setSentiment(null);
+      setSelectedSong(null);
+      
       setToast({
         show: true,
-        message: "Authentication error. Please log in again.",
+        message: "Disconnected from Spotify",
+        type: "info"
+      });
+    } catch (error) {
+      console.error("Error clearing history on logout:", error);
+      setToast({
+        show: true,
+        message: "Error disconnecting: " + error.message,
         type: "error"
       });
     }
   };
-
-  // Handle Spotify logout - only affects Spotify connection, not overall auth
-  const handleSpotifyLogout = async () => {
-    try {
-      await fetch(`${backendUrl}/api/songs/clear`, { method: "DELETE" });
-    } catch (error) {
-      console.error("Error clearing history on logout:", error);
-    }
-    
-    // Only remove Spotify tokens, not overall auth
-    localStorage.removeItem("spotify_access_token");
-    localStorage.removeItem("spotify_refresh_token");
-    
-    // Update Spotify connection state
-    setSpotifyConnected(false);
-    setFlashcards([]);
-    setSentiment(null);
-    
-    // Show toast notification
-    setToast({
-      show: true,
-      message: "Disconnected from Spotify",
-      type: "info"
-    });
-  };
-
-  // Modified navigation functions
-  const handleMouseDown = (direction) => {
-    if (flashcards.length === 0 || isLoadingCards) return;
-    
-    // Clear any existing timers
-    if (longPressTimer.current) clearTimeout(longPressTimer.current);
-    
-    // Set a timer to detect long press
-    longPressTimer.current = setTimeout(() => {
-      setIsLongPress(true);
-      startContinuousNavigation(direction);
-    }, LONG_PRESS_THRESHOLD);
-  };
-
-  const handleMouseUp = () => {
-    // Clear the long press timer
-    if (longPressTimer.current) {
-      clearTimeout(longPressTimer.current);
-      longPressTimer.current = null;
-    }
-    
-    // Stop navigation if it was a long press
-    if (isLongPress) {
-      stopContinuousNavigation();
-      setIsLongPress(false);
-    }
-    // Single tap is handled by onClick, not here
-  };
-
-  // The onClick handlers remain unchanged
-  const navigatePrevious = () => {
-    if (!isLongPress && flashcards.length > 0) {
-      setCurrentIndex((prev) => (prev === 0 ? flashcards.length - 1 : prev - 1));
-      setFlipped(false);
-    }
-  };
-
-  const navigateNext = () => {
-    if (!isLongPress && flashcards.length > 0) {
-      setCurrentIndex((prev) => (prev + 1) % flashcards.length);
-      setFlipped(false);
-    }
-  };
-
-  // Modified startContinuousNavigation to not perform initial navigation
-  const startContinuousNavigation = (direction) => {
-    if (flashcards.length === 0 || isLoadingCards) return;
-    
-    // Clear any existing interval
-    if (navInterval) clearInterval(navInterval);
-    
-    // Set up interval for continuous navigation
-    const interval = setInterval(() => {
-      if (direction === 'previous') {
-        setCurrentIndex((prev) => (prev === 0 ? flashcards.length - 1 : prev - 1));
-      } else {
-        setCurrentIndex((prev) => (prev + 1) % flashcards.length);
-      }
-      setFlipped(false);
-    }, 250);
-    
-    setNavInterval(interval);
-  };
-
-  // Function to stop continuous navigation
-  const stopContinuousNavigation = () => {
-    if (navInterval) {
-      clearInterval(navInterval);
-      setNavInterval(null);
-    }
-  };
-
-  // Fetch flashcards based on selected language
-  const fetchFlashcards = () => {
+  
+  // Enhanced fetchFlashcards with user-specific handling
+  const fetchFlashcards = async () => {
     if (!selectedSong) return;
     
     setIsLoadingCards(true);
     
-    // Get JWT token with fallback options
-    const token = localStorage.getItem("token") || sessionStorage.getItem("auth_token");
-    
-    if (!token) {
+    try {
+      // Construct URL with language parameter
+      let url = `${backendUrl}/api/songs/flashcards?song=${encodeURIComponent(selectedSong.song)}`;
+      if (selectedLanguage !== "auto") {
+        url += `&lang=${selectedLanguage}`;
+      }
+      
+      // Add user ID for server-side validation
+      const userId = getUserId();
+      if (userId) {
+        url += `&userId=${userId}`;
+      }
+      
+      const data = await apiGet(url);
+      
+      if (data.error) {
+        throw new Error(data.error);
+      }
+      
+      setFlashcards(data);
+      
+      // Update detected language
+      if (data.length > 0 && data[0].detectedLanguage) {
+        setDetectedLanguage(data[0].detectedLanguage);
+      }
+    } catch (error) {
+      console.error("Error fetching flashcards:", error);
       setToast({
         show: true,
-        message: "Authentication required. Please log in again.",
+        message: error.message || "Failed to load flashcards",
         type: "error"
       });
-      setIsLoadingCards(false);
-      return;
-    }
-    
-    // Construct URL with language parameter
-    let url = `${backendUrl}/api/songs/flashcards?song=${encodeURIComponent(selectedSong.song)}`;
-    if (selectedLanguage !== "auto") {
-      url += `&lang=${selectedLanguage}`;
-    }
-    
-    fetch(url, {
-      headers: {
-        "Authorization": `Bearer ${token}`,
-        "Cache-Control": "no-cache"
+      
+      // If unauthorized, might need to redirect to login
+      if (error.message.includes("Authentication") || error.message.includes("401")) {
+        setIsLoggedIn(false);
+        navigate("/login");
       }
-    })
-      .then(res => {
-        if (!res.ok) {
-          if (res.status === 401) {
-            throw new Error("Authentication expired. Please log in again.");
-          }
-          return res.json().then(data => {
-            throw new Error(data.error || `Failed to fetch flashcards: ${res.status}`);
-          }).catch(e => {
-            throw new Error(`Failed to fetch flashcards: ${res.status}`);
-          });
-        }
-        return res.json();
-      })
-      .then(data => {
-        if (data.error) {
-          throw new Error(data.error);
-        } 
-        setFlashcards(data);
-        
-        // Update detected language
-        if (data.length > 0 && data[0].detectedLanguage) {
-          setDetectedLanguage(data[0].detectedLanguage);
-        }
-        setIsLoadingCards(false);
-      })
-      .catch(error => {
-        console.error("Error fetching flashcards:", error);
-        setToast({
-          show: true,
-          message: error.message || "Failed to load flashcards",
-          type: "error"
-        });
-        setIsLoadingCards(false);
-      });
+    } finally {
+      setIsLoadingCards(false);
+    }
   };
-
-  // Clean up interval on component unmount
+  
+  // Fetch flashcards when song or language changes
   useEffect(() => {
-    return () => {
-      if (navInterval) clearInterval(navInterval);
-    };
-  }, [navInterval]);
-
-  // Effect for fetching flashcards when song or language changes
-  useEffect(() => {
-    if (selectedSong) {
+    if (selectedSong && isAuthenticated()) {
       fetchFlashcards();
     }
   }, [selectedSong, selectedLanguage]);
-
-  // Handle language change
-  const handleLanguageChange = (e) => {
-    const newLanguage = e.target.value;
-    setSelectedLanguage(newLanguage);
-    setIsLoadingCards(true);
-    setCurrentIndex(0);
-    setFlipped(false);
-  };
-
+  
+  // Fetch sentiment analysis with user-specific validation
   useEffect(() => {
-    if (selectedSong && flashcards.length > 0) {
+    if (selectedSong && flashcards.length > 0 && isAuthenticated()) {
       setSentimentLoading(true);
       
-      // Retrieve JWT token with fallback options
-      const token = localStorage.getItem("token") || sessionStorage.getItem("auth_token");
-      
-      if (!token) {
-        setSentimentLoading(false);
-        setSentiment(null);
-        setToast({
-          show: true,
-          message: "Authentication required to analyze sentiment",
-          type: "error"
-        });
-        return;
-      }
-      
-      // Construct the URL with song and artist parameters
-      let url = `${backendUrl}/api/songs/sentiment?song=${encodeURIComponent(selectedSong.song)}`;
-      if (selectedSong.artist) {
-        url += `&artist=${encodeURIComponent(selectedSong.artist)}`;
-      }
-      
-      fetch(url, {
-        headers: {
-          "Authorization": `Bearer ${token}`,
-          "Cache-Control": "no-cache"  // Prevent caching issues
-        }
-      })
-        .then(res => {
-          if (!res.ok) {
-            if (res.status === 401) {
-              throw new Error("Authentication expired. Please log in again.");
-            }
-            return res.json().then(data => {
-              throw new Error(data.error || `Sentiment analysis failed: ${res.status}`);
-            }).catch(e => {
-              throw new Error(`Sentiment analysis failed: ${res.status}`);
-            });
+      const fetchSentiment = async () => {
+        try {
+          // Construct the URL
+          let url = `${backendUrl}/api/songs/sentiment?song=${encodeURIComponent(selectedSong.song)}`;
+          if (selectedSong.artist) {
+            url += `&artist=${encodeURIComponent(selectedSong.artist)}`;
           }
-          return res.json();
-        })
-        .then(data => {
-          setSentiment(data);
-          setSentimentLoading(false);
-        })
-        .catch(error => {
-          console.error("Error fetching sentiment:", error);
-          setSentimentLoading(false);
           
-          // Provide a fallback sentiment object when the API fails
+          // Add user ID to validate on server
+          const userId = getUserId();
+          if (userId) {
+            url += `&userId=${userId}`;
+          }
+          
+          const data = await apiGet(url);
+          setSentiment(data);
+        } catch (error) {
+          console.error("Error fetching sentiment:", error);
+          
+          // Provide a fallback sentiment when the API fails
           setSentiment({
             sentiment: "Neutral",
             emoji: "😐",
@@ -382,7 +183,7 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn, setIsLoggedIn }
             primaryEmotion: "Unknown",
             emotionScore: "0.00",
             fallback: true,
-            error: error.message,
+            error: error.message || "Failed to analyze sentiment",
             songMetadata: {
               title: selectedSong.song,
               artist: selectedSong.artist || "Unknown Artist"
@@ -391,163 +192,99 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn, setIsLoggedIn }
           
           setToast({
             show: true,
-            message: "Unable to analyze sentiment: " + error.message,
+            message: "Sentiment analysis issue: " + error.message,
             type: "warning"
           });
-        });
+        } finally {
+          setSentimentLoading(false);
+        }
+      };
+      
+      fetchSentiment();
     }
-  }, [selectedSong, flashcards.length, backendUrl]);
-
-  // Function to log the current song
+  }, [selectedSong, flashcards.length]);
+  
+  // Log current song with user-specific validation
   const logCurrentSong = async () => {
     setLogging(true);
     
-    // Check authentication first
-    const jwtToken = localStorage.getItem("token") || sessionStorage.getItem("auth_token");
-    if (!jwtToken) {
-      setToast({
-        show: true,
-        message: "You need to be logged in to save songs. Please log in first.",
-        type: "error"
-      });
-      setLogging(false);
-      navigate("/login");
-      return;
-    }
-
-    // Then check Spotify connection
-    const accessToken = localStorage.getItem("spotify_access_token");
-    const refreshToken = localStorage.getItem("spotify_refresh_token");
-    
-    if (!accessToken || !refreshToken) {
-      setToast({
-        show: true,
-        message: "You need to connect to Spotify first!",
-        type: "error"
-      });
-      setLogging(false);
-      return;
-    }
-    
     try {
-      // Fetch the currently playing song from Spotify
-      const currentResponse = await fetch(
-        `${backendUrl}/api/spotify/current-song?accessToken=${accessToken}&refreshToken=${refreshToken}`
-      );
-      
-      // Handle potential errors with better user feedback
-      if (!currentResponse.ok) {
-        const errorData = await currentResponse.json();
-        
-        // Handle specific error cases
-        if (currentResponse.status === 401 || (errorData && errorData.authExpired)) {
-          setToast({
-            show: true,
-            message: "Your Spotify session has expired. Please log in again.",
-            type: "error"
-          });
-          
-          // Update Spotify connection state on auth expiration
-          localStorage.removeItem("spotify_access_token");
-          localStorage.removeItem("spotify_refresh_token");
-          setSpotifyConnected(false);
-          
-        } else if (errorData && errorData.scopeIssue) {
-          setToast({
-            show: true,
-            message: "Your Spotify account needs additional permissions. Please log in again.",
-            type: "error"
-          });
-          
-          // Update Spotify connection state on scope issues
-          localStorage.removeItem("spotify_access_token");
-          localStorage.removeItem("spotify_refresh_token");
-          setSpotifyConnected(false);
-          
-        } else if (currentResponse.status === 429) {
-          setToast({
-            show: true,
-            message: "Too many requests to Spotify. Please try again in a moment.",
-            type: "warning"
-          });
-          
-        } else if (currentResponse.status === 412 || (errorData && errorData.noActiveDevice)) {
-          setToast({
-            show: true,
-            message: "No active Spotify playback found. Please start playing music in your Spotify app.",
-            type: "warning"
-          });
-          
-        } else if (currentResponse.status === 404) {
-          setToast({
-            show: true,
-            message: "No song currently playing on Spotify.",
-            type: "info"
-          });
-          
-        } else {
-          setToast({
-            show: true,
-            message: errorData?.error || "Error connecting to Spotify. Please try again.",
-            type: "error"
-          });
-        }
-        
-        setLogging(false);
+      if (!isAuthenticated()) {
+        setToast({
+          show: true,
+          message: "You need to be logged in to save songs",
+          type: "error"
+        });
+        navigate("/login");
         return;
       }
       
-      // Process successful response
-      const currentData = await currentResponse.json();
-      
-      if (currentData.song) {
-        // Log the song in your history by posting it to your API
-        const logResponse = await fetch(`${backendUrl}/api/songs/log`, {
-          method: "POST",
-          headers: { 
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${jwtToken}`  // Add the JWT token here
-          },
-          body: JSON.stringify(currentData)
+      const spotifyTokens = getSpotifyTokens();
+      if (!spotifyTokens) {
+        setToast({
+          show: true,
+          message: "You need to connect to Spotify first!",
+          type: "error"
         });
+        return;
+      }
+      
+      // Fetch the currently playing song from Spotify
+      const response = await fetch(
+        `${backendUrl}/api/spotify/current-song?accessToken=${spotifyTokens.accessToken}&refreshToken=${spotifyTokens.refreshToken}&userId=${getUserId()}`
+      );
+      
+      if (!response.ok) {
+        const errorData = await response.json();
         
-        if (!logResponse.ok) {
-          const logError = await logResponse.json();
-          setToast({ 
-            show: true, 
-            message: logError.error || "Failed to log song", 
-            type: "error" 
+        // Handle token refresh if needed
+        if (response.status === 401 || (errorData && errorData.authExpired)) {
+          setToast({
+            show: true,
+            message: "Your Spotify session has expired. Please reconnect.",
+            type: "error"
           });
-          setLogging(false);
+          
+          // Clear tokens
+          localStorage.removeItem(`spotify_access_token:${getUserId()}`);
+          localStorage.removeItem(`spotify_refresh_token:${getUserId()}`);
+          setSpotifyConnected(false);
           return;
         }
         
-        const logData = await logResponse.json();
-
-        // Reset language to auto-detect for new song
-        setSelectedLanguage("auto");
+        throw new Error(errorData?.error || "Error connecting to Spotify");
+      }
+      
+      const currentData = await response.json();
+      
+      // If new tokens were returned, update them
+      if (currentData.newAccessToken) {
+        storeSpotifyTokens(currentData.newAccessToken, spotifyTokens.refreshToken);
+      }
+      
+      if (currentData.song) {
+        // Log the song to user's history
+        const logData = await apiPost(`${backendUrl}/api/songs/log`, {
+          song: currentData.song, 
+          artist: currentData.artist
+        });
         
-        // Set loading state to true as we're about to update selectedSong
+        // Reset language for new song
+        setSelectedLanguage("auto");
         setIsLoadingCards(true);
         
-        // Show success toast
+        // Show success message
         setToast({
           show: true,
           message: `🎵 Logged: ${logData.song.song} by ${logData.song.artist}`,
           type: "success"
         });
         
-        // Update selected song which will trigger the useEffect to fetch flashcards
+        // Update selected song
         setSelectedSong(logData.song);
-        setCurrentSong(logData.song);
-
-        // Also trigger history refresh if user visits history page
-        sessionStorage.setItem("refresh_history", "true");
-
+        
         // Force flashcards data to reload
-        setIsLoadingCards(true);
         setFlashcards([]);
-        fetchFlashcards();
       } else {
         setToast({
           show: true,
@@ -555,37 +292,24 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn, setIsLoggedIn }
           type: "info"
         });
       }
-      
     } catch (err) {
       console.error("Error logging song:", err);
       setToast({
         show: true,
-        message: "Network error while fetching current song.",
+        message: err.message || "Error logging song",
         type: "error"
       });
     } finally {
       setLogging(false);
     }
   };
-
-  // Add at the start of your component
-  useEffect(() => {
-    // Check authentication on component mount
-    const token = localStorage.getItem("token");
-    if (!token) {
-      setToast({
-        show: true,
-        message: "Please log in to access this feature",
-        type: "warning"
-      });
-      navigate("/login");
-    }
-  }, []);
-
+  
+  // Rest of the component remains unchanged...
+  
   return (
     <div className="flashcards-container">
       <div className="flashcards-content">
-        {/* Animated Title */}
+        {/* Title */}
         <motion.h1 
           className="flashcards-title"
           variants={textVariants}
@@ -596,7 +320,7 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn, setIsLoggedIn }
           Flashcards for {selectedSong ? selectedSong.song : "Unknown Song"}
         </motion.h1>
 
-        {/* Integrated Spotify Auth Button with toggle functionality */}
+        {/* Spotify Authentication Button */}
         <motion.div 
           className="spotify-auth-container"
           variants={textVariants}
@@ -605,7 +329,6 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn, setIsLoggedIn }
           transition={{ duration: 0.3, delay: 0.05 }}
         >
           {isLoggedIn ? (
-            // Spotify connection button logic (already implemented)
             spotifyConnected ? (
               <button className="spotify-auth-button connected" onClick={handleSpotifyLogout}>
                 Disconnect from Spotify
@@ -618,18 +341,14 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn, setIsLoggedIn }
           ) : (
             <button 
               className="spotify-auth-button spotify-auth-button-disabled" 
-              onClick={() => setToast({
-                show: true,
-                message: "Please log in to connect Spotify",
-                type: "info"
-              })}
+              onClick={() => navigate("/login")}
             >
               <span className="lock-icon">🔒</span> Connect to Spotify
             </button>
           )}
         </motion.div>
 
-        {/* Log Current Song Button - uses spotifyConnected state */}
+        {/* Log Current Song Button */}
         <motion.div 
           className="log-button-wrapper"
           variants={textVariants}
@@ -657,14 +376,7 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn, setIsLoggedIn }
           ) : (
             <button 
               className="log-song-button log-song-button-disabled" 
-              onClick={() => {
-                setToast({
-                  show: true,
-                  message: "Please log in to access this feature",
-                  type: "info"
-                });
-                navigate("/login");
-              }}
+              onClick={() => navigate("/login")}
             >
               <span className="lock-icon">🔒</span> Log Current Song
             </button>
@@ -684,7 +396,7 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn, setIsLoggedIn }
             <select 
               id="language-select" 
               value={selectedLanguage}
-              onChange={handleLanguageChange}
+              onChange={(e) => setSelectedLanguage(e.target.value)}
               disabled={isLoadingCards || !selectedSong}
               className="language-select"
             >
@@ -703,6 +415,7 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn, setIsLoggedIn }
           )}
         </motion.div>
 
+        {/* Flashcard Display */}
         <div className="flashcard-wrapper">
           <div className="flashcard-container">
             {isLoadingCards ? (
@@ -722,7 +435,7 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn, setIsLoggedIn }
           </div>
         </div>
 
-        {/* Animated Flashcard Controls */}
+        {/* Flashcard Navigation */}
         <motion.div 
           className="flashcard-controls"
           variants={textVariants}
@@ -732,12 +445,12 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn, setIsLoggedIn }
         >
           <button 
             className="nav-button" 
-            onClick={navigatePrevious}
-            onMouseDown={() => handleMouseDown('previous')}
-            onMouseUp={handleMouseUp}
-            onMouseLeave={handleMouseUp}
-            onTouchStart={() => handleMouseDown('previous')}
-            onTouchEnd={handleMouseUp}
+            onClick={() => {
+              if (flashcards.length > 0) {
+                setCurrentIndex((prev) => (prev === 0 ? flashcards.length - 1 : prev - 1));
+                setFlipped(false);
+              }
+            }}
             disabled={isLoadingCards || flashcards.length === 0}
           >
             &#8592; {/* Left Arrow */}
@@ -757,19 +470,19 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn, setIsLoggedIn }
           
           <button 
             className="nav-button" 
-            onClick={navigateNext}
-            onMouseDown={() => handleMouseDown('next')}
-            onMouseUp={handleMouseUp}
-            onMouseLeave={handleMouseUp}
-            onTouchStart={() => handleMouseDown('next')}
-            onTouchEnd={handleMouseUp}
+            onClick={() => {
+              if (flashcards.length > 0) {
+                setCurrentIndex((prev) => (prev + 1) % flashcards.length);
+                setFlipped(false);
+              }
+            }}
             disabled={isLoadingCards || flashcards.length === 0}
           >
             &#8594; {/* Right Arrow */}
           </button>
         </motion.div>
 
-        {/* Sentiment Analysis Display with Emotions */}
+        {/* Sentiment Analysis Display */}
         <motion.div 
           className="sentiment-container"
           initial={{ opacity: 0, y: 20 }}
@@ -778,13 +491,15 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn, setIsLoggedIn }
         >
           <h3 className="sentiment-title">Song Mood Analysis</h3>
           
-          {!spotifyConnected ? (
+          {!isLoggedIn ? (
+            <div className="sentiment-unauthenticated">
+              <div className="sentiment-lock-icon">🔒</div>
+              <p className="sentiment-login-message">Log in to access song mood analysis</p>
+            </div>
+          ) : !spotifyConnected ? (
             <div className="sentiment-unauthenticated">
               <div className="sentiment-lock-icon">🔒</div>
               <p className="sentiment-login-message">Connect to Spotify to access song mood analysis</p>
-              <p className="sentiment-feature-description">
-                Discover the emotional tones and primary feelings behind your favorite songs
-              </p>
             </div>
           ) : sentimentLoading ? (
             <div className="sentiment-loading">
@@ -857,5 +572,57 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn, setIsLoggedIn }
     </div>
   );
 }
+
+// Enhanced LoadingEllipsis Component
+function LoadingEllipsis() {
+  const [dots, setDots] = useState('.');
+  
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setDots(prev => prev.length >= 3 ? '.' : prev + '.');
+    }, 400);
+    return () => clearInterval(interval);
+  }, []);
+  
+  return (
+    <div className="loading-ellipsis">
+      Fetching flashcards<span className="animated-dots">{dots}</span>
+    </div>
+  );
+}
+
+// Empty Flashcard State Component
+function EmptyFlashcardState({ songName }) {
+  return (
+    <div className="empty-flashcard-container">
+      <div className="empty-flashcard-text">
+        No flashcards available{songName ? ` for "${songName}"` : ''}
+      </div>
+      <div className="empty-flashcard-subtext">
+        Try selecting a different song or log a new song from Spotify
+      </div>
+    </div>
+  );
+}
+
+// Language options constant
+const LANGUAGE_OPTIONS = [
+  { code: "auto", name: "Auto-detect" },
+  { code: "ES", name: "Spanish" },
+  { code: "FR", name: "French" },
+  { code: "PT", name: "Portuguese" },
+  { code: "IT", name: "Italian" },
+  { code: "DE", name: "German" },
+  { code: "JA", name: "Japanese" },
+  { code: "ZH", name: "Chinese" },
+  { code: "RU", name: "Russian" },
+  { code: "KO", name: "Korean" }
+];
+
+// Animation variants
+const textVariants = {
+  initial: { opacity: 0, y: 20 },
+  animate: { opacity: 1, y: 0 }
+};
 
 export default Flashcards;

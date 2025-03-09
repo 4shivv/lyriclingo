@@ -294,8 +294,6 @@ const deleteSong = async (req, res) => {
   }
 };
 
-// Updated getSongSentiment function to handle hybrid results
-
 const getSongSentiment = async (req, res) => {
   try {
     const { song, artist } = req.query;
@@ -305,7 +303,19 @@ const getSongSentiment = async (req, res) => {
       return res.status(400).json({ error: "Song title is required" });
     }
     
-    // Check Redis cache first
+    // Check if the song exists in THIS user's history
+    const userSong = await Song.findOne({ 
+      song: song, 
+      user: userId 
+    });
+    
+    if (!userSong) {
+      return res.status(404).json({ 
+        error: "Song not found in your history. Please log the song first." 
+      });
+    }
+    
+    // Check Redis cache with user-specific key
     const cacheKey = `sentiment:${userId}:${song}${artist ? ':' + artist : ''}`;
     let cachedSentiment;
     
@@ -322,63 +332,136 @@ const getSongSentiment = async (req, res) => {
       return res.json(JSON.parse(cachedSentiment));
     }
     
-    // Find the song to ensure it exists in user's history
-    const userSong = await Song.findOne({ 
-      user: userId,
-      song: song
-    });
+    console.log(`🔍 Starting sentiment analysis for song: "${song}"`);
     
-    if (!userSong) {
-      return res.status(404).json({ 
-        error: "Song not found in your history. Please log the song first." 
-      });
-    }
-    
-    // Get flashcards first (they contain translations)
+    // Get flashcards first for translations
     let flashcards;
     try {
-      // Construct the URL for flashcards
-      const backendUrl = process.env.BACKEND_URL || `${req.protocol}://${req.get('host')}`;
-      const flashcardsUrl = `${backendUrl}/api/songs/flashcards?song=${encodeURIComponent(song)}${artist ? '&artist=' + encodeURIComponent(artist) : ''}`;
+      // Use user's song record to get the correct lyricsUrl
+      const lyricsUrl = userSong.lyricsUrl;
       
-      // Attach original request's auth token to internal request
-      const response = await fetch(flashcardsUrl, {
-        headers: {
-          'Authorization': req.headers.authorization
+      if (!lyricsUrl) {
+        throw new Error("Song has no lyrics URL");
+      }
+      
+      // Use normalized backend URL
+      const normalizedBackendUrl = process.env.BACKEND_URL
+        ? (process.env.BACKEND_URL.startsWith("http") ? process.env.BACKEND_URL : `https://${process.env.BACKEND_URL}`)
+        : `${req.protocol}://${req.get('host')}`;
+      
+      // Fetch lyrics 
+      const lyricsResponse = await fetch(
+        `${normalizedBackendUrl}/api/lyrics/fetch-lyrics?lyricsUrl=${encodeURIComponent(lyricsUrl)}`,
+        {
+          headers: {
+            "Authorization": req.headers.authorization
+          }
+        }
+      );
+      
+      if (!lyricsResponse.ok) {
+        const errorText = await lyricsResponse.text();
+        throw new Error(`Failed to fetch lyrics: ${lyricsResponse.status} - ${errorText}`);
+      }
+      
+      const lyricsData = await lyricsResponse.json();
+      
+      if (!lyricsData.lyrics || lyricsData.lyrics.trim().length === 0) {
+        throw new Error("No lyrics content received");
+      }
+      
+      console.log("🔍 Lyrics received, processing for translation");
+      
+      // Process lyrics to create flashcards
+      const lyricsLines = lyricsData.lyrics.split('\n')
+        .map(line => {
+          // Remove section markers
+          const cleanLine = line.replace(/"?\[.*?\]"?/g, '').trim();
+          return cleanLine;
+        })
+        .filter(line => line.length > 0);
+      
+      // Detect language
+      const sampleText = lyricsLines.slice(0, Math.min(10, lyricsLines.length)).join(" ");
+      const detectedLanguage = languageDetector.detectLanguage(sampleText);
+      console.log(`🔤 Detected language: ${detectedLanguage}`);
+      
+      // Prepare for translation
+      const uniqueLines = new Map();
+      const uniqueArray = [];
+      
+      // Deduplicate lines
+      lyricsLines.forEach((line) => {
+        const trimmedLine = line.trim();
+        if (!uniqueLines.has(trimmedLine) && trimmedLine.length > 0) {
+          uniqueLines.set(trimmedLine, uniqueArray.length);
+          uniqueArray.push(trimmedLine);
         }
       });
       
-      if (!response.ok) {
-        throw new Error(`Failed to fetch flashcards: ${response.status}`);
+      console.log(`🔍 Translation: ${lyricsLines.length} total lines → ${uniqueArray.length} unique lines to translate`);
+      
+      // Translate in batches
+      const BATCH_SIZE = 10;
+      const uniqueTranslations = [];
+      
+      for (let i = 0; i < uniqueArray.length; i += BATCH_SIZE) {
+        const batch = uniqueArray.slice(i, i + BATCH_SIZE);
+        console.log(`🔤 Translating batch ${Math.floor(i/BATCH_SIZE) + 1} (${batch.length} lines)`);
+        
+        const translatedBatch = await translateBatch(batch, detectedLanguage);
+        uniqueTranslations.push(...translatedBatch);
       }
       
-      flashcards = await response.json();
+      // Create flashcards
+      flashcards = lyricsLines.map((line) => {
+        const trimmedLine = line.trim();
+        if (!trimmedLine) return null;
+        
+        const translationIndex = uniqueLines.get(trimmedLine);
+        const translation = uniqueTranslations[translationIndex] || "Translation unavailable";
+        
+        return {
+          front: trimmedLine,
+          back: translation.trim().replace(/\|+/g, '').trim()
+        };
+      }).filter(card => card !== null);
+      
+      console.log(`✅ Created ${flashcards.length} flashcards for sentiment analysis`);
     } catch (flashcardsError) {
-      console.error("Error fetching flashcards:", flashcardsError);
+      console.error("Error creating flashcards for sentiment:", flashcardsError);
       return res.status(500).json({ 
-        error: "Failed to retrieve flashcards for sentiment analysis",
+        error: "Failed to process lyrics for sentiment analysis",
         details: flashcardsError.message 
       });
     }
     
     if (!flashcards || !Array.isArray(flashcards) || flashcards.length === 0) {
-      return res.status(404).json({ error: "No flashcards found for this song" });
+      return res.status(404).json({ error: "No lyrics found for this song" });
     }
     
-    // Deduplicate flashcard translations
+    // OPTIMIZATION: Deduplicate flashcard translations before analysis
     const uniqueTranslations = new Set();
+    
+    // Filter out duplicate translations
     const uniqueFlashcards = flashcards.filter(card => {
       if (!card.back || card.back.trim().length < 2) return false;
+      
       const normalizedText = card.back.trim().toLowerCase();
-      if (uniqueTranslations.has(normalizedText)) return false;
+      if (uniqueTranslations.has(normalizedText)) {
+        return false;
+      }
+      
       uniqueTranslations.add(normalizedText);
       return true;
     });
     
-    // Combine unique English translations
+    console.log(`🔍 Deduplication: ${flashcards.length} flashcards → ${uniqueFlashcards.length} unique translations`);
+    
+    // Combine translated text for sentiment analysis
     const englishText = uniqueFlashcards.map(card => card.back.trim()).join(". ");
     
-    // Analyze sentiment with error handling
+    // Analyze sentiment
     let sentimentResult;
     try {
       sentimentResult = await analyzeSentiment(englishText);
@@ -386,7 +469,7 @@ const getSongSentiment = async (req, res) => {
     } catch (sentimentError) {
       console.error(`❌ Sentiment analysis failed for "${song}":`, sentimentError);
       
-      // Provide default sentiment on API failure
+      // Provide neutral fallback
       sentimentResult = {
         sentiment: "Neutral",
         emoji: "😐",
@@ -394,6 +477,7 @@ const getSongSentiment = async (req, res) => {
         emotions: [],
         primaryEmotion: "Unknown",
         emotionScore: "0.00",
+        error: "Analysis service unavailable",
         fallback: true
       };
     }
@@ -401,23 +485,37 @@ const getSongSentiment = async (req, res) => {
     // Add song metadata
     sentimentResult.songMetadata = {
       title: song,
-      artist: artist || "Unknown Artist"
+      artist: artist || userSong.artist || "Unknown Artist"
     };
     
-    // Cache the result (with error handling)
+    // Cache the result for this user
     try {
       if (redis) {
-        await redis.setex(cacheKey, 604800, JSON.stringify(sentimentResult));
+        await redis.setex(cacheKey, 604800, JSON.stringify(sentimentResult)); // 7 days
+        console.log(`💾 Cached sentiment for user ${userId}: "${song}"`);
       }
     } catch (cacheError) {
-      console.log(`❌ Failed to cache sentiment result: ${cacheError.message}`);
+      console.log(`❌ Failed to cache sentiment: ${cacheError.message}`);
     }
     
-    return res.json(sentimentResult);
+    // Also cache flashcards if they don't exist yet
+    try {
+      const flashcardsCacheKey = `flashcards:${userId}:${song}`;
+      const existingFlashcards = await redis.get(flashcardsCacheKey);
+      
+      if (!existingFlashcards && redis) {
+        await redis.setex(flashcardsCacheKey, 86400, JSON.stringify(flashcards)); // 1 day
+        console.log(`💾 Also cached flashcards for user ${userId}: "${song}"`);
+      }
+    } catch (cacheError) {
+      console.log(`❌ Failed to cache flashcards: ${cacheError.message}`);
+    }
+    
+    res.json(sentimentResult);
   } catch (error) {
     console.error("Error analyzing song sentiment:", error);
-    return res.status(500).json({ 
-      error: "Failed to analyze song sentiment",
+    res.status(500).json({ 
+      error: "Failed to analyze song sentiment: " + error.message,
       fallback: {
         sentiment: "Unknown",
         emoji: "❓",

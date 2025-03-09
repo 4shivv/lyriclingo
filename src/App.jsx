@@ -1,5 +1,6 @@
+
 import React, { useState, useEffect } from "react";
-import { BrowserRouter as Router, Routes, Route, useNavigate, useLocation } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, useNavigate, useLocation, Navigate } from "react-router-dom";
 import { motion, AnimatePresence } from 'framer-motion';
 import Navbar from "./components/Navbar";
 import Flashcards from "./pages/Flashcards";
@@ -9,6 +10,7 @@ import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
+import { isAuthenticated, getUserId, storeSpotifyTokens } from "./utils/auth";
 import "./styles/Global.css";
 
 function App() {
@@ -19,74 +21,62 @@ function App() {
   );
 }
 
+// Protected route component to enforce authentication
+const ProtectedRoute = ({ children }) => {
+  const authenticated = isAuthenticated();
+  const location = useLocation();
+  
+  if (!authenticated) {
+    // Save the location for redirecting after login
+    sessionStorage.setItem('redirectAfterLogin', location.pathname);
+    return <Navigate to="/login" replace />;
+  }
+  
+  return children;
+};
+
 function AppContent() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [selectedSong, setSelectedSong] = useState(null);
   const navigate = useNavigate();
   const location = useLocation();
 
+  // Check authentication status and handle Spotify callbacks
   useEffect(() => {
+    // Check auth status
+    const authenticated = isAuthenticated();
+    setIsLoggedIn(authenticated);
+    
     // Check for Spotify tokens in URL parameters
     const urlParams = new URLSearchParams(window.location.search);
     const accessToken = urlParams.get("access_token");
     const refreshToken = urlParams.get("refresh_token");
 
     if (accessToken && refreshToken) {
-      // Store Spotify tokens but DON'T change app login state
-      localStorage.setItem("spotify_access_token", accessToken);
-      localStorage.setItem("spotify_refresh_token", refreshToken);
+      // Store Spotify tokens with user ID association
+      storeSpotifyTokens(accessToken, refreshToken);
       
       // Remove tokens from URL
       window.history.replaceState({}, document.title, "/flashcards");
 
       // Redirect user to Flashcards page
       navigate("/flashcards", { replace: true });
-    } 
-    
-    // Check app authentication using JWT token presence
-    const token = localStorage.getItem("token") || sessionStorage.getItem("auth_token");
-    const isAppLoggedOut = sessionStorage.getItem("app_logged_out") === "true";
-    
-    if (token && !isAppLoggedOut) {
-      // Store token in both locations for consistency
-      localStorage.setItem("token", token);
-      sessionStorage.setItem("auth_token", token);
-      
-      setIsLoggedIn(true);
-      sessionStorage.setItem("app_logged_in", "true");
-      sessionStorage.removeItem("app_logged_out");
-    } else {
-      setIsLoggedIn(false);
-      sessionStorage.removeItem("app_logged_in");
     }
   }, [navigate]);
 
+  // Update page title based on route
   useEffect(() => {
     const routeTitleMap = {
       "/": "LyricLingo",
       "/flashcards": "Flashcards - LyricLingo",
       "/history": "History - LyricLingo",
+      "/login": "Login - LyricLingo",
+      "/signup": "Sign Up - LyricLingo",
     };
     document.title = routeTitleMap[location.pathname] || "LyricLingo";
   }, [location]);
 
-  // Add protected route component to restrict access to authenticated routes
-  function ProtectedRoute({ isLoggedIn, children }) {
-    const navigate = useNavigate();
-    
-    useEffect(() => {
-      // Check both flags and token existence
-      const token = localStorage.getItem("token") || sessionStorage.getItem("auth_token");
-      const isLoggedOut = sessionStorage.getItem("app_logged_out") === "true";
-      
-      if (!token || isLoggedOut) {
-        navigate("/login");
-      }
-    }, [navigate]);
-    
-    return isLoggedIn ? children : null;
-  }
-
+  // Animation variants for page transitions
   const pageVariants = {
     initial: { opacity: 0, y: 20 },
     animate: { opacity: 1, y: 0 },
@@ -109,8 +99,10 @@ function AppContent() {
               <Home />
             </motion.div>
           } />
+          
+          {/* Protected routes */}
           <Route path="/flashcards" element={
-            <ProtectedRoute isLoggedIn={isLoggedIn}>
+            <ProtectedRoute>
               <motion.div
                 variants={pageVariants}
                 initial="initial"
@@ -127,8 +119,9 @@ function AppContent() {
               </motion.div>
             </ProtectedRoute>
           } />
+          
           <Route path="/history" element={
-            <ProtectedRoute isLoggedIn={isLoggedIn}>
+            <ProtectedRoute>
               <motion.div
                 variants={pageVariants}
                 initial="initial"
@@ -140,6 +133,8 @@ function AppContent() {
               </motion.div>
             </ProtectedRoute>
           } />
+          
+          {/* Public routes */}
           <Route path="/login" element={
             <motion.div
               variants={pageVariants}
@@ -151,6 +146,7 @@ function AppContent() {
               <Login setIsLoggedIn={setIsLoggedIn} />
             </motion.div>
           } />
+          
           <Route path="/signup" element={
             <motion.div
               variants={pageVariants}
@@ -162,6 +158,7 @@ function AppContent() {
               <Signup setIsLoggedIn={setIsLoggedIn} />
             </motion.div>
           } />
+          
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password/:token" element={<ResetPassword />} />
         </Routes>

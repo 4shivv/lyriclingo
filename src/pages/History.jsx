@@ -1,9 +1,13 @@
+// src/pages/History.jsx - Updated with user data isolation
+
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom"; // Import navigation
+import { useNavigate } from "react-router-dom"; 
 import { motion, AnimatePresence } from "framer-motion";
 import Toast from "../components/Toast";
-import LoadingSpinner from "../components/LoadingSpinner"; // Import spinner for clear history
+import LoadingSpinner from "../components/LoadingSpinner";
 import "../styles/History.css";
+import { isAuthenticated, getUserId } from "../utils/auth";
+import { apiGet, apiDelete } from "../utils/api";
 
 // Use backendUrl from environment variable
 const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:5001";
@@ -11,83 +15,51 @@ const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:5001";
 function History({ setSelectedSong }) {
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [clearLoading, setClearLoading] = useState(false); // New state for clear history spinner
+  const [clearLoading, setClearLoading] = useState(false);
   const [toast, setToast] = useState({ show: false, message: "", type: "error" });
-  const navigate = useNavigate(); // Initialize navigation
+  const navigate = useNavigate();
 
-  // Add this authorization check at the beginning of the component
+  // Check authentication on component mount
   useEffect(() => {
-    // Check authentication on component mount
-    const token = localStorage.getItem("token") || sessionStorage.getItem("auth_token");
-    if (!token) {
+    if (!isAuthenticated()) {
       setToast({
         show: true,
-        message: "Please log in to access this feature",
+        message: "Please log in to access your history",
         type: "warning"
       });
       navigate("/login");
       return;
     }
     
-    // Store token in both places for consistency
-    localStorage.setItem("token", token);
-    sessionStorage.setItem("auth_token", token);
-    
     fetchHistory();
   }, [navigate]);
 
-  // Fetch history from API
+  // Fetch user-specific history
   const fetchHistory = async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem("token") || sessionStorage.getItem("auth_token");
-      if (!token) {
-        setToast({
-          show: true,
-          message: "Authentication required. Please log in again.",
-          type: "error"
-        });
-        setLoading(false);
-        navigate("/login");
-        return;
+      // Get user ID for data validation
+      const userId = getUserId();
+      if (!userId) {
+        throw new Error("User ID not found. Please log in again.");
       }
       
-      // Store token in both places for consistency
-      localStorage.setItem("token", token);
-      sessionStorage.setItem("auth_token", token);
+      // Add timestamp and userId to prevent caching issues
+      const url = `${backendUrl}/api/songs/history?userId=${userId}&t=${Date.now()}`;
       
-      const res = await fetch(
-        `${backendUrl}/api/songs/history?t=${Date.now()}`,
-        {
-          headers: {
-            "Authorization": `Bearer ${token}`
-          }
-        }
-      );
-      
-      if (!res.ok) {
-        if (res.status === 401) {
-          localStorage.removeItem("token");
-          sessionStorage.removeItem("auth_token");
-          setToast({
-            show: true,
-            message: "Authentication expired. Please log in again.",
-            type: "error"
-          });
-          setLoading(false);
-          navigate("/login");
-          return;
-        }
-        throw new Error(`Failed to fetch history: ${res.status}`);
-      }
-      
-      const data = await res.json();
+      const data = await apiGet(url);
       setHistory(data);
     } catch (error) {
       console.error("Error fetching history:", error);
+      
+      if (error.message.includes("Authentication") || error.message.includes("User ID")) {
+        // Authentication error - redirect to login
+        navigate("/login");
+      }
+      
       setToast({ 
         show: true, 
-        message: error.message || "Error fetching history.", 
+        message: error.message || "Error fetching history", 
         type: "error" 
       });
     } finally {
@@ -95,39 +67,32 @@ function History({ setSelectedSong }) {
     }
   };
 
-  useEffect(() => {
-    fetchHistory();
-  }, []);
-
-  // Clear history without confirmation and with spinner
+  // Clear history with user validation
   const clearHistory = async () => {
     setClearLoading(true);
     try {
-      // Retrieve JWT token
-      const token = localStorage.getItem("token");
-      if (!token) {
-        setToast({ show: true, message: "Authentication required", type: "error" });
-        setClearLoading(false);
-        return;
+      // Check authentication
+      if (!isAuthenticated()) {
+        throw new Error("Authentication required");
       }
 
-      const response = await fetch(`${backendUrl}/api/songs/clear`, {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`  // Add JWT token
-        }
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to clear history: ${response.status}`);
-      }
-
+      await apiDelete(`${backendUrl}/api/songs/clear`);
+      
       setToast({ show: true, message: "History Cleared!", type: "success" });
       setHistory([]);  // Clear history state immediately
     } catch (error) {
       console.error("Error clearing history:", error);
-      setToast({ show: true, message: error.message || "Error clearing history", type: "error" });
+      
+      if (error.message.includes("Authentication")) {
+        // Authentication error - redirect to login
+        navigate("/login");
+      }
+      
+      setToast({ 
+        show: true, 
+        message: error.message || "Error clearing history", 
+        type: "error" 
+      });
     } finally {
       setClearLoading(false);
     }
@@ -135,19 +100,49 @@ function History({ setSelectedSong }) {
 
   // Navigate to flashcards for selected song
   const handleSongClick = (song) => {
-    // Store token in sessionStorage for cross-component access
-    const token = localStorage.getItem("token");
-    if (token) {
-      sessionStorage.setItem("auth_token", token);
+    // Validate user is still authenticated
+    if (!isAuthenticated()) {
+      setToast({
+        show: true,
+        message: "Please log in to view flashcards",
+        type: "warning"
+      });
+      navigate("/login");
+      return;
     }
     
     setSelectedSong(song);
     navigate("/flashcards");
   };
 
+  // Delete a specific song
+  const handleSongDelete = async (id, event) => {
+    // Stop event propagation to prevent navigating to flashcards
+    event.stopPropagation();
+    
+    try {
+      await apiDelete(`${backendUrl}/api/songs/${id}`);
+      
+      // Update local state to remove the deleted song
+      setHistory(prevHistory => prevHistory.filter(song => song._id !== id));
+      
+      setToast({
+        show: true,
+        message: "Song deleted from history",
+        type: "success"
+      });
+    } catch (error) {
+      console.error("Error deleting song:", error);
+      setToast({
+        show: true,
+        message: error.message || "Error deleting song",
+        type: "error"
+      });
+    }
+  };
+
   return (
     <div className="history-container">
-      {/* New content wrapper with downward shift */}
       <div className="history-content">
         <motion.h1 
           className="history-title"
@@ -170,13 +165,24 @@ function History({ setSelectedSong }) {
           onClick={clearHistory}
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
+          disabled={clearLoading || history.length === 0}
         >
           {clearLoading ? <LoadingSpinner size={20} color="#fff" /> : "🗑 Clear History"}
         </motion.button>
 
         <motion.div className="history-list">
           <AnimatePresence>
-            {history.length > 0 ? (
+            {loading ? (
+              <motion.div 
+                className="history-loading"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+              >
+                <LoadingSpinner size={30} color="#fff" />
+                <p>Loading your history...</p>
+              </motion.div>
+            ) : history.length > 0 ? (
               history.map((entry) => (
                 <motion.div
                   key={entry._id}
@@ -200,6 +206,13 @@ function History({ setSelectedSong }) {
                     <span className="history-date">
                       {new Date(entry.timestamp).toLocaleDateString()}
                     </span>
+                    <button 
+                      className="delete-history-button"
+                      onClick={(e) => handleSongDelete(entry._id, e)}
+                      title="Delete song"
+                    >
+                      🗑️
+                    </button>
                   </div>
                 </motion.div>
               ))
