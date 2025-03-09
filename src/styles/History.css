@@ -94,6 +94,7 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
+  flex: 1;
 }
 
 .history-song {
@@ -109,6 +110,14 @@
   letter-spacing: 0.2px;
 }
 
+/* History actions - update layout to position elements horizontally */
+.history-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
 /* Date styling */
 .history-date {
   font-size: 0.9rem;
@@ -118,12 +127,42 @@
   border-radius: 15px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   transition: all 0.3s ease;
+  white-space: nowrap;
 }
 
 .history-item:hover .history-date {
   background: rgba(255, 255, 255, 0.12);
   color: #ffffff;
   border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Delete History Button styling */
+.delete-history-button {
+  background: rgba(255, 255, 255, 0.05);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 6px 12px;
+  font-size: 0.9rem;
+  border-radius: 15px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin-left: 5px; /* Add space between date and button */
+}
+
+.delete-history-button:hover {
+  transform: translateY(-2px) scale(1.05);
+  background: rgba(231, 76, 60, 0.15);
+  border-color: rgba(231, 76, 60, 0.3);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.delete-history-button:active {
+  transform: translateY(0) scale(0.98);
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.1);
 }
 
 /* Empty State */
@@ -184,32 +223,26 @@
   box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
 }
 
-/* Delete History Button (if present) */
-.delete-history-button {
-  background: rgba(255, 255, 255, 0.05);
-  color: white;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  padding: 6px 12px;
-  font-size: 0.9rem;
-  border-radius: 15px;
-  cursor: pointer;
-  transition: all 0.3s ease;
+/* History loading container */
+.history-loading {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  gap: 15px;
+  padding: 40px 20px;
+  width: 100%;
+  height: 200px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
 }
 
-.delete-history-button:hover {
-  transform: translateY(-2px) scale(1.05);
-  background: rgba(231, 76, 60, 0.15);
-  border-color: rgba(231, 76, 60, 0.3);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
-.delete-history-button:active {
-  transform: translateY(0) scale(0.98);
-  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.1);
+.history-loading p {
+  color: #e0e0e0;
+  margin: 0;
+  font-size: 1.1rem;
 }
 
 /* Responsive adjustments */
@@ -229,6 +262,11 @@
   .history-date {
     font-size: 0.8rem;
     padding: 3px 8px;
+  }
+  
+  .delete-history-button {
+    padding: 3px 8px;
+    font-size: 0.8rem;
   }
   
   .history-empty {
@@ -252,5 +290,36 @@
   .history-item {
     padding: 12px;
     border-radius: 12px;
+  }
+  
+  /* Adjust history actions for small screens */
+  .history-actions {
+    gap: 6px;
+  }
+}
+
+/* Extra small screens */
+@media (max-width: 400px) {
+  .history-item {
+    padding: 10px;
+  }
+  
+  .history-info {
+    font-size: 0.9rem;
+  }
+  
+  .history-date {
+    font-size: 0.75rem;
+    padding: 2px 6px;
+  }
+  
+  .delete-history-button {
+    font-size: 0.75rem;
+    padding: 2px 6px;
+  }
+  
+  .history-actions {
+    flex-direction: row;
+    gap: 4px;
   }
 }

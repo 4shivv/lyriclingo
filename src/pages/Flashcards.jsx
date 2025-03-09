@@ -7,7 +7,7 @@ import LoadingSpinner from "../components/LoadingSpinner";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { isAuthenticated, getUserId, getSpotifyTokens, storeSpotifyTokens } from "../utils/auth";
-import { apiGet, apiPost } from "../utils/api";
+import { apiGet, apiPost, apiDelete } from "../utils/api";
 
 // Use Vite's env variable for backend URL; fallback to localhost for development.
 const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:5001";

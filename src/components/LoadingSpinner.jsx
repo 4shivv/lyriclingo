@@ -4,17 +4,19 @@ import "./LoadingSpinner.css";
 
 function LoadingSpinner({ size, color }) {
   return (
-    <div
-      className="loading-spinner"
-      style={{
-        width: size,
-        height: size,
-        borderTopColor: color,
-        borderRightColor: color,
-        borderBottomColor: color,
-        borderLeftColor: "transparent",
-      }}
-    ></div>
+    <div className="spinner-container">
+      <div
+        className="loading-spinner"
+        style={{
+          width: size,
+          height: size,
+          borderTopColor: color,
+          borderRightColor: color,
+          borderBottomColor: color,
+          borderLeftColor: "transparent",
+        }}
+      ></div>
+    </div>
   );
 }
 
@@ -28,4 +30,4 @@ LoadingSpinner.defaultProps = {
   color: "#6200ee", // default color if none provided
 };
 
-export default LoadingSpinner; 
+export default LoadingSpinner;

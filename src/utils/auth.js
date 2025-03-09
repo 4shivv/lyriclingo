@@ -76,6 +76,31 @@ export const clearAuthData = () => {
 };
 
 /**
+ * Clears all Spotify-related data for the current user
+ * @returns {boolean} - True if successful, false otherwise
+ */
+export const clearSpotifyConnection = () => {
+  try {
+    const userId = getUserId();
+    
+    // Clear user-specific tokens if we have userId
+    if (userId) {
+      localStorage.removeItem(`spotify_access_token:${userId}`);
+      localStorage.removeItem(`spotify_refresh_token:${userId}`);
+    }
+    
+    // Clear generic tokens
+    localStorage.removeItem("spotify_access_token");
+    localStorage.removeItem("spotify_refresh_token");
+    
+    return true;
+  } catch (error) {
+    console.error("Error clearing Spotify connection:", error);
+    return false;
+  }
+};
+
+/**
  * Gets Spotify tokens for the current authenticated user
  * @returns {Object|null} Object with accessToken and refreshToken, or null if not found
  */

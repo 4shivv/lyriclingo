@@ -1,5 +1,3 @@
-// src/pages/History.jsx - Updated with user data isolation
-
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom"; 
 import { motion, AnimatePresence } from "framer-motion";
@@ -78,6 +76,9 @@ function History({ setSelectedSong }) {
 
       await apiDelete(`${backendUrl}/api/songs/clear`);
       
+      // Clear selected song state to prevent stale data on flashcards page
+      setSelectedSong(null);
+      
       setToast({ show: true, message: "History Cleared!", type: "success" });
       setHistory([]);  // Clear history state immediately
     } catch (error) {
@@ -121,10 +122,15 @@ function History({ setSelectedSong }) {
     event.stopPropagation();
     
     try {
-      await apiDelete(`${backendUrl}/api/songs/${id}`);
+      const response = await apiDelete(`${backendUrl}/api/songs/${id}`);
       
       // Update local state to remove the deleted song
       setHistory(prevHistory => prevHistory.filter(song => song._id !== id));
+      
+      // If this was the currently selected song in Flashcards, clear it
+      if (response.songTitle && selectedSong && selectedSong.song === response.songTitle) {
+        setSelectedSong(null);
+      }
       
       setToast({
         show: true,
