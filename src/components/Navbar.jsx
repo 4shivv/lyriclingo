@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { NavLink, Link, useNavigate, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import "../styles/Navbar.css";
+import { clearAuthData } from "../utils/auth";
 
 function Navbar({ isLoggedIn, setIsLoggedIn, setSpotifyConnected }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -33,6 +34,7 @@ function Navbar({ isLoggedIn, setIsLoggedIn, setSpotifyConnected }) {
     navigate("/login");
   };
 
+  // Improved logout function that properly clears all user data
   const handleLogout = () => {
     // Clear all auth tokens and user-specific data
     clearAuthData();
