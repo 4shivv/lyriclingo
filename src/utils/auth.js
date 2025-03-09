@@ -1,4 +1,3 @@
-
 /**
  * Get user ID from JWT token
  * @returns {string|null} User ID or null if not found
