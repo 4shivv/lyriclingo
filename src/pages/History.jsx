@@ -177,57 +177,67 @@ function History({ setSelectedSong }) {
         </motion.button>
 
         <motion.div className="history-list">
-          <AnimatePresence>
+          <AnimatePresence mode="wait">
             {loading ? (
               <motion.div 
                 className="history-loading"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
+                key="loading"
               >
-                <LoadingSpinner size={30} color="#fff" />
-                <p>Loading your history...</p>
+                <LoadingSpinner size={40} color="#fcdc4d" />
               </motion.div>
             ) : history.length > 0 ? (
-              history.map((entry) => (
-                <motion.div
-                  key={entry._id}
-                  className="history-item"
-                  onClick={() => handleSongClick(entry)}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: 20 }}
-                  transition={{ delay: 0.1 }}
-                  whileHover={{ 
-                    scale: 1.02,
-                    x: 10,
-                    transition: { duration: 0.2 }
-                  }}
-                >
-                  <div className="history-info">
-                    <span className="history-song">{entry.song}</span> - 
-                    <span className="history-artist"> {entry.artist}</span>
-                  </div>
-                  <div className="history-actions">
-                    <span className="history-date">
-                      {new Date(entry.timestamp).toLocaleDateString()}
-                    </span>
-                    <button 
-                      className="delete-history-button"
-                      onClick={(e) => handleSongDelete(entry._id, e)}
-                      title="Delete song"
-                    >
-                      🗑️
-                    </button>
-                  </div>
-                </motion.div>
-              ))
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="history-items-container"
+                key="history-items"
+                style={{ width: "100%" }}
+              >
+                {history.map((entry) => (
+                  <motion.div
+                    key={entry._id}
+                    className="history-item"
+                    onClick={() => handleSongClick(entry)}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: 20 }}
+                    transition={{ delay: 0.1 }}
+                    whileHover={{ 
+                      scale: 1.02,
+                      x: 10,
+                      transition: { duration: 0.2 }
+                    }}
+                  >
+                    <div className="history-info">
+                      <span className="history-song">{entry.song}</span> - 
+                      <span className="history-artist"> {entry.artist}</span>
+                    </div>
+                    <div className="history-actions">
+                      <span className="history-date">
+                        {new Date(entry.timestamp).toLocaleDateString()}
+                      </span>
+                      <button 
+                        className="delete-history-button"
+                        onClick={(e) => handleSongDelete(entry._id, e)}
+                        title="Delete song"
+                      >
+                        🗑️
+                      </button>
+                    </div>
+                  </motion.div>
+                ))}
+              </motion.div>
             ) : (
               <motion.p 
                 className="history-empty"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.3 }}
+                key="empty"
               >
                 No songs logged yet.
               </motion.p>
