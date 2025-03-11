@@ -85,8 +85,9 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn, setIsLoggedIn, 
       return;
     }
     
-    // Redirect to Spotify login with userId included
-    window.location.href = `${backendUrl}/api/spotify/login?userId=${userId}`;
+    // Add a timestamp and show_dialog=true parameter to force the Spotify login screen
+    // This ensures users can select a different account even if already logged in
+    window.location.href = `${backendUrl}/api/spotify/login?userId=${userId}&t=${Date.now()}&force_login=true`;
   };
   
   // Handle Spotify logout

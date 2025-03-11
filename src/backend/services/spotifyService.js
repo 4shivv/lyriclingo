@@ -324,10 +324,14 @@ const fetchCurrentSong = async (userAccessToken, refreshToken) => {
  * Export this function to be used in the controller
  */
 const getAuthorizationUrl = (userId) => {
+    // Get force_login parameter value from the query string
+    const forceSuffix = '&show_dialog=true';
+    
     return `https://accounts.spotify.com/authorize?client_id=${CLIENT_ID}` +
            `&response_type=code&redirect_uri=${encodeURIComponent(REDIRECT_URI)}` +
            `&scope=${encodeURIComponent(REQUIRED_SCOPES)}` +
-           `${userId ? `&state=${userId}` : ''}`;
+           `${userId ? `&state=${userId}` : ''}` +
+           forceSuffix; // Always include to force account selection
 };
 
 module.exports = { 
