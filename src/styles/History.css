@@ -12,6 +12,9 @@
   transform: translateY(75px);
   position: relative;
   z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 /* Overlay to improve text contrast */
@@ -27,7 +30,7 @@
   pointer-events: none;
 }
 
-/* Title with gradient text - matches flashcards page */
+/* Enhanced History Title - matching flashcards page styling */
 .history-title {
   font-size: 3rem;
   font-weight: bold;
@@ -38,6 +41,31 @@
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   text-shadow: 0px 2px 5px rgba(0, 0, 0, 0.3);
+  position: relative;
+  display: inline-block;
+  text-align: center;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Add subtle underline effect */
+.history-title::after {
+  content: "";
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  width: 80px;
+  height: 4px;
+  background: linear-gradient(90deg, rgba(252, 220, 77, 0.2), rgba(252, 220, 77, 0.8), rgba(252, 220, 77, 0.2));
+  transform: translateX(-50%);
+  border-radius: 2px;
+}
+
+/* Add animation for the gradient text */
+@keyframes gradient {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
 }
 
 .history-subtitle {
@@ -242,10 +270,17 @@
   letter-spacing: 0.5px;
 }
 
-/* Responsive adjustments */
+/* Mobile responsiveness */
 @media (max-width: 768px) {
   .history-title {
     font-size: 2rem;
+    margin-bottom: 25px;
+  }
+  
+  .history-title::after {
+    width: 60px;
+    height: 3px;
+    bottom: -8px;
   }
   
   .history-subtitle {
