@@ -87,134 +87,158 @@
   min-height: 200px; /* Ensure there's space for loading state */
 }
 
-/* Completely remade History Item hover effect */
+/* Complete remake of History Item to match UI */
 .history-item {
   width: 100%;
   padding: 16px 20px;
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(26, 27, 36, 0.4);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   color: white;
-  border-left: 3px solid transparent;
-  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 16px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
   position: relative;
   overflow: hidden;
+  margin-bottom: 15px;
 }
 
-/* Base state styling */
+/* Remove previous hover effects */
+.history-item::before, 
+.history-item::after {
+  display: none;
+}
+
+/* Song and Artist info container */
 .history-info {
-  font-size: 1.2rem;
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 5px;
   flex: 1;
-  transition: transform 0.3s ease;
+  position: relative;
+  z-index: 2;
 }
 
+/* Song name styling */
 .history-song {
+  font-size: 1.1rem;
   font-weight: 600;
   color: #ffffff;
-  margin-right: 5px;
-  transition: color 0.3s ease;
+  letter-spacing: 0.3px;
+  display: block;
 }
 
+/* Artist styling */
 .history-artist {
-  color: #cccccc;
+  font-size: 0.9rem;
+  color: #bbbbbb;
   font-weight: 400;
-  transition: color 0.3s ease;
+  letter-spacing: 0.2px;
+  display: block;
+  margin-top: 2px;
 }
 
+/* History actions container */
+.history-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Date badge styling */
 .history-date {
-  font-size: 0.9rem;
-  color: #aaaaaa;
-  background: rgba(255, 255, 255, 0.08);
-  padding: 4px 10px;
-  border-radius: 15px;
-  transition: all 0.3s ease;
-}
-
-.delete-history-button {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.7);
   background: rgba(255, 255, 255, 0.05);
-  color: white;
-  border: 1px solid rgba(255, 255, 255, 0.1);
   padding: 6px 12px;
-  font-size: 0.9rem;
-  border-radius: 15px;
-  cursor: pointer;
+  border-radius: 20px;
+  white-space: nowrap;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Delete button styling */
+.delete-history-button {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(231, 76, 60, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 50%;
   transition: all 0.3s ease;
-  margin-left: 5px;
+  padding: 0;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 }
 
-/* New hover effect */
-.history-item:hover {
-  background: rgba(26, 32, 44, 0.4);
-  border-left: 3px solid rgba(252, 220, 77, 0.8);
-  transform: translateX(10px);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
-}
-
-/* Add a shine effect that moves across the item */
-@keyframes shine {
-  0% {
-    transform: translateX(-100%) translateY(-100%) rotate(45deg);
-  }
-  100% {
-    transform: translateX(100%) translateY(100%) rotate(45deg);
-  }
-}
-
-.history-item::after {
-  content: '';
+/* Yellow accent behind item */
+.history-item::before {
+  content: "";
   position: absolute;
-  top: 0;
   left: 0;
-  width: 200%;
-  height: 200%;
-  background: linear-gradient(
-    to right,
-    rgba(255, 255, 255, 0) 0%,
-    rgba(255, 255, 255, 0.05) 50%,
-    rgba(255, 255, 255, 0) 100%
-  );
-  transform: translateX(-100%) translateY(-100%) rotate(45deg);
-  pointer-events: none;
+  top: 0;
+  height: 100%;
+  width: 4px;
+  background: rgba(252, 220, 77, 0);
+  transition: all 0.3s ease;
 }
 
-.history-item:hover::after {
-  animation: shine 1.5s forwards;
+/* Hover state effects */
+.history-item:hover {
+  background: rgba(30, 32, 45, 0.6);
+  transform: translateY(-5px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
+  border-color: rgba(255, 255, 255, 0.12);
 }
 
-/* Enhanced text effects on hover */
+.history-item:hover::before {
+  background: rgba(252, 220, 77, 0.8);
+  width: 4px;
+}
+
+/* Song and artist hover state */
 .history-item:hover .history-song {
   color: rgba(252, 220, 77, 0.9);
 }
 
 .history-item:hover .history-artist {
-  color: rgba(255, 255, 255, 0.9);
+  color: #dddddd;
 }
 
+/* Date badge hover state */
 .history-item:hover .history-date {
-  background: rgba(252, 220, 77, 0.1);
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.15);
   color: white;
 }
 
-/* Delete button hover effect */
+/* Delete button hover state */
 .delete-history-button:hover {
   background: rgba(231, 76, 60, 0.15);
-  color: white;
+  color: rgba(231, 76, 60, 1);
   transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(231, 76, 60, 0.15);
 }
 
-/* History actions - update layout to position elements horizontally */
-.history-actions {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  flex-shrink: 0;
+/* Active states */
+.history-item:active {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
+  transition: all 0.1s ease;
+}
+
+.delete-history-button:active {
+  transform: scale(0.95);
 }
 
 /* Empty State */
@@ -345,13 +369,30 @@
   }
   
   .history-item {
-    padding: 12px;
-    border-radius: 12px;
+    padding: 14px 16px;
   }
   
-  /* Adjust history actions for small screens */
+  .history-song {
+    font-size: 1rem;
+  }
+  
+  .history-artist {
+    font-size: 0.85rem;
+  }
+  
+  .history-date {
+    font-size: 0.75rem;
+    padding: 4px 10px;
+  }
+  
+  .delete-history-button {
+    width: 32px;
+    height: 32px;
+    font-size: 0.9rem;
+  }
+  
   .history-actions {
-    gap: 6px;
+    gap: 8px;
   }
   
   .history-loading {
