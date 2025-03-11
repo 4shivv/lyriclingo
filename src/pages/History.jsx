@@ -189,7 +189,7 @@ function History({ setSelectedSong, currentUserId }) {
       setHistory(prevHistory => prevHistory.filter(song => song._id !== id));
       
       // If this was the currently selected song in Flashcards, clear it
-      if (response.songTitle && response.songTitle === selectedSong?.song) {
+      if (response.songTitle) {
         setSelectedSong(null);
       }
       
