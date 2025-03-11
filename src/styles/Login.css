@@ -211,10 +211,6 @@
 
 .login-button.loading {
   background: linear-gradient(90deg, rgba(252, 220, 77, 0.6), rgba(252, 220, 77, 0.4));
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 10px;
 }
 
 .loading-spinner {

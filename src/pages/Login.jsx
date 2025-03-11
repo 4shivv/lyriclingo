@@ -162,10 +162,15 @@ function Login({ setIsLoggedIn }) {
               disabled={isLoading}
             >
               {isLoading ? (
-                <>
+                <div style={{
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  gap: '10px'
+                }}>
                   <span className="loading-spinner"></span>
                   <span>Signing in...</span>
-                </>
+                </div>
               ) : "Sign In"}
             </button>
           </form>
