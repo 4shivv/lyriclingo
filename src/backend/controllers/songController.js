@@ -1,25 +1,81 @@
-const Song = require("../models/Song"); // ✅ Import once
+const Song = require("../models/Song");
 const { getLyricsFromGenius } = require("../services/geniusService");
-const { fetchLyricsUrl } = require("../services/lyricsService"); // Import Genius search function
-const { translateBatch, languageDetector } = require("../services/translationService"); // ✅ Import translation service with language detector
+const { fetchLyricsUrl } = require("../services/lyricsService");
+const { translateBatch, languageDetector } = require("../services/translationService");
 const axios = require("axios");
 const Redis = require("ioredis");
 const redis = new Redis(process.env.REDIS_URL || "redis://127.0.0.1:6379");
 const { analyzeSentiment } = require("../services/sentimentService");
 
-// Optionally add an error listener to handle connection issues gracefully:
+// Error listener for Redis connection
 redis.on("error", (error) => {
   console.error("Redis error:", error);
 });
 
-// Use BACKEND_URL environment variable if available. Otherwise, we'll use the request's host.
+// Use BACKEND_URL environment variable or request's host
 const BACKEND_URL = process.env.BACKEND_URL;
 
-// ✅ Log a new song (triggered by user action) and fetch the lyrics URL
+/**
+ * Generate cache keys for a user's song data
+ * @param {string} userId - User ID
+ * @param {string} songTitle - Song title
+ * @param {string} artist - Artist name (optional)
+ * @param {string} language - Language code (optional)
+ * @returns {Object} Object containing different cache keys
+ */
+const generateCacheKeys = (userId, songTitle, artist = null, language = null) => {
+  return {
+    flashcards: `flashcards:${userId}:${songTitle}${language ? ':' + language : ''}`,
+    sentiment: `sentiment:${userId}:${songTitle}${artist ? ':' + artist : ''}`,
+    translations: `translations:${userId}:${songTitle}${language ? ':' + language : ''}`
+  };
+};
+
+/**
+ * Clear all caches related to a specific song
+ * @param {string} userId - User ID
+ * @param {string} songTitle - Song title 
+ * @param {string} artist - Artist name (optional)
+ */
+const clearSongCaches = async (userId, songTitle, artist = null) => {
+  if (!redis) return;
+  
+  try {
+    const cacheKeys = generateCacheKeys(userId, songTitle, artist);
+    
+    // Build a list of language-specific keys to clear
+    const languageKeys = [];
+    const supportedLanguages = ['ES', 'FR', 'PT', 'IT', 'DE', 'JA', 'ZH', 'RU', 'KO'];
+    
+    // Add language-specific cache keys
+    for (const lang of supportedLanguages) {
+      languageKeys.push(`flashcards:${userId}:${songTitle}:${lang}`);
+      languageKeys.push(`translations:${userId}:${songTitle}:${lang}`);
+    }
+    
+    // Combine all keys to delete
+    const keysToDelete = [
+      cacheKeys.flashcards,
+      cacheKeys.sentiment,
+      cacheKeys.translations,
+      ...languageKeys
+    ];
+    
+    // Execute multi-delete
+    if (keysToDelete.length > 0) {
+      await redis.del(...keysToDelete);
+      console.log(`🗑️ Cleared all caches for song "${songTitle}" (user: ${userId})`);
+    }
+  } catch (error) {
+    console.error(`❌ Error clearing caches for song "${songTitle}":`, error);
+  }
+};
+
+// Log a new song (triggered by user action) and fetch the lyrics URL
 const logSong = async (req, res) => {
   try {
     const { song, artist } = req.body;
-    const userId = req.userId; // Available from auth middleware
+    const userId = req.userId;
 
     if (!song || !artist) {
       return res.status(400).json({ error: "Song and artist are required" });
@@ -30,22 +86,12 @@ const logSong = async (req, res) => {
     // Check if song already exists FOR THIS USER
     let existingSong = await Song.findOne({ song, artist, user: userId });
     
-    // If song exists, we need to clear any existing caches for that song
+    // If song exists, clear any existing caches for that song
     if (existingSong) {
       console.log("✅ Song already exists in user's history.");
       
-      // Clear caches for the song
-      if (redis) {
-        const flashcardsCacheKey = `flashcards:${userId}:${song}`;
-        const sentimentCacheKey = `sentiment:${userId}:${song}${artist ? ':' + artist : ''}`;
-        
-        await Promise.all([
-          redis.del(flashcardsCacheKey),
-          redis.del(sentimentCacheKey)
-        ]);
-        
-        console.log(`🗑️ Cleared caches for existing song "${song}" for user ${userId}`);
-      }
+      // Clear all caches for this song
+      await clearSongCaches(userId, song, artist);
       
       return res.json({ message: "Song already exists!", song: existingSong });
     }
@@ -61,17 +107,7 @@ const logSong = async (req, res) => {
     await newSong.save();
 
     // Clear any existing user-specific cache for this song
-    if (redis) {
-      const flashcardsCacheKey = `flashcards:${userId}:${song}`;
-      const sentimentCacheKey = `sentiment:${userId}:${song}${artist ? ':' + artist : ''}`;
-      
-      await Promise.all([
-        redis.del(flashcardsCacheKey),
-        redis.del(sentimentCacheKey)
-      ]);
-      
-      console.log(`🗑️ Cleared caches for new song "${song}" for user ${userId}`);
-    }
+    await clearSongCaches(userId, song, artist);
     
     res.json({ message: "Song logged successfully!", song: newSong });
   } catch (error) {
@@ -80,7 +116,7 @@ const logSong = async (req, res) => {
   }
 };
 
-// ✅ Get song history
+// Get song history
 const getSongHistory = async (req, res) => {
   try {
     const userId = req.userId;
@@ -92,7 +128,7 @@ const getSongHistory = async (req, res) => {
   }
 };
 
-// ✅ Clear song history
+// Clear song history
 const clearHistory = async (req, res) => {
   try {
     const userId = req.userId;
@@ -105,18 +141,13 @@ const clearHistory = async (req, res) => {
     
     // Clear all cache entries for this user's songs
     if (redis) {
-      const songClearPromises = userSongs.map(song => {
-        const flashcardsCacheKey = `flashcards:${userId}:${song.song}`;
-        const sentimentCacheKey = `sentiment:${userId}:${song.song}${song.artist ? ':' + song.artist : ''}`;
-        
-        return Promise.all([
-          redis.del(flashcardsCacheKey),
-          redis.del(sentimentCacheKey)
-        ]);
-      });
+      // Clear caches for each song individually
+      const clearPromises = userSongs.map(song => 
+        clearSongCaches(userId, song.song, song.artist)
+      );
       
-      await Promise.all(songClearPromises);
-      console.log(`🗑️ Cleared all caches for user ${userId}`);
+      await Promise.all(clearPromises);
+      console.log(`🗑️ Cleared all song caches for user ${userId}`);
     }
     
     res.json({ message: "History and cache cleared!" });
@@ -126,15 +157,16 @@ const clearHistory = async (req, res) => {
   }
 };
 
+// Get flashcards for a specific song
 const getFlashcardsForSong = async (req, res) => {
   try {
     const songTitle = req.query.song;
     const forceLanguage = req.query.lang; // Optional override parameter
     const userId = req.userId;
-    const cacheKey = `flashcards:${userId}:${songTitle}${forceLanguage ? ':' + forceLanguage : ''}`;
+    const cacheKeys = generateCacheKeys(userId, songTitle, null, forceLanguage);
 
     // Check Redis cache first
-    const cachedFlashcards = await redis.get(cacheKey);
+    const cachedFlashcards = await redis.get(cacheKeys.flashcards);
     if (cachedFlashcards) {
       console.log(`⚡ Serving flashcards from cache for: ${songTitle}`);
       return res.json(JSON.parse(cachedFlashcards));
@@ -182,7 +214,6 @@ const getFlashcardsForSong = async (req, res) => {
     const lyricsLines = data.lyrics.split('\n')
       .map(line => {
         // Remove any section markers with or without quotes
-        // This handles both "[Intro]" and ""[Intro]""
         const cleanLine = line.replace(/"?\[.*?\]"?/g, '').trim();
         return cleanLine;
       })
@@ -193,9 +224,6 @@ const getFlashcardsForSong = async (req, res) => {
 
     // Prepare arrays for translation
     let frontLines = lyricsLines;
-    
-    // ===== OPTIMIZED TRANSLATION APPROACH =====
-    // Deduplicate for efficient translation but keep all lines in final output
     
     // Step 1: Create a map of unique lines for translation efficiency
     const uniqueLines = new Map(); // Maps text to index in uniqueArray
@@ -226,7 +254,6 @@ const getFlashcardsForSong = async (req, res) => {
     
     // Step 2: Automatically detect language from the combined lyrics
     // Use forceLanguage if explicitly provided in the request
-    // A small sample of lyrics is enough for detection
     let detectedOrForcedLanguage = forceLanguage;
     if (!detectedOrForcedLanguage) {
       // Create a sample text for language detection (first 10 unique lines or fewer)
@@ -237,20 +264,34 @@ const getFlashcardsForSong = async (req, res) => {
       console.log(`🔤 Using forced language: ${detectedOrForcedLanguage}`);
     }
     
-    // Step 3: Translate only the unique lines in batches
-    const BATCH_SIZE = 10; // Number of lines to translate in each API call
-    const uniqueTranslations = [];
+    // Check if we have cached translations first
+    const translationsCacheKey = cacheKeys.translations;
+    const cachedTranslations = await redis.get(translationsCacheKey);
     
-    // Process unique lines in batches
-    for (let i = 0; i < uniqueArray.length; i += BATCH_SIZE) {
-      const batch = uniqueArray.slice(i, i + BATCH_SIZE);
-      console.log(`🔤 Translating unique batch ${Math.floor(i/BATCH_SIZE) + 1} (${batch.length} lines)`);
+    let uniqueTranslations = [];
+    
+    if (cachedTranslations) {
+      console.log(`⚡ Using cached translations for: ${songTitle}`);
+      uniqueTranslations = JSON.parse(cachedTranslations);
+    } else {
+      // Step 3: Translate only the unique lines in batches
+      const BATCH_SIZE = 10; // Number of lines to translate in each API call
       
-      // Send the batch for translation with the detected/forced language
-      const translatedBatch = await translateBatch(batch, detectedOrForcedLanguage);
+      // Process unique lines in batches
+      for (let i = 0; i < uniqueArray.length; i += BATCH_SIZE) {
+        const batch = uniqueArray.slice(i, i + BATCH_SIZE);
+        console.log(`🔤 Translating unique batch ${Math.floor(i/BATCH_SIZE) + 1} (${batch.length} lines)`);
+        
+        // Send the batch for translation with the detected/forced language
+        const translatedBatch = await translateBatch(batch, detectedOrForcedLanguage);
+        
+        // Add translated lines to unique translations array
+        uniqueTranslations.push(...translatedBatch);
+      }
       
-      // Add translated lines to unique translations array
-      uniqueTranslations.push(...translatedBatch);
+      // Store translations in Redis (without expiration)
+      await redis.set(translationsCacheKey, JSON.stringify(uniqueTranslations));
+      console.log(`💾 Cached translations for: ${songTitle}`);
     }
     
     // Step 4: Map translations back to ALL original lines (including duplicates)
@@ -302,9 +343,6 @@ const getFlashcardsForSong = async (req, res) => {
       return true;
     });
 
-    // Log the count of identical translations (kept in the results)
-    console.log(`📊 Found ${identicalCount} identical translations (kept in flashcards)`);
-    
     // Log detailed filtering statistics
     const filteredCount = initialCount - flashcards.length;
     console.log(`✅ Created ${flashcards.length} clean flashcards from ${initialCount} lines (filtered ${filteredCount} problematic lines)`);
@@ -318,8 +356,9 @@ const getFlashcardsForSong = async (req, res) => {
       flashcards[0].detectedLanguage = detectedOrForcedLanguage;
     }
     
-    // Cache the flashcards
-    await redis.setex(cacheKey, 86400, JSON.stringify(flashcards));
+    // Cache the flashcards (without expiration)
+    await redis.set(cacheKeys.flashcards, JSON.stringify(flashcards));
+    console.log(`💾 Cached flashcards for: ${songTitle}`);
 
     res.json(flashcards);
   } catch (error) {
@@ -328,6 +367,7 @@ const getFlashcardsForSong = async (req, res) => {
   }
 };
 
+// Delete a specific song
 const deleteSong = async (req, res) => {
   try {
     const { id } = req.params;
@@ -343,18 +383,8 @@ const deleteSong = async (req, res) => {
     // Delete the song from database
     await Song.findByIdAndDelete(id);
     
-    // Clear both flashcards and sentiment caches for this song
-    if (redis) {
-      const flashcardsCacheKey = `flashcards:${userId}:${song.song}`;
-      const sentimentCacheKey = `sentiment:${userId}:${song.song}${song.artist ? ':' + song.artist : ''}`;
-      
-      await Promise.all([
-        redis.del(flashcardsCacheKey),
-        redis.del(sentimentCacheKey)
-      ]);
-      
-      console.log(`🗑️ Cleared caches for song "${song.song}" for user ${userId}`);
-    }
+    // Clear all caches for this song
+    await clearSongCaches(userId, song.song, song.artist);
     
     res.json({ 
       message: "Song deleted successfully!",
@@ -367,10 +397,11 @@ const deleteSong = async (req, res) => {
   }
 };
 
+// Get sentiment analysis for a song
 const getSongSentiment = async (req, res) => {
   try {
     const { song, artist } = req.query;
-    const userId = req.userId; // From auth middleware
+    const userId = req.userId;
     
     if (!song) {
       return res.status(400).json({ error: "Song title is required" });
@@ -389,16 +420,8 @@ const getSongSentiment = async (req, res) => {
     }
     
     // Check Redis cache with user-specific key
-    const cacheKey = `sentiment:${userId}:${song}${artist ? ':' + artist : ''}`;
-    let cachedSentiment;
-    
-    try {
-      if (redis) {
-        cachedSentiment = await redis.get(cacheKey);
-      }
-    } catch (cacheError) {
-      console.log("Cache check failed, proceeding without cache");
-    }
+    const cacheKeys = generateCacheKeys(userId, song, artist);
+    const cachedSentiment = await redis.get(cacheKeys.sentiment);
     
     if (cachedSentiment) {
       console.log(`⚡ Serving sentiment analysis from cache for: ${song}`);
@@ -407,24 +430,23 @@ const getSongSentiment = async (req, res) => {
     
     console.log(`🔍 Starting sentiment analysis for song: "${song}"`);
     
-    // Get flashcards first for translations
+    // Check for cached translations first to avoid redundant translation
+    const translationsCacheKey = generateCacheKeys(userId, song, null).translations;
+    const cachedTranslations = await redis.get(translationsCacheKey);
+    
     let flashcards;
-    try {
-      // Use user's song record to get the correct lyricsUrl
-      const lyricsUrl = userSong.lyricsUrl;
+    
+    if (cachedTranslations) {
+      console.log(`⚡ Using cached translations for sentiment analysis: ${song}`);
       
-      if (!lyricsUrl) {
-        throw new Error("Song has no lyrics URL");
-      }
-      
-      // Use normalized backend URL
+      // Get lyrics for creating flashcards from translations
       const normalizedBackendUrl = process.env.BACKEND_URL
         ? (process.env.BACKEND_URL.startsWith("http") ? process.env.BACKEND_URL : `https://${process.env.BACKEND_URL}`)
         : `${req.protocol}://${req.get('host')}`;
       
-      // Fetch lyrics 
+      // Fetch lyrics
       const lyricsResponse = await fetch(
-        `${normalizedBackendUrl}/api/lyrics/fetch-lyrics?lyricsUrl=${encodeURIComponent(lyricsUrl)}`,
+        `${normalizedBackendUrl}/api/lyrics/fetch-lyrics?lyricsUrl=${encodeURIComponent(userSong.lyricsUrl)}`,
         {
           headers: {
             "Authorization": req.headers.authorization
@@ -433,19 +455,12 @@ const getSongSentiment = async (req, res) => {
       );
       
       if (!lyricsResponse.ok) {
-        const errorText = await lyricsResponse.text();
-        throw new Error(`Failed to fetch lyrics: ${lyricsResponse.status} - ${errorText}`);
+        throw new Error(`Failed to fetch lyrics: ${lyricsResponse.status}`);
       }
       
       const lyricsData = await lyricsResponse.json();
       
-      if (!lyricsData.lyrics || lyricsData.lyrics.trim().length === 0) {
-        throw new Error("No lyrics content received");
-      }
-      
-      console.log("🔍 Lyrics received, processing for translation");
-      
-      // Process lyrics to create flashcards
+      // Process lyrics to create flashcards with cached translations
       const lyricsLines = lyricsData.lyrics.split('\n')
         .map(line => {
           // Remove section markers
@@ -454,59 +469,43 @@ const getSongSentiment = async (req, res) => {
         })
         .filter(line => line.length > 0);
       
-      // Detect language
-      const sampleText = lyricsLines.slice(0, Math.min(10, lyricsLines.length)).join(" ");
-      const detectedLanguage = languageDetector.detectLanguage(sampleText);
-      console.log(`🔤 Detected language: ${detectedLanguage}`);
+      const uniqueTranslations = JSON.parse(cachedTranslations);
       
-      // Prepare for translation
+      // Create a map of original lines to unique indices
       const uniqueLines = new Map();
       const uniqueArray = [];
+      const originalToUnique = new Map();
       
-      // Deduplicate lines
-      lyricsLines.forEach((line) => {
+      // Identify unique lines while preserving all original lines
+      lyricsLines.forEach((line, index) => {
         const trimmedLine = line.trim();
-        if (!uniqueLines.has(trimmedLine) && trimmedLine.length > 0) {
+        
+        if (!uniqueLines.has(trimmedLine)) {
           uniqueLines.set(trimmedLine, uniqueArray.length);
           uniqueArray.push(trimmedLine);
         }
+        
+        originalToUnique.set(index, uniqueLines.get(trimmedLine));
       });
       
-      console.log(`🔍 Translation: ${lyricsLines.length} total lines → ${uniqueArray.length} unique lines to translate`);
-      
-      // Translate in batches
-      const BATCH_SIZE = 10;
-      const uniqueTranslations = [];
-      
-      for (let i = 0; i < uniqueArray.length; i += BATCH_SIZE) {
-        const batch = uniqueArray.slice(i, i + BATCH_SIZE);
-        console.log(`🔤 Translating batch ${Math.floor(i/BATCH_SIZE) + 1} (${batch.length} lines)`);
-        
-        const translatedBatch = await translateBatch(batch, detectedLanguage);
-        uniqueTranslations.push(...translatedBatch);
-      }
+      // Map translations back to original lines
+      const backLines = lyricsLines.map((_, index) => {
+        const uniqueIndex = originalToUnique.get(index);
+        return uniqueIndex < uniqueTranslations.length ? uniqueTranslations[uniqueIndex] : "Translation unavailable";
+      });
       
       // Create flashcards
-      flashcards = lyricsLines.map((line) => {
-        const trimmedLine = line.trim();
-        if (!trimmedLine) return null;
-        
-        const translationIndex = uniqueLines.get(trimmedLine);
-        const translation = uniqueTranslations[translationIndex] || "Translation unavailable";
-        
+      flashcards = lyricsLines.map((line, index) => {
         return {
-          front: trimmedLine,
-          back: translation.trim().replace(/\|+/g, '').trim()
+          front: line.trim(),
+          back: backLines[index].trim().replace(/\|+/g, '').trim()
         };
-      }).filter(card => card !== null);
+      }).filter(card => card.front.length > 0 && card.back.length > 0);
       
-      console.log(`✅ Created ${flashcards.length} flashcards for sentiment analysis`);
-    } catch (flashcardsError) {
-      console.error("Error creating flashcards for sentiment:", flashcardsError);
-      return res.status(500).json({ 
-        error: "Failed to process lyrics for sentiment analysis",
-        details: flashcardsError.message 
-      });
+      console.log(`✅ Created ${flashcards.length} flashcards from cached translations for sentiment analysis`);
+    } else {
+      // If no cached translations, generate flashcards from scratch
+      flashcards = await generateFlashcards(userSong, req);
     }
     
     if (!flashcards || !Array.isArray(flashcards) || flashcards.length === 0) {
@@ -561,28 +560,9 @@ const getSongSentiment = async (req, res) => {
       artist: artist || userSong.artist || "Unknown Artist"
     };
     
-    // Cache the result for this user
-    try {
-      if (redis) {
-        await redis.setex(cacheKey, 604800, JSON.stringify(sentimentResult)); // 7 days
-        console.log(`💾 Cached sentiment for user ${userId}: "${song}"`);
-      }
-    } catch (cacheError) {
-      console.log(`❌ Failed to cache sentiment: ${cacheError.message}`);
-    }
-    
-    // Also cache flashcards if they don't exist yet
-    try {
-      const flashcardsCacheKey = `flashcards:${userId}:${song}`;
-      const existingFlashcards = await redis.get(flashcardsCacheKey);
-      
-      if (!existingFlashcards && redis) {
-        await redis.setex(flashcardsCacheKey, 86400, JSON.stringify(flashcards)); // 1 day
-        console.log(`💾 Also cached flashcards for user ${userId}: "${song}"`);
-      }
-    } catch (cacheError) {
-      console.log(`❌ Failed to cache flashcards: ${cacheError.message}`);
-    }
+    // Cache the sentiment result (without expiration)
+    await redis.set(cacheKeys.sentiment, JSON.stringify(sentimentResult));
+    console.log(`💾 Cached sentiment for user ${userId}: "${song}"`);
     
     res.json(sentimentResult);
   } catch (error) {
@@ -601,5 +581,117 @@ const getSongSentiment = async (req, res) => {
   }
 };
 
-// ✅ Ensure all functions are correctly exported
-module.exports = { logSong, getSongHistory, clearHistory, getFlashcardsForSong, deleteSong, getSongSentiment };
+// Helper function to generate flashcards
+async function generateFlashcards(song, req) {
+  try {
+    const lyricsUrl = song.lyricsUrl;
+    
+    if (!lyricsUrl) {
+      throw new Error("Song has no lyrics URL");
+    }
+    
+    // Use normalized backend URL
+    const normalizedBackendUrl = process.env.BACKEND_URL
+      ? (process.env.BACKEND_URL.startsWith("http") ? process.env.BACKEND_URL : `https://${process.env.BACKEND_URL}`)
+      : `${req.protocol}://${req.get('host')}`;
+    
+    // Fetch lyrics 
+    const lyricsResponse = await fetch(
+      `${normalizedBackendUrl}/api/lyrics/fetch-lyrics?lyricsUrl=${encodeURIComponent(lyricsUrl)}`,
+      {
+        headers: {
+          "Authorization": req.headers.authorization
+        }
+      }
+    );
+    
+    if (!lyricsResponse.ok) {
+      const errorText = await lyricsResponse.text();
+      throw new Error(`Failed to fetch lyrics: ${lyricsResponse.status} - ${errorText}`);
+    }
+    
+    const lyricsData = await lyricsResponse.json();
+    
+    if (!lyricsData.lyrics || lyricsData.lyrics.trim().length === 0) {
+      throw new Error("No lyrics content received");
+    }
+    
+    console.log("🔍 Lyrics received, processing for translation");
+    
+    // Process lyrics to create flashcards
+    const lyricsLines = lyricsData.lyrics.split('\n')
+      .map(line => {
+        // Remove section markers
+        const cleanLine = line.replace(/"?\[.*?\]"?/g, '').trim();
+        return cleanLine;
+      })
+      .filter(line => line.length > 0);
+    
+    // Detect language
+    const sampleText = lyricsLines.slice(0, Math.min(10, lyricsLines.length)).join(" ");
+    const detectedLanguage = languageDetector.detectLanguage(sampleText);
+    console.log(`🔤 Detected language: ${detectedLanguage}`);
+    
+    // Prepare for translation
+    const uniqueLines = new Map();
+    const uniqueArray = [];
+    
+    // Deduplicate lines
+    lyricsLines.forEach((line) => {
+      const trimmedLine = line.trim();
+      if (!uniqueLines.has(trimmedLine) && trimmedLine.length > 0) {
+        uniqueLines.set(trimmedLine, uniqueArray.length);
+        uniqueArray.push(trimmedLine);
+      }
+    });
+    
+    console.log(`🔍 Translation: ${lyricsLines.length} total lines → ${uniqueArray.length} unique lines to translate`);
+    
+    // Translate in batches
+    const BATCH_SIZE = 10;
+    const uniqueTranslations = [];
+    
+    for (let i = 0; i < uniqueArray.length; i += BATCH_SIZE) {
+      const batch = uniqueArray.slice(i, i + BATCH_SIZE);
+      console.log(`🔤 Translating batch ${Math.floor(i/BATCH_SIZE) + 1} (${batch.length} lines)`);
+      
+      const translatedBatch = await translateBatch(batch, detectedLanguage);
+      uniqueTranslations.push(...translatedBatch);
+    }
+    
+    // Create flashcards
+    const flashcards = lyricsLines.map((line) => {
+      const trimmedLine = line.trim();
+      if (!trimmedLine) return null;
+      
+      const translationIndex = uniqueLines.get(trimmedLine);
+      const translation = uniqueTranslations[translationIndex] || "Translation unavailable";
+      
+      return {
+        front: trimmedLine,
+        back: translation.trim().replace(/\|+/g, '').trim()
+      };
+    }).filter(card => card !== null);
+    
+    console.log(`✅ Created ${flashcards.length} flashcards for sentiment analysis`);
+    
+    // Cache the translations
+    const userId = req.userId;
+    const translationsCacheKey = generateCacheKeys(userId, song.song).translations;
+    await redis.set(translationsCacheKey, JSON.stringify(uniqueTranslations));
+    
+    return flashcards;
+  } catch (error) {
+    console.error("Error generating flashcards:", error);
+    throw error;
+  }
+}
+
+module.exports = { 
+  logSong, 
+  getSongHistory, 
+  clearHistory, 
+  getFlashcardsForSong, 
+  deleteSong, 
+  getSongSentiment 
+};
