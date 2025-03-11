@@ -87,7 +87,7 @@
   min-height: 200px; /* Ensure there's space for loading state */
 }
 
-/* History Item - styled consistently with flashcards elements */
+/* Enhanced History Item - modernized hover effect */
 .history-item {
   width: 100%;
   padding: 16px;
@@ -98,7 +98,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  transition: all 0.3s ease;
+  transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); /* Smoother animation curve */
   cursor: pointer;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
   position: relative;
@@ -106,11 +106,49 @@
   box-sizing: border-box;
 }
 
+/* Add subtle gradient overlay */
+.history-item::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), transparent);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* Enhanced hover state */
 .history-item:hover {
   background: rgba(255, 255, 255, 0.08);
-  transform: translateX(10px) scale(1.02);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
-  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.25);
+  border-color: rgba(252, 220, 77, 0.25); /* Subtle yellow border matching theme */
+}
+
+/* Show gradient on hover */
+.history-item:hover::before {
+  opacity: 1;
+}
+
+/* Add subtle glow effect on hover */
+.history-item:hover {
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.25), 
+              0 0 20px rgba(252, 220, 77, 0.05); /* Subtle yellow glow */
+}
+
+/* Enhance inner elements on hover */
+.history-item:hover .history-song {
+  color: rgba(252, 220, 77, 0.9); /* Highlight song name on hover */
+  text-shadow: 0 0 10px rgba(252, 220, 77, 0.1);
+}
+
+.history-item:hover .history-date {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.25);
 }
 
 /* Song and Artist Info */
@@ -180,11 +218,12 @@
   margin-left: 5px; /* Add space between date and button */
 }
 
+/* Improve delete button hover */
 .delete-history-button:hover {
-  transform: translateY(-2px) scale(1.05);
-  background: rgba(231, 76, 60, 0.15);
-  border-color: rgba(231, 76, 60, 0.3);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px) scale(1.1);
+  background: rgba(231, 76, 60, 0.2);
+  border-color: rgba(231, 76, 60, 0.4);
+  box-shadow: 0 5px 15px rgba(231, 76, 60, 0.15);
 }
 
 .delete-history-button:active {
