@@ -141,11 +141,8 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn, setIsLoggedIn, 
     // Verify the current user matches the song's user
     const currentUser = getUserId();
     if (selectedSong.user && selectedSong.user !== currentUser) {
-      setToast({
-        show: true,
-        message: "This song is not in your library",
-        type: "warning"
-      });
+      // Instead of showing a toast, just reset the selectedSong state
+      // This happens automatically when navigating from History after deleting a song
       setSelectedSong(null);
       return;
     }
@@ -179,11 +176,16 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn, setIsLoggedIn, 
       }
     } catch (error) {
       console.error("Error fetching flashcards:", error);
-      setToast({
-        show: true,
-        message: error.message || "Failed to load flashcards",
-        type: "error"
-      });
+      
+      // Only show toast for actual errors, not for "song not found" 
+      // which happens normally when a song is deleted
+      if (!error.message.includes("Song not found")) {
+        setToast({
+          show: true,
+          message: error.message || "Failed to load flashcards",
+          type: "error"
+        });
+      }
       
       // If unauthorized, might need to redirect to login
       if (error.message.includes("Authentication") || error.message.includes("401")) {
