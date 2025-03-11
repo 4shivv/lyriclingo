@@ -566,11 +566,17 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn, setIsLoggedIn, 
               <div className="sentiment-lock-icon">🔒</div>
               <p className="sentiment-login-message">Log in to access song mood analysis</p>
             </div>
-          ) : !spotifyConnected ? (
-            <div className="sentiment-unauthenticated">
-              <div className="sentiment-lock-icon">🔒</div>
-              <p className="sentiment-login-message">Connect to Spotify to access song mood analysis</p>
-            </div>
+          ) : !selectedSong ? (
+            !spotifyConnected ? (
+              <div className="sentiment-unauthenticated">
+                <div className="sentiment-lock-icon">🔒</div>
+                <p className="sentiment-login-message">Connect to Spotify to log songs and view mood analysis</p>
+              </div>
+            ) : (
+              <div className="sentiment-unavailable">
+                Log a song from Spotify to see mood analysis
+              </div>
+            )
           ) : sentimentLoading ? (
             <div className="sentiment-loading">
               <div className="loading-spinner"></div>
@@ -629,10 +635,7 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn, setIsLoggedIn, 
             </div>
           ) : (
             <div className="sentiment-unavailable">
-              {selectedSong ? 
-                "Mood analysis unavailable for this song" : 
-                "Select or log a song to see mood analysis"
-              }
+              Mood analysis unavailable for this song
             </div>
           )}
         </motion.div>
