@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import "../styles/Navbar.css";
 import { clearAuthData } from "../utils/auth";
 
-function Navbar({ isLoggedIn, setIsLoggedIn, setSpotifyConnected }) {
+function Navbar({ isLoggedIn, setIsLoggedIn, onLogout }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
@@ -41,6 +41,11 @@ function Navbar({ isLoggedIn, setIsLoggedIn, setSpotifyConnected }) {
     
     // Update app state
     setIsLoggedIn(false);
+    
+    // Call parent logout handler if provided
+    if (onLogout && typeof onLogout === 'function') {
+      onLogout();
+    }
     
     // Navigate to home page
     navigate("/");

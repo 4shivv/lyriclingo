@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { BrowserRouter as Router, Routes, Route, useNavigate, useLocation, Navigate } from "react-router-dom";
 import { motion, AnimatePresence } from 'framer-motion';
 import Navbar from "./components/Navbar";
@@ -9,7 +9,7 @@ import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
-import { isAuthenticated, getUserId, storeSpotifyTokens } from "./utils/auth";
+import { isAuthenticated, getUserId, storeSpotifyTokens, clearSongStates } from "./utils/auth";
 import "./styles/Global.css";
 
 function App() {
@@ -37,14 +37,74 @@ const ProtectedRoute = ({ children }) => {
 function AppContent() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [selectedSong, setSelectedSong] = useState(null);
+  const [currentUserId, setCurrentUserId] = useState(null);
   const navigate = useNavigate();
   const location = useLocation();
+
+  // Reset application state (safe to call multiple times)
+  const resetAppState = useCallback(() => {
+    console.log("Resetting application state");
+    setSelectedSong(null);
+    clearSongStates();
+  }, []);
+
+  // Function to handle logout (includes state reset)
+  const handleLogout = useCallback(() => {
+    setIsLoggedIn(false);
+    setCurrentUserId(null);
+    resetAppState();
+  }, [resetAppState]);
+
+  // Listen for auth events dispatched from auth.js
+  useEffect(() => {
+    const handleLogin = (event) => {
+      console.log("User login detected, resetting state");
+      resetAppState();
+      setIsLoggedIn(true);
+      setCurrentUserId(getUserId());
+    };
+
+    const handleLogout = () => {
+      console.log("User logout detected, clearing state");
+      handleLogout();
+    };
+
+    // Add event listeners
+    window.addEventListener('user:login', handleLogin);
+    window.addEventListener('user:logout', handleLogout);
+
+    // Cleanup
+    return () => {
+      window.removeEventListener('user:login', handleLogin);
+      window.removeEventListener('user:logout', handleLogout);
+    };
+  }, [handleLogout, resetAppState]);
 
   // Check authentication status and handle Spotify callbacks
   useEffect(() => {
     // Check auth status
     const authenticated = isAuthenticated();
-    setIsLoggedIn(authenticated);
+    const userId = getUserId();
+    
+    // If auth status changed
+    if (authenticated !== isLoggedIn) {
+      setIsLoggedIn(authenticated);
+      
+      // If logged in, set current user ID
+      if (authenticated) {
+        setCurrentUserId(userId);
+      } else {
+        setCurrentUserId(null);
+        resetAppState();
+      }
+    }
+    
+    // If user ID changed (different user logged in)
+    if (authenticated && userId !== currentUserId && currentUserId !== null) {
+      console.log("User account changed, resetting state");
+      resetAppState();
+      setCurrentUserId(userId);
+    }
     
     // Check for Spotify tokens in URL parameters
     const urlParams = new URLSearchParams(window.location.search);
@@ -61,7 +121,7 @@ function AppContent() {
       // Redirect user to Flashcards page
       navigate("/flashcards", { replace: true });
     }
-  }, [navigate]);
+  }, [navigate, isLoggedIn, currentUserId, resetAppState]);
 
   // Update page title based on route
   useEffect(() => {
@@ -84,7 +144,11 @@ function AppContent() {
 
   return (
     <>
-      <Navbar isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn} />
+      <Navbar 
+        isLoggedIn={isLoggedIn} 
+        setIsLoggedIn={setIsLoggedIn} 
+        onLogout={handleLogout} 
+      />
       <AnimatePresence mode="wait">
         <Routes location={location} key={location.pathname}>
           <Route path="/" element={
@@ -114,6 +178,7 @@ function AppContent() {
                   setIsLoggedIn={setIsLoggedIn} 
                   selectedSong={selectedSong} 
                   setSelectedSong={setSelectedSong} 
+                  currentUserId={currentUserId}
                 />
               </motion.div>
             </ProtectedRoute>
@@ -128,7 +193,10 @@ function AppContent() {
                 exit="exit"
                 transition={{ duration: 0.3 }}
               >
-                <History setSelectedSong={setSelectedSong} />
+                <History 
+                  setSelectedSong={setSelectedSong} 
+                  currentUserId={currentUserId}
+                />
               </motion.div>
             </ProtectedRoute>
           } />

@@ -44,18 +44,21 @@ export const storeAuthToken = (token) => {
   sessionStorage.setItem("auth_token", token);
   sessionStorage.setItem("app_logged_in", "true");
   sessionStorage.removeItem("app_logged_out");
+  
+  // Dispatch custom event when user logs in
+  window.dispatchEvent(new CustomEvent('user:login', { detail: { token } }));
 };
 
 /**
  * Clears all authentication and user-specific data
  */
 export const clearAuthData = () => {
+  // Get user ID before clearing everything
+  const userId = getUserId();
+  
   // Clear auth tokens
   localStorage.removeItem("token");
   sessionStorage.removeItem("auth_token");
-  
-  // Get user ID before clearing everything
-  const userId = getUserId();
   
   // Clear Spotify tokens with user specificity
   if (userId) {
@@ -73,6 +76,9 @@ export const clearAuthData = () => {
   
   // Clear any other user-specific cached data
   clearUserCache(userId);
+  
+  // Dispatch custom event when user logs out
+  window.dispatchEvent(new CustomEvent('user:logout', { detail: { userId } }));
 };
 
 /**
@@ -176,4 +182,35 @@ export const clearUserCache = (userId) => {
       sessionStorage.removeItem(key);
     }
   }
+  
+  // Also clear cached song data
+  clearSongStates();
+};
+
+/**
+ * Clears all user-related app state
+ * Especially important for flashcards and song history
+ */
+export const clearSongStates = () => {
+  // Clear Redis-cached data (will be done server-side)
+  // These localStorage items help track states between sessions
+  localStorage.removeItem("last_selected_song");
+  localStorage.removeItem("flashcards_state");
+  localStorage.removeItem("history_state");
+  localStorage.removeItem("last_language");
+};
+
+/**
+ * Checks if current user owns the provided song data
+ * @param {Object} song - Song object with user field
+ * @returns {boolean} - True if song belongs to current user
+ */
+export const validateSongOwnership = (song) => {
+  if (!song) return false;
+  
+  const userId = getUserId();
+  if (!userId) return false;
+  
+  // Check if song has user field and matches current user
+  return song.user === userId;
 };

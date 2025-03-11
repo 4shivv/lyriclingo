@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom"; 
 import { motion, AnimatePresence } from "framer-motion";
 import Toast from "../components/Toast";
@@ -10,14 +10,20 @@ import { apiGet, apiDelete } from "../utils/api";
 // Use backendUrl from environment variable
 const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:5001";
 
-function History({ setSelectedSong }) {
+function History({ setSelectedSong, currentUserId }) {
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
   const [clearLoading, setClearLoading] = useState(false);
   const [toast, setToast] = useState({ show: false, message: "", type: "error" });
   const navigate = useNavigate();
 
-  // Check authentication on component mount
+  // Reset component state when needed
+  const resetComponentState = useCallback(() => {
+    setHistory([]);
+    setSelectedSong(null);
+  }, [setSelectedSong]);
+
+  // Check authentication on component mount and handle user changes
   useEffect(() => {
     if (!isAuthenticated()) {
       setToast({
@@ -29,10 +35,17 @@ function History({ setSelectedSong }) {
       return;
     }
     
+    // Check if user ID changed
+    const userId = getUserId();
+    if (userId !== currentUserId && currentUserId !== null) {
+      console.log("User changed in History component, resetting state");
+      resetComponentState();
+    }
+    
     fetchHistory();
-  }, [navigate]);
+  }, [navigate, currentUserId, resetComponentState]);
 
-  // Fetch user-specific history
+  // Fetch user-specific history with improved validation
   const fetchHistory = async () => {
     setLoading(true);
     try {
@@ -42,10 +55,24 @@ function History({ setSelectedSong }) {
         throw new Error("User ID not found. Please log in again.");
       }
       
+      // Validate that the current user matches the expected user
+      if (currentUserId !== null && userId !== currentUserId) {
+        console.warn("User mismatch detected, refreshing auth state");
+        throw new Error("User session changed. Please log in again.");
+      }
+      
       // Add timestamp and userId to prevent caching issues
       const url = `${backendUrl}/api/songs/history?userId=${userId}&t=${Date.now()}`;
       
       const data = await apiGet(url);
+      
+      // Ensure the data isn't cached from a previous user
+      if (data.length > 0 && data[0].user !== userId) {
+        console.warn("Retrieved data belongs to a different user");
+        setHistory([]);
+        throw new Error("Data integrity issue. Please refresh the page.");
+      }
+      
       setHistory(data);
     } catch (error) {
       console.error("Error fetching history:", error);
@@ -65,13 +92,19 @@ function History({ setSelectedSong }) {
     }
   };
 
-  // Clear history with user validation
+  // Clear history with improved user validation
   const clearHistory = async () => {
     setClearLoading(true);
     try {
       // Check authentication
       if (!isAuthenticated()) {
         throw new Error("Authentication required");
+      }
+      
+      // Verify current user ID
+      const userId = getUserId();
+      if (userId !== currentUserId && currentUserId !== null) {
+        throw new Error("User session may have changed. Please log in again.");
       }
 
       await apiDelete(`${backendUrl}/api/songs/clear`);
@@ -99,7 +132,7 @@ function History({ setSelectedSong }) {
     }
   };
 
-  // Navigate to flashcards for selected song
+  // Navigate to flashcards for selected song with ownership validation
   const handleSongClick = (song) => {
     // Validate user is still authenticated
     if (!isAuthenticated()) {
@@ -112,23 +145,51 @@ function History({ setSelectedSong }) {
       return;
     }
     
+    // Verify song belongs to current user
+    const userId = getUserId();
+    if (song.user !== userId) {
+      setToast({
+        show: true,
+        message: "This song is not in your library",
+        type: "warning"
+      });
+      return;
+    }
+    
     setSelectedSong(song);
     navigate("/flashcards");
   };
 
-  // Delete a specific song
+  // Delete a specific song with improved validation
   const handleSongDelete = async (id, event) => {
     // Stop event propagation to prevent navigating to flashcards
     event.stopPropagation();
     
     try {
+      // Validate current user
+      const userId = getUserId();
+      if (!userId || (currentUserId !== null && userId !== currentUserId)) {
+        throw new Error("User session may have changed. Please log in again.");
+      }
+      
+      // Find song to verify ownership
+      const songToDelete = history.find(song => song._id === id);
+      if (!songToDelete) {
+        throw new Error("Song not found");
+      }
+      
+      // Verify ownership
+      if (songToDelete.user !== userId) {
+        throw new Error("You don't have permission to delete this song");
+      }
+      
       const response = await apiDelete(`${backendUrl}/api/songs/${id}`);
       
       // Update local state to remove the deleted song
       setHistory(prevHistory => prevHistory.filter(song => song._id !== id));
       
       // If this was the currently selected song in Flashcards, clear it
-      if (response.songTitle && selectedSong && selectedSong.song === response.songTitle) {
+      if (response.songTitle && response.songTitle === selectedSong?.song) {
         setSelectedSong(null);
       }
       
@@ -139,6 +200,12 @@ function History({ setSelectedSong }) {
       });
     } catch (error) {
       console.error("Error deleting song:", error);
+      
+      // If authentication error, redirect to login
+      if (error.message.includes("authentication") || error.message.includes("session")) {
+        navigate("/login");
+      }
+      
       setToast({
         show: true,
         message: error.message || "Error deleting song",

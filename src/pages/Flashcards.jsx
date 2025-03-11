@@ -1,6 +1,4 @@
-// src/pages/Flashcards.jsx - Updated with proper data isolation and token handling
-
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import "../styles/Flashcards.css";
 import Toast from "../components/Toast";
 import LoadingSpinner from "../components/LoadingSpinner";
@@ -12,7 +10,7 @@ import { apiGet, apiPost, apiDelete } from "../utils/api";
 // Use Vite's env variable for backend URL; fallback to localhost for development.
 const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:5001";
 
-function Flashcards({ selectedSong, setSelectedSong, isLoggedIn, setIsLoggedIn }) {
+function Flashcards({ selectedSong, setSelectedSong, isLoggedIn, setIsLoggedIn, currentUserId }) {
   const navigate = useNavigate();
   const [flashcards, setFlashcards] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -26,6 +24,16 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn, setIsLoggedIn }
   const [detectedLanguage, setDetectedLanguage] = useState(null);
   const [spotifyConnected, setSpotifyConnected] = useState(false);
   
+  // Reset component state
+  const resetComponentState = useCallback(() => {
+    setFlashcards([]);
+    setCurrentIndex(0);
+    setFlipped(false);
+    setSentiment(null);
+    setDetectedLanguage(null);
+    setSelectedLanguage("auto");
+  }, []);
+  
   // Check authentication and redirect if not logged in
   useEffect(() => {
     if (!isAuthenticated()) {
@@ -35,14 +43,34 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn, setIsLoggedIn }
         type: "warning"
       });
       navigate("/login");
+      return;
     }
-  }, [navigate]);
+    
+    // Reset state if user changed
+    const userId = getUserId();
+    if (userId !== currentUserId && currentUserId !== null) {
+      console.log("User changed in Flashcards component, resetting state");
+      resetComponentState();
+    }
+  }, [navigate, currentUserId, resetComponentState]);
   
   // Check Spotify connection based on user ID
   useEffect(() => {
     const spotifyTokens = getSpotifyTokens();
     setSpotifyConnected(!!spotifyTokens);
   }, [isLoggedIn]);
+  
+  // Effect to check if the selected song belongs to the current user
+  useEffect(() => {
+    if (selectedSong && currentUserId) {
+      // Check if song belongs to current user
+      if (selectedSong.user && selectedSong.user !== currentUserId) {
+        console.log("Selected song doesn't belong to current user, clearing selection");
+        setSelectedSong(null);
+        resetComponentState();
+      }
+    }
+  }, [selectedSong, currentUserId, setSelectedSong, resetComponentState]);
   
   // Handle Spotify login
   const handleSpotifyLogin = () => {
@@ -94,9 +122,32 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn, setIsLoggedIn }
     }
   };
   
-  // Enhanced fetchFlashcards with user-specific handling
+  // Enhanced fetchFlashcards with user-specific handling and improved error handling
   const fetchFlashcards = async () => {
     if (!selectedSong) return;
+    
+    // Validate user authentication
+    if (!isAuthenticated()) {
+      setToast({
+        show: true,
+        message: "Please log in to access flashcards",
+        type: "warning"
+      });
+      navigate("/login");
+      return;
+    }
+    
+    // Verify the current user matches the song's user
+    const currentUser = getUserId();
+    if (selectedSong.user && selectedSong.user !== currentUser) {
+      setToast({
+        show: true,
+        message: "This song is not in your library",
+        type: "warning"
+      });
+      setSelectedSong(null);
+      return;
+    }
     
     setIsLoadingCards(true);
     
@@ -157,6 +208,12 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn, setIsLoggedIn }
       
       const fetchSentiment = async () => {
         try {
+          // Verify user ownership before proceeding
+          const currentUser = getUserId();
+          if (selectedSong.user && selectedSong.user !== currentUser) {
+            throw new Error("This song is not in your library");
+          }
+          
           // Construct the URL
           let url = `${backendUrl}/api/songs/sentiment?song=${encodeURIComponent(selectedSong.song)}`;
           if (selectedSong.artist) {
@@ -204,7 +261,7 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn, setIsLoggedIn }
     }
   }, [selectedSong, flashcards.length]);
   
-  // Log current song with user-specific validation
+  // Log current song with user-specific validation and additional security
   const logCurrentSong = async () => {
     setLogging(true);
     
@@ -213,6 +270,18 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn, setIsLoggedIn }
         setToast({
           show: true,
           message: "You need to be logged in to save songs",
+          type: "error"
+        });
+        navigate("/login");
+        return;
+      }
+      
+      // Verify current user ID
+      const userId = getUserId();
+      if (!userId || userId !== currentUserId) {
+        setToast({
+          show: true,
+          message: "User session may have changed. Please log in again.",
           type: "error"
         });
         navigate("/login");
@@ -231,7 +300,7 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn, setIsLoggedIn }
       
       // Fetch the currently playing song from Spotify
       const response = await fetch(
-        `${backendUrl}/api/spotify/current-song?accessToken=${spotifyTokens.accessToken}&refreshToken=${spotifyTokens.refreshToken}&userId=${getUserId()}`
+        `${backendUrl}/api/spotify/current-song?accessToken=${spotifyTokens.accessToken}&refreshToken=${spotifyTokens.refreshToken}&userId=${userId}`
       );
       
       if (!response.ok) {
@@ -304,7 +373,8 @@ function Flashcards({ selectedSong, setSelectedSong, isLoggedIn, setIsLoggedIn }
     }
   };
   
-  // Rest of the component remains unchanged...
+  // Rest of the component remains mostly unchanged...
+  // (Including the LoadingEllipsis and EmptyFlashcardState components)
   
   return (
     <div className="flashcards-container">
