@@ -1,170 +1,73 @@
 # LyricLingo
 
-**LyricLingo** is a full-stack web application that fetches song lyrics, translates them, and generates flashcards for language learning. Users can log songs, view their history, and test themselves with flashcards generated from song lyrics.
+LyricLingo is an interactive web application that helps users learn new languages through music. By integrating with Spotify, LyricLingo allows users to log songs, view translated lyrics, create flashcards, and analyze song sentiment.
 
-## 🚀 Features
+## Features
 
-- **Fetch song lyrics** from Genius API
-- **Translate lyrics** using DeepL API
-- **Generate flashcards** from lyrics (original + translated)
-- **Save song history** in MongoDB
-- **Redis caching** for optimized API performance
-- **Frontend built with React** (inside `src/`)
-- **Backend powered by Node.js + Express**
+- Spotify integration to log currently playing songs
+- Translation of song lyrics into multiple languages
+- Flashcard creation for language learning
+- Sentiment analysis of translated lyrics
+- User authentication and personalized song history
+- Responsive design for mobile and desktop
 
----
+## Tech Stack
 
-## 🛠️ Installation
+- **Frontend:** React, React Router, Framer Motion, Vite
+- **Backend:** Node.js, Express, MongoDB, Redis
+- **External APIs:** Spotify API, DeepL API, Genius Lyrics API
 
-### **1️⃣ Clone the Repository**
+## Getting Started
 
-```sh
-git clone https://github.com/your-username/my-lyric-app.git 
-cd my-lyric-app
-```
+### Prerequisites
 
-### **2️⃣ Set Up Backend**
+- [Node.js](https://nodejs.org) (v14 or higher)
+- [MongoDB](https://www.mongodb.com)
+- [Redis](https://redis.io)
 
-```sh
-  cd backend
-  npm install
-```
+### Installation
 
-#### **Environment Variables** (Create `.env` file inside `backend/`)
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/your-username/lyriclingo.git
+   cd lyriclingo
+Install dependencies:
 
-```env
-GENIUS_ACCESS_TOKEN=your-genius-api-key
-DEEPL_API_KEY=your-deepl-api-key
-MONGO_URI=your-mongodb-connection-string
+bash
+Copy
+Edit
+npm install
+Set up environment variables:
+
+Create a .env file in the root directory
+Add the following variables:
+bash
+Copy
+Edit
+MONGO_URI=your-mongodb-uri
+JWT_SECRET=your-jwt-secret
 SPOTIFY_CLIENT_ID=your-spotify-client-id
 SPOTIFY_CLIENT_SECRET=your-spotify-client-secret
-SPOTIFY_REDIRECT_URI=http://localhost:5001/api/spotify/callback
-```
+SPOTIFY_REDIRECT_URI=your-spotify-redirect-uri
+GENIUS_ACCESS_TOKEN=your-genius-access-token
+DEEPL_API_KEY=your-deepl-api-key
+REDIS_URL=your-redis-url
+Development
+Start the backend server:
 
-#### **Run Backend**
+bash
+Copy
+Edit
+cd src/backend
+node server.js
+Start the frontend development server:
 
-```sh
-  node server.js
-```
+bash
+Copy
+Edit
+cd ../
+npm run dev
+Open your browser and visit http://localhost:5173 to see the application.
 
-> Backend runs on **[http://localhost:5001](http://localhost:5001)**
-
-#### **Start Redis (If not running already)**
-
-```sh
-  redis-server
-```
-
-OR (if using Homebrew on macOS):
-
-```sh
-  brew services start redis
-```
-
----
-
-### **3️⃣ Set Up Frontend** (Inside `src/` but no separate frontend directory)
-
-```sh
-  npm install
-```
-
-#### **Run Frontend**
-
-```sh
-  npm run dev
-```
-
-> Frontend runs on **[http://localhost:5173/](http://localhost:5173/)**
-
----
-
-## 📡 API Endpoints
-
-### **1️⃣ Log a Song**
-
-```http
-POST /api/songs/log
-```
-
-**Request Body:**
-
-```json
-{
-  "song": "BESO",
-  "artist": "Rosalía & Rauw Alejandro"
-}
-```
-
-**Response:**
-
-```json
-{
-  "message": "Song logged successfully!",
-  "song": {
-    "song": "BESO",
-    "artist": "Rosalía & Rauw Alejandro",
-    "lyricsUrl": "https://genius.com/..."
-  }
-}
-```
-
-### **2️⃣ Get Song History**
-
-```http
-GET /api/songs/history
-```
-
-**Response:**
-
-```json
-[
-  {
-    "song": "BESO",
-    "artist": "Rosalía & Rauw Alejandro"
-  }
-]
-```
-
-### **3️⃣ Fetch Flashcards**
-
-```http
-GET /api/songs/flashcards?song=BESO
-```
-
-**Response:**
-
-```json
-[
-  { "front": "Ya yo necesito otro beso", "back": "Now I need another kiss" },
-  { "front": "Uno de esos que tú me da'", "back": "One of those that you give me'" }
-]
-```
-
----
-
-## 🛠️ Tech Stack
-
-- **Frontend:** React, Tailwind CSS
-- **Backend:** Node.js, Express
-- **Database:** MongoDB Atlas
-- **APIs Used:** Genius API, DeepL API
-- **Caching:** Redis (ioredis)
-- **Hosting:** Vercel (frontend), Render/Railway (backend)
-
----
-
-## 👥 Contributors
-
-- **Shivaganesh Nagamandla** - *Developer & Project Lead*
-
----
-
-## 🎯 Future Improvements
-
-- ✅ Support for more languages
-- ✅ User authentication
-- ✅ Mobile-friendly UI
-
-🚀 **Built for music lovers & language learners!** 🎶
-
+Deployment
+The application is deployed at https://lyriclingo.vercel.app/. The frontend is hosted on Vercel, and the backend is hosted separately.
