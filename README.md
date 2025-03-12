@@ -33,11 +33,11 @@ LyricLingo is an interactive web application that helps users learn new language
    ```bash
    git clone https://github.com/your-username/lyriclingo.git
    cd lyriclingo
-
+  ```
 2. **Install dependencies:**
   ```bash
     npm install
-
+  ```
 3. **Set up environment variables:**
 
 - Create a .env file in the root directory
@@ -58,10 +58,10 @@ LyricLingo is an interactive web application that helps users learn new language
 ```bash 
     cd src/backend
     node server.js
- 
+```
 2.  **Start the frontend development server:**
   ```bash 
     cd ../
     npm run dev
-
+  ```
 3. **Open your browser** and visit http://localhost:5173 to see the application.
