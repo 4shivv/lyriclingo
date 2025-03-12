@@ -17,7 +17,7 @@ LyricLingo is a full-stack web application that helps users learn new languages 
 
 - **Frontend**: React, React Router, Framer Motion, Vite
 - **Backend**: Node.js, Express, MongoDB, Redis
-- **External APIs**: Spotify API, DeepL API, Genius Lyrics API
+- **External APIs**: Spotify API, DeepL API, Genius Lyrics API, Hugging Face API
 
 ## 🚀 Getting Started
 
@@ -52,7 +52,7 @@ LyricLingo is a full-stack web application that helps users learn new languages 
      GENIUS_ACCESS_TOKEN=your-genius-access-token
      DEEPL_API_KEY=your-deepl-api-key
      REDIS_URL=your-redis-url
-     HUGGINGFACE_API_TOKEN=
+     HUGGINGFACE_API_TOKEN=your-huggingface-api-token
 
      ```
 
