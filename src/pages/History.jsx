@@ -265,7 +265,7 @@ function History({ setSelectedSong, currentUserId }) {
                 style={{ width: "100%" }}
               >
                 {history.map((entry) => (
-                  <React.Fragment key={entry._id}>
+                  <div className="history-item-container" key={entry._id}>
                     <motion.div
                       className="history-item"
                       onClick={() => handleSongClick(entry)}
@@ -295,7 +295,7 @@ function History({ setSelectedSong, currentUserId }) {
                     >
                       🗑️
                     </button>
-                  </React.Fragment>
+                  </div>
                 ))}
               </motion.div>
             ) : (
