@@ -1,5 +1,7 @@
 # LyricLingo
 
+The application is deployed at https://lyriclingo.vercel.app/.
+
 LyricLingo is an interactive web application that helps users learn new languages through music. By integrating with Spotify, LyricLingo allows users to log songs, view translated lyrics, create flashcards, and analyze song sentiment.
 
 ## Features
@@ -31,43 +33,35 @@ LyricLingo is an interactive web application that helps users learn new language
    ```bash
    git clone https://github.com/your-username/lyriclingo.git
    cd lyriclingo
-Install dependencies:
 
-bash
-Copy
-Edit
-npm install
-Set up environment variables:
+2. **Install dependencies:**
+  ```bash
+    npm install
 
-Create a .env file in the root directory
-Add the following variables:
-bash
-Copy
-Edit
-MONGO_URI=your-mongodb-uri
-JWT_SECRET=your-jwt-secret
-SPOTIFY_CLIENT_ID=your-spotify-client-id
-SPOTIFY_CLIENT_SECRET=your-spotify-client-secret
-SPOTIFY_REDIRECT_URI=your-spotify-redirect-uri
-GENIUS_ACCESS_TOKEN=your-genius-access-token
-DEEPL_API_KEY=your-deepl-api-key
-REDIS_URL=your-redis-url
-Development
-Start the backend server:
+3. **Set up environment variables:**
 
-bash
-Copy
-Edit
-cd src/backend
-node server.js
-Start the frontend development server:
+- Create a .env file in the root directory
+- Add the following variables:
+  ``` bash
+      MONGO_URI=your-mongodb-uri
+      JWT_SECRET=your-jwt-secret
+      SPOTIFY_CLIENT_ID=your-spotify-client-id
+      SPOTIFY_CLIENT_SECRET=your-spotify-client-secret
+      SPOTIFY_REDIRECT_URI=your-spotify-redirect-uri
+      GENIUS_ACCESS_TOKEN=your-genius-access-token
+      DEEPL_API_KEY=your-deepl-api-key
+      REDIS_URL=your-redis-url
 
-bash
-Copy
-Edit
-cd ../
-npm run dev
-Open your browser and visit http://localhost:5173 to see the application.
+### Development
 
-Deployment
-The application is deployed at https://lyriclingo.vercel.app/. The frontend is hosted on Vercel, and the backend is hosted separately.
+1. **Start the backend server:**
+```bash 
+    cd src/backend
+    node server.js
+ 
+2.  **Start the frontend development server:**
+  ```bash 
+    cd ../
+    npm run dev
+
+3. **Open your browser** and visit http://localhost:5173 to see the application.
