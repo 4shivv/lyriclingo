@@ -134,7 +134,7 @@ function Home() {
                   whileHover={{ y: -5, scale: 1.1 }}
                   transition={{ type: "spring", stiffness: 400 }}
                 >
-                  <img src="/email.png" alt="GitHub" className="social-icon" />
+                  <img src="/mail-227.png" alt="GitHub" className="social-icon" />
                 </motion.a>
                 <motion.a 
                   href="https://www.linkedin.com/in/shivaganesh-nagamandla" 
