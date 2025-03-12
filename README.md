@@ -1,5 +1,7 @@
 # LyricLingo
 
+The application is deployed at [LyricLingo](https://lyriclingo.vercel.app/).
+
 LyricLingo is a full-stack web application that helps users learn new languages through music. By integrating with Spotify, LyricLingo allows users to log songs, view translated lyrics, create flashcards, and analyze song sentiment.
 
 ## 🌟 Features
@@ -69,19 +71,6 @@ LyricLingo is a full-stack web application that helps users learn new languages 
 3. **Open Your Browser**:
    Visit [http://localhost:5173](http://localhost:5173) to see the application.
 
-## 🌐 Deployment
-
-The application is deployed at [LyricLingo](https://lyriclingo.vercel.app/).
-
-## 👥 Contributors
-
-- **Shivaganesh Nagamandla** - Developer & Project Lead
-
-## 🎯 Future Improvements
-
-- Support for more languages
-- Enhanced user authentication
-- Improved mobile UI
 
 ---
 

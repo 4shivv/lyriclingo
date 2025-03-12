@@ -128,13 +128,13 @@ function Home() {
             >
               <div className="social-links">
                 <motion.a 
-                  href="https://github.com/4shivv" 
+                  href="mailto:lyriclingoapp@gmail.com" 
                   target="_blank" 
                   rel="noopener noreferrer"
                   whileHover={{ y: -5, scale: 1.1 }}
                   transition={{ type: "spring", stiffness: 400 }}
                 >
-                  <img src="/github-logo.png" alt="GitHub" className="social-icon" />
+                  <img src="/3690706.png" alt="GitHub" className="social-icon" />
                 </motion.a>
                 <motion.a 
                   href="https://www.linkedin.com/in/shivaganesh-nagamandla" 
