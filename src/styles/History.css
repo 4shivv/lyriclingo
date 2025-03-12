@@ -200,47 +200,58 @@
   gap: 8px; /* Reduced from 12px */
 }
 
-/* Hover state effects */
+/* Redesigned hover state effects */
 .history-item:hover {
   background: rgba(30, 32, 45, 0.6);
-  transform: translateY(-3px); /* Reduced from -5px */
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15); /* Reduced shadow */
-  border-color: rgba(255, 255, 255, 0.12);
+  transform: translateY(-5px) scale(1.02);
+  box-shadow: 0 12px 25px rgba(0, 0, 0, 0.2);
+  border-color: rgba(255, 255, 255, 0.15);
+  border-left: 4px solid rgba(252, 220, 77, 0.8);
+  padding-left: 16px; /* Adjust padding to accommodate border */
 }
 
-.history-item:hover::before {
-  background: rgba(252, 220, 77, 0.8);
-  width: 4px;
-}
-
-/* Song and artist hover state */
+/* Song and artist hover state - enhanced */
 .history-item:hover .history-song {
   color: rgba(252, 220, 77, 0.9);
+  transition: all 0.3s ease;
 }
 
 .history-item:hover .history-artist {
-  color: #dddddd;
+  color: #ffffff;
+  transition: all 0.3s ease;
 }
 
-/* Date badge hover state */
+/* Date badge hover state - enhanced */
 .history-item:hover .history-date {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.2);
   color: white;
+  transform: scale(1.05);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
-/* Delete button hover state */
+/* Delete button hover state with matching animation */
 .delete-history-button:hover {
-  background: rgba(231, 76, 60, 0.15);
+  background: rgba(231, 76, 60, 0.2);
   color: rgba(231, 76, 60, 1);
-  transform: scale(1.1);
-  box-shadow: 0 4px 12px rgba(231, 76, 60, 0.15);
+  transform: translateY(-3px) scale(1.1);
+  box-shadow: 0 6px 15px rgba(231, 76, 60, 0.25);
 }
 
-/* Active states */
-.history-item:active {
+/* Remove the previous hover pseudo-element since we're using border-left now */
+.history-item::before {
+  display: none;
+}
+
+/* Transition the delete button when the item is hovered for a coordinated effect */
+.history-item-container:hover .delete-history-button {
   transform: translateY(-2px);
-  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
+}
+
+/* Improved active states */
+.history-item:active {
+  transform: translateY(-2px) scale(0.99);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
   transition: all 0.1s ease;
 }
 
