@@ -52,6 +52,8 @@ LyricLingo is a full-stack web application that helps users learn new languages 
      GENIUS_ACCESS_TOKEN=your-genius-access-token
      DEEPL_API_KEY=your-deepl-api-key
      REDIS_URL=your-redis-url
+     HUGGINGFACE_API_TOKEN=
+
      ```
 
 ### Development
