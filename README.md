@@ -30,19 +30,22 @@ LyricLingo is an interactive web application that helps users learn new language
 ### Installation
 
 1. **Clone the repository:**
+
    ```bash
    git clone https://github.com/your-username/lyriclingo.git
    cd lyriclingo
   ```
 2. **Install dependencies:**
-  ```bash
+
+    ```bash
     npm install
   ```
 3. **Set up environment variables:**
 
 - Create a .env file in the root directory
 - Add the following variables:
-  ``` bash
+
+    ``` bash
       MONGO_URI=your-mongodb-uri
       JWT_SECRET=your-jwt-secret
       SPOTIFY_CLIENT_ID=your-spotify-client-id
@@ -51,16 +54,18 @@ LyricLingo is an interactive web application that helps users learn new language
       GENIUS_ACCESS_TOKEN=your-genius-access-token
       DEEPL_API_KEY=your-deepl-api-key
       REDIS_URL=your-redis-url
+    ```
 
 ### Development
 
 1. **Start the backend server:**
-```bash 
+    ```bash 
     cd src/backend
     node server.js
-```
+  ```
+
 2.  **Start the frontend development server:**
-  ```bash 
+    ```bash 
     cd ../
     npm run dev
   ```
