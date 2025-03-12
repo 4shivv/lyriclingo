@@ -106,6 +106,7 @@
   position: relative;
   overflow: hidden;
   margin-bottom: 10px; /* Reduced from 15px */
+  margin-right: 50px; /* Make space for the delete button */
 }
 
 /* Remove previous hover effects */
@@ -132,7 +133,7 @@
   font-weight: 600;
   color: #ffffff;
   letter-spacing: 0.3px;
-  display: block;
+  display: inline; /* Changed from block to inline */
 }
 
 /* Artist styling - slightly smaller */
@@ -141,8 +142,8 @@
   color: #bbbbbb;
   font-weight: 400;
   letter-spacing: 0.2px;
-  display: block;
-  margin-top: 1px; /* Reduced from 2px */
+  display: inline; /* Changed from block to inline */
+  margin-left: 2px; /* Add a little space after the dash */
 }
 
 /* History actions container - more compact */
@@ -164,7 +165,7 @@
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Reduced shadow */
 }
 
-/* Delete button styling - smaller */
+/* Repositioned delete button styling */
 .delete-history-button {
   width: 32px; /* Reduced from 36px */
   height: 32px; /* Reduced from 36px */
@@ -179,6 +180,11 @@
   transition: all 0.3s ease;
   padding: 0;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Reduced shadow */
+  position: absolute;
+  right: -40px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 3;
 }
 
 /* Yellow accent behind item */
